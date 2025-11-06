@@ -1,0 +1,26 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "Painel interativo para conduzir avaliações de segurança com base em OWASP Top 10, OWASP API Security, PTES, SAST, DAST e hardening de servidores. O projeto foi desenhado para funcionar **100% offline**: basta abrir `index.html` no navegador e começar a checklist.",
+  "main": "index.js",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GhostN3xus/Owasp_Checklist_testing.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/GhostN3xus/Owasp_Checklist_testing/issues"
+  },
+  "homepage": "https://github.com/GhostN3xus/Owasp_Checklist_testing#readme",
+  "devDependencies": {
+    "esbuild": "^0.25.12",
+    "vitest": "^4.0.7"
+  }
+}
