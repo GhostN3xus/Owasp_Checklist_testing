@@ -419,3 +419,12 @@ const serverHardening = {
     }
   ]
 };
+
+if (typeof globalThis !== "undefined") {
+  globalThis.serverHardening = serverHardening;
+}
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = serverHardening;
+}
+

@@ -8,7 +8,6 @@ Painel interativo para conduzir avaliações de segurança com base em OWASP Top
 - Checklists completos com boxes de progresso, status (Passou/Falhou/N/A) e campo para notas e evidências.
 - Guias técnicos detalhados por item: impacto, como identificar, ferramentas, comandos reais, passo a passo, mitigações e evidências sugeridas.
 - Cobertura integral dos Top 10 OWASP Web 2021 e OWASP API Security 2023 com múltiplos testes acionáveis por categoria.
-
 - Seção dedicada a hardening de servidores (IIS, Apache, Nginx, Windows, Linux).
 - Exportação rápida para PDF (utilize a função do navegador após abrir o relatório).
 - Salvamento automático no `localStorage` para não perder o progresso.

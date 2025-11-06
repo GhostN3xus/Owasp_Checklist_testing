@@ -182,7 +182,7 @@ const checklistData = [
         ]
       },
       {
-
+        
         id: "a03",
         title: "A03 – Injeção (SQL/Command/NoSQL)",
         summary: "Validação de entrada, parametrização de queries e segurança de comandos.",
@@ -1812,6 +1812,7 @@ const checklistData = [
               ],
               references: ["OWASP Secrets Management Cheat Sheet", "OWASP API Security – API10"]
             }
+
         id: "llm",
         title: "OWASP LLM Top 10",
         summary: "Checklist especializado para segurança de modelos de linguagem e chatbots.",
@@ -2623,4 +2624,13 @@ const checklistData = [
     ]
   }
 ];
+
+
+if (typeof globalThis !== "undefined") {
+  globalThis.checklistData = checklistData;
+}
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = checklistData;
+}
 
