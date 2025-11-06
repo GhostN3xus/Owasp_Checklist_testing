@@ -8,7 +8,7 @@ import { calculateProgress, renderStatusBadge } from "./logic.js";
 
 const checklistData = [...originalChecklistData, cloudSecurityChecklist, secureCodeChecklist, owaspCheatSheetChecklist];
 
-(() => {
+document.addEventListener("DOMContentLoaded", () => {
   const TABS = checklistData.map((category) => ({
     id: category.id,
     name: category.name,
@@ -485,4 +485,4 @@ const checklistData = [...originalChecklistData, cloudSecurityChecklist, secureC
   renderTabs();
   renderTools();
   renderActiveTab(activeTabId);
-})();
+});

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OWASP AppSec Checklist Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <aside class="sidebar">
+      <h1>🧠 AppSec Dashboard</h1>
+      <p class="tagline">OWASP • PTES • SAST • DAST • Hardening</p>
+      <nav id="tab-list" class="tab-list">
+        <!-- Tabs injected by app.js -->
+      </nav>
+      <div class="sidebar-actions">
+        <button id="export-pdf" class="primary">📄 Exportar PDF</button>
+        <button id="reset-state" class="danger">🧹 Resetar Dados</button>
+      </div>
+      <section class="sidebar-tools">
+        <h2>🔧 Ferramentas úteis</h2>
+        <ul id="tool-list"></ul>
+      </section>
+    </aside>
+    <main class="content">
+      <header class="content-header">
+        <div>
+          <h2 id="current-tab-title">Selecione uma aba</h2>
+          <p id="current-tab-description">Escolha um domínio de segurança para iniciar a avaliação.</p>
+        </div>
+        <div class="project-meta">
+          <label>
+            Projeto
+            <input id="project-name" type="text" placeholder="Ex: API de Pagamentos" />
+          </label>
+          <label>
+            Tester
+            <input id="tester-name" type="text" placeholder="Seu nome" />
+          </label>
+        </div>
+      </header>
+      <section id="category-content" class="category-content">
+        <!-- Checklist cards injected by app.js -->
+      </section>
+    </main>
+  </div>
+
+  <div id="guide-modal" class="modal hidden">
+    <div class="modal-content">
+      <button class="modal-close" id="close-modal">✖</button>
+      <div class="modal-body">
+        <h3 id="modal-title"></h3>
+        <p id="modal-description" class="modal-description"></p>
+        <section id="modal-body-content"></section>
+      </div>
+    </div>
+  </div>
+
+  <template id="checklist-card-template">
+    <article class="checklist-card">
+      <header class="card-header">
+        <div>
+          <h3 class="card-title"></h3>
+          <p class="card-summary"></p>
+        </div>
+        <div class="card-progress">
+          <span class="progress-label"></span>
+          <div class="progress-bar">
+            <div class="progress-value"></div>
+          </div>
+        </div>
+      </header>
+      <div class="card-body"></div>
+    </article>
+  </template>
+
+  <template id="checklist-item-template">
+    <div class="checklist-item">
+      <label class="checkbox">
+        <input type="checkbox" class="item-checkbox" />
+        <span class="item-title"></span>
+      </label>
+      <p class="item-description"></p>
+      <div class="item-controls">
+        <label>Status
+          <select class="item-status">
+            <option value="">--</option>
+            <option value="passed">Passou</option>
+            <option value="failed">Falhou</option>
+            <option value="na">N/A</option>
+          </select>
+        </label>
+        <label>Notas
+          <textarea class="item-notes" rows="2" placeholder="Evidências, payloads, observações..."></textarea>
+        </label>
+        <button class="item-guide secondary">📘 Guia real</button>
+      </div>
+    </div>
+  </template>
+
+  <script src="bundle.js" type="module" defer></script>
+</body>
+</html>
