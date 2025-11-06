@@ -34,10 +34,11 @@ python3 -m http.server 8000
 3.1. Para cada card do checklist:
 
 - Leia o resumo para entender o objetivo do controle.
-- Execute os testes descritos no botão **📘 Guia real**.
+- Abra o botão **📘 Guia real** para consultar impacto, técnicas de detecção, comandos, mitigações e evidências sugeridas.
+- Execute os testes descritos nas seções "Como identificar" e "Comandos".
 - Marque a checkbox ao finalizar o item.
 - Selecione o status apropriado (Passou, Falhou, N/A).
-- Registre evidências no campo de notas (payloads, logs, prints, links). Utilize markdown simples se preferir.
+- Registre evidências no campo de notas (payloads, logs, prints, links) indicando onde os arquivos estão armazenados. Utilize markdown simples se preferir.
 
 3.2. Exemplos de comandos sugeridos (todos listados no painel):
 

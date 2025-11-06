@@ -263,13 +263,19 @@
     });
 
     guideBtn.addEventListener("click", () => {
-      openGuideModal(item.title, item.description, {
-        overview: item.notes,
-        commands: item.verification,
-        tools: [stack.name],
-        steps: ["Documente evidências (logs, screenshots) para cada configuração aplicada."],
-        references: ["CIS Benchmarks", "OWASP Server Security"]
-      });
+      openGuideModal(
+        item.title,
+        item.description,
+        item.guide || {
+          overview: item.notes,
+          commands: item.verification,
+          tools: [stack.name],
+          steps: [
+            "Documente evidências (logs, screenshots) para cada configuração aplicada."
+          ],
+          references: ["CIS Benchmarks", "OWASP Server Security"]
+        }
+      );
     });
 
     return element;
@@ -282,9 +288,13 @@
 
     const sections = [
       { key: "overview", label: "Resumo técnico" },
+      { key: "impact", label: "Impacto e riscos" },
+      { key: "detection", label: "Como identificar" },
       { key: "tools", label: "Ferramentas" },
       { key: "commands", label: "Comandos" },
       { key: "steps", label: "Passo a passo" },
+      { key: "mitigation", label: "Mitigações recomendadas" },
+      { key: "evidence", label: "Evidências sugeridas" },
       { key: "references", label: "Referências" }
     ];
 

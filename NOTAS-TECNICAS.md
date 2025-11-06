@@ -6,6 +6,7 @@
 - Não há dependências externas nem chamadas a APIs, permitindo uso offline completo.
 - Todos os dados das checklists estão em `data.js`, `serverConfig.js` e `securityTools.js`.
 - O modal de guia consome os objetos `guide` presentes em cada item, garantindo reuso de conteúdo.
+- Estrutura esperada para `guide`: `overview`, `impact`, `detection`, `tools`, `commands`, `steps`, `mitigation`, `evidence` e `references` (todos opcionais, exibidos somente quando preenchidos).
 
 ## Persistência local
 

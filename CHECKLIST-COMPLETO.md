@@ -1,6 +1,6 @@
 # ✅ Checklist Completo de Segurança
 
-Este documento consolida as principais checagens utilizadas no dashboard. Use-o como referência rápida ou para revisar o conteúdo de forma offline.
+Este documento consolida as principais checagens utilizadas no dashboard. Use-o como referência rápida ou para revisar o conteúdo de forma offline. Cada item no painel possui guia com impacto, técnicas de detecção, ferramentas, comandos, mitigações e evidências recomendadas.
 
 ## OWASP Top 10 (2021)
 

@@ -6,7 +6,7 @@ Painel interativo para conduzir avaliações de segurança com base em OWASP Top
 
 - Interface moderna em tema dark com navegação por abas.
 - Checklists completos com boxes de progresso, status (Passou/Falhou/N/A) e campo para notas e evidências.
-- Guias técnicos detalhados por item: ferramentas, comandos reais, passo a passo e referências.
+- Guias técnicos detalhados por item: impacto, como identificar, ferramentas, comandos reais, passo a passo, mitigações e evidências sugeridas.
 - Seção dedicada a hardening de servidores (IIS, Apache, Nginx, Windows, Linux).
 - Exportação rápida para PDF (utilize a função do navegador após abrir o relatório).
 - Salvamento automático no `localStorage` para não perder o progresso.
@@ -40,8 +40,8 @@ Painel interativo para conduzir avaliações de segurança com base em OWASP Top
 5. Para cada item:
    - Marque a checkbox quando concluir o teste.
    - Escolha o status (Passou, Falhou, N/A).
-   - Registre evidências no campo de notas.
-   - Clique em **📘 Guia real** para abrir instruções aprofundadas.
+   - Registre notas e evidências coletadas (logs, prints, comandos executados).
+   - Clique em **📘 Guia real** para abrir instruções aprofundadas com impacto, técnicas de detecção, mitigações e checklist de evidências.
 6. Clique em **📄 Exportar PDF** para gerar o relatório consolidado (use “Imprimir em PDF”).
 7. Utilize **🧹 Resetar Dados** para limpar o estado local e iniciar um novo ciclo.
 
@@ -50,6 +50,15 @@ Painel interativo para conduzir avaliações de segurança com base em OWASP Top
 - O botão **📄 Exportar PDF** abre uma nova aba com relatório formatado.
 - Utilize o atalho do navegador (`Ctrl + P` / `Cmd + P`) e escolha “Salvar como PDF”.
 - O relatório contém: projeto, tester, data/hora, status por item e notas registradas.
+
+## 🔎 Fluxo recomendado de validação
+
+1. **Planeje** o escopo utilizando a aba PTES e confira se obrigações legais estão cobertas.
+2. **Execute** os testes por categoria (OWASP, API, SAST, DAST, Hardening) consultando os guias para compreender impacto, técnicas de detecção e comandos.
+3. **Colete evidências** descritas nos guias (logs, capturas, relatórios de ferramentas) e anexe o resumo no campo de notas.
+4. **Classifique o status** de cada item com base no resultado observado (Passou/Falhou/N/A) e marque a checkbox quando finalizar.
+5. **Revise mitigações sugeridas** e inclua recomendações específicas do ambiente analisado.
+6. **Gere o relatório PDF** para anexar à documentação do projeto ou sistema de acompanhamento de vulnerabilidades.
 
 ## 🔒 Privacidade e funcionamento offline
 
