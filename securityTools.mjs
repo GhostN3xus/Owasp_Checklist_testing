@@ -50,3 +50,6 @@ const securityTools = [
     description: "Scanner de vulnerabilidades, IaC e secrets para containers, repositórios e sistemas."
   }
 ];
+
+
+export { securityTools };

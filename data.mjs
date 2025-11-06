@@ -96,6 +96,93 @@ const checklistData = [
         ]
       },
       {
+        id: "a02",
+        title: "A02 – Falhas Criptográficas",
+        summary: "Garantia de confidencialidade para dados em trânsito e repouso, gestão de chaves e protocolos.",
+        items: [
+          {
+            id: "a02-1",
+            title: "Avaliar configuração TLS ponta a ponta",
+            description:
+              "Verifique protocolos permitidos, conjuntos de cifras, certificados e pinagem entre cliente, balanceadores e backend.",
+            guide: {
+              overview:
+                "O transporte deve utilizar TLS 1.2+ com cifras modernas, certificados válidos e checagem de revogação.",
+              impact:
+                "Protocolos fracos permitem ataques de downgrade, MITM e exposição de credenciais durante a captura de tráfego.",
+              detection: [
+                "Execute scans de TLS para validar suporte a cifras inseguras.",
+                "Analise cadeias de certificados e datas de expiração.",
+                "Revise configurações de intermediários (CDN, proxies) para inconsistências."
+              ],
+              tools: ["testssl.sh", "sslyze", "openssl"],
+              commands: [
+                "testssl.sh --fast https://localhost",
+                "openssl s_client -connect localhost:443 -tls1_2"
+              ],
+              steps: [
+                "Mapeie todos os domínios e subdomínios publicados.",
+                "Execute varredura TLS validando suporte mínimo a TLS 1.2 e ALPN.",
+                "Confirme pinagem/HPKP em apps mobile ou clientes dedicados.",
+                "Documente exceções e defina plano de migração para cifras inseguras."
+              ],
+              mitigation: [
+                "Desabilitar protocolos antigos (SSL, TLS 1.0/1.1).",
+                "Utilizar certificados curtos com renovação automatizada e verificação OCSP.",
+                "Ativar HSTS e políticas de pinagem gerenciadas via gateway."
+              ],
+              evidence: [
+                "Relatório testssl demonstrando apenas cifras fortes habilitadas.",
+                "Captura da cadeia de certificados válida e atualizada.",
+                "Configuração do servidor ou infraestrutura como código com ajustes aplicados."
+              ],
+              references: ["OWASP Top 10 – A02", "Mozilla SSL Configuration Guide"]
+            }
+          },
+          {
+            id: "a02-2",
+            title: "Inspecionar proteção de dados sensíveis em repouso",
+            description:
+              "Analise armazenamento de senhas, tokens, backups e segredos para confirmar hashing seguro e criptografia.",
+            guide: {
+              overview:
+                "Dados sensíveis devem utilizar hashing adaptativo e criptografia com chaves protegidas por HSM/serviços KMS.",
+              impact:
+                "Vazamentos de base de dados permitem cracking rápido de senhas ou exposição direta de informações pessoais.",
+              detection: [
+                "Revise esquemas do banco identificando colunas críticas.",
+                "Analise código e pipelines verificando uso de hashing e key management.",
+                "Avalie backups e dumps para confirmar criptografia e controle de acesso."
+              ],
+              tools: ["psql", "mongosh", "trivy fs", "gitleaks"],
+              commands: [
+                "psql -c 'SELECT column_name, data_type FROM information_schema.columns WHERE table_name=\"users\";'",
+                "trivy fs --security-checks secret ./",
+                "gitleaks detect"
+              ],
+              steps: [
+                "Liste campos marcados como senhas, tokens, chaves e dados pessoais.",
+                "Valide se senhas usam bcrypt, Argon2 ou scrypt com custo adequado.",
+                "Verifique se segredos estão em cofre (HashiCorp Vault, AWS KMS) e não em arquivos plano.",
+                "Analise procedimentos de backup e exportação garantindo criptografia e acesso segregado."
+              ],
+              mitigation: [
+                "Migrar hashes inseguros (MD5/SHA1) para algoritmos adaptativos.",
+                "Implementar envelope encryption com rotação periódica de chaves.",
+                "Automatizar varreduras de segredos em repositórios e pipelines."
+              ],
+              evidence: [
+                "Trechos de código mostrando uso de bcrypt/Argon2 com sal e fator de custo.",
+                "Política do KMS ou Vault com registros de acesso.",
+                "Relatório de inventário de segredos com classificação de risco."
+              ],
+              references: ["OWASP Cryptographic Storage Cheat Sheet", "NIST SP 800-57"]
+            }
+          }
+        ]
+      },
+      {
+
         id: "a03",
         title: "A03 – Injeção (SQL/Command/NoSQL)",
         summary: "Validação de entrada, parametrização de queries e segurança de comandos.",
@@ -179,6 +266,92 @@ const checklistData = [
                 "Captura do código corrigido usando APIs seguras."
               ],
               references: ["OWASP Cheat Sheet – Command Injection"]
+            }
+          }
+        ]
+      },
+      {
+
+        id: "a04",
+        title: "A04 – Design Inseguro",
+        summary: "Cobertura de modelagem de ameaças, regras de negócio resilientes e padrões seguros de arquitetura.",
+        items: [
+          {
+            id: "a04-1",
+            title: "Revisar modelagem de ameaças e casos de abuso",
+            description:
+              "Confirme que fluxos críticos possuem análise STRIDE/LINDDUN e backlog de riscos com contramedidas implementadas.",
+            guide: {
+              overview:
+                "Modelagem de ameaças contínua garante que riscos arquiteturais sejam endereçados desde o design.",
+              impact:
+                "Ausência de modelagem gera lacunas em controles estruturais e deixa superfícies de ataque sem cobertura.",
+              detection: [
+                "Audite artefatos de threat modeling e registros de workshops recentes.",
+                "Mapeie requisitos não funcionais versus implementações disponíveis.",
+                "Compare controles definidos com a arquitetura atual para identificar desvios."
+              ],
+              tools: ["OWASP Threat Dragon", "IriusRisk", "draw.io"],
+              commands: [
+                "iriusrisk-cli projects list",
+                "python3 scripts/threat_model_gap.py --diagrams ./docs/amenazas"
+              ],
+              steps: [
+                "Reúna diagramas de arquitetura, fluxos de dados e casos de uso.",
+                "Identifique componentes sem controles (auth, logging, segregação de dados).",
+                "Valide se backlog de riscos foi mitigado ou aceito formalmente.",
+                "Atualize matriz de ameaças com descobertas do teste de intrusão."
+              ],
+              mitigation: [
+                "Instituir revisões de arquitetura com checklist padrão.",
+                "Integrar threat modeling a marcos de desenvolvimento (design reviews).",
+                "Automatizar validações via políticas de arquitetura como código."
+              ],
+              evidence: [
+                "Registro de sessão de threat modeling com participantes e decisões.",
+                "Capturas dos diagramas atualizados com contramedidas anotadas.",
+                "Plano de ação rastreável em ferramenta de gestão (Jira, Azure DevOps)."
+              ],
+              references: ["OWASP SAMM – Design", "Microsoft Threat Modeling Tool Guide"]
+            }
+          },
+          {
+            id: "a04-2",
+            title: "Validar regras de negócio contra abuso lógico",
+            description:
+              "Teste fluxos críticos (pagamentos, cupons, workflows) procurando bypass de validações e inconsistências de estado.",
+            guide: {
+              overview:
+                "Cenários de abuso exigem entendimento profundo do domínio para evitar fraudes e bypass de processos.",
+              impact:
+                "Design inseguro em regras de negócio gera perdas financeiras, fraude e violações de compliance.",
+              detection: [
+                "Mapeie estados permitidos e compare com o que a aplicação aceita.",
+                "Reproduza fluxos com dados fora de ordem ou repetidos.",
+                "Analise logs para identificar sequências de chamadas suspeitas."
+              ],
+              tools: ["Burp Suite", "Cypress", "Playwright"],
+              commands: [
+                "npx playwright test tests/abuso-fluxo.spec.ts",
+                "burpsuite -> Repeater -> Alterar ordem de passos e tokens"
+              ],
+              steps: [
+                "Liste invariantes de negócio (limites, estado mínimo, aprovações).",
+                "Crie cenários negativos mudando ordem de requisições ou removendo validações.",
+                "Valide se o backend reforça as regras independentemente do front-end.",
+                "Documente gaps e proponha controles compensatórios."
+              ],
+              mitigation: [
+                "Implementar validações server-side alinhadas ao domain model.",
+                "Adicionar monitoração de anomalias para sequências de chamadas suspeitas.",
+                "Utilizar testes automatizados de abuso lógico em pipelines."
+              ],
+              evidence: [
+                "Gravações ou scripts que demonstram exploração de fluxo.",
+                "Logs do backend antes/depois com checagens adicionais.",
+                "Casos de teste automatizados cobrindo cenários críticos."
+              ],
+              references: ["OWASP Testing Guide – Business Logic", "PTES – Vulnerability Analysis"]
             }
           }
         ]
@@ -269,6 +442,434 @@ const checklistData = [
         ]
       },
       {
+
+        id: "a06",
+        title: "A06 – Componentes Vulneráveis e Desatualizados",
+        summary: "Inventário de dependências, varredura de vulnerabilidades e políticas de atualização contínua.",
+        items: [
+          {
+            id: "a06-1",
+            title: "Inventariar versões de dependências e pacotes",
+            description:
+              "Utilize SBOM, scanners e lockfiles para mapear bibliotecas utilizadas, comparando com CVEs recentes.",
+            guide: {
+              overview:
+                "Sem inventário atualizado é impossível priorizar correções de componentes vulneráveis.",
+              impact:
+                "Dependências desatualizadas facilitam exploração com exploits públicos e comprometem cadeia de suprimentos.",
+              detection: [
+                "Gere SBOM (CycloneDX/SPDX) a partir do código-fonte.",
+                "Execute scanners (npm audit, pip-audit, trivy) em todas as linguagens.",
+                "Compare resultados com políticas de patch management e SLAs."
+              ],
+              tools: ["syft", "trivy", "npm audit", "pip-audit"],
+              commands: [
+                "syft packages dir:. -o cyclonedx-json > sbom.json",
+                "trivy fs --security-checks vuln .",
+                "pip-audit"
+              ],
+              steps: [
+                "Identifique gerenciadores de pacotes utilizados (npm, Maven, NuGet).",
+                "Extraia lockfiles e gere SBOM centralizado.",
+                "Cruze vulnerabilidades com criticidade do ativo e exposição externa.",
+                "Criar backlog priorizado para atualizações e monitorar regressões."
+              ],
+              mitigation: [
+                "Implementar dependabot/renovate para manter versões atualizadas.",
+                "Adotar política de aprovação para novos pacotes baseada em risco.",
+                "Automatizar bloqueio de builds com CVEs críticas não tratadas."
+              ],
+              evidence: [
+                "SBOM anexado com data de geração.",
+                "Relatório de scanner com vulnerabilidades mapeadas e tratadas.",
+                "Histórico de atualizações aplicado no repositório."
+              ],
+              references: ["OWASP Top 10 – A06", "OWASP Dependency-Check"]
+            }
+          },
+          {
+            id: "a06-2",
+            title: "Validar baseline de imagens e containers",
+            description:
+              "Analise imagens Docker/VMs para garantir pacotes atualizados, usuários não privilegiados e assinaturas válidas.",
+            guide: {
+              overview:
+                "Componentes runtime precisam de manutenção contínua com políticas de assinatura e escaneamento de imagens.",
+              impact:
+                "Imagens desatualizadas abrem portas para exploração de vulnerabilidades críticas e persistência do atacante.",
+              detection: [
+                "Escaneie imagens com trivy/clair buscando pacotes vulneráveis.",
+                "Verifique se imagens são assinadas e provenientes de registries confiáveis.",
+                "Revise Dockerfiles garantindo uso de usuários não root e atualizações periódicas."
+              ],
+              tools: ["trivy", "grype", "cosign"],
+              commands: [
+                "trivy image registry/prod/app:latest",
+                "cosign verify registry/prod/app:latest",
+                "grype registry/prod/app:latest"
+              ],
+              steps: [
+                "Liste imagens em produção e suas tags.",
+                "Execute escaneamentos e registre vulnerabilidades identificadas.",
+                "Confirme política de atualização automática e rebuild periódico.",
+                "Recomende hardening (USER nonroot, pacotes mínimos, var var/lock)."
+              ],
+              mitigation: [
+                "Adotar pipelines imutáveis com rebuild automático após patches.",
+                "Exigir assinatura digital e verificação no deploy.",
+                "Criar política de descontinuação para imagens fora de suporte."
+              ],
+              evidence: [
+                "Relatório de imagem sem vulnerabilidades críticas.",
+                "Dockerfile revisado com práticas de hardening.",
+                "Registro de política de assinatura e enforcement no cluster."
+              ],
+              references: ["CIS Docker Benchmark", "NIST 800-190"]
+            }
+          }
+        ]
+      },
+      {
+        id: "a07",
+        title: "A07 – Falhas de Identificação e Autenticação",
+        summary: "Resiliência contra brute force, gestão de sessões, MFA e segurança de credenciais.",
+        items: [
+          {
+            id: "a07-1",
+            title: "Testar controles de brute force e enumeração",
+            description:
+              "Avalie login, reset de senha e OTP contra tentativas ilimitadas, respostas diferenciadas e enumeração de usuários.",
+            guide: {
+              overview:
+                "Autenticação deve implementar bloqueio progressivo, monitoramento e mensagens genéricas.",
+              impact:
+                "Sem proteção, atacantes conseguem descobrir contas válidas e comprometer credenciais via brute force.",
+              detection: [
+                "Observe diferenças de resposta entre usuário válido e inválido.",
+                "Execute ataques controlados medindo thresholds e bloqueios.",
+                "Analise logs para identificar alertas ou ausência deles durante testes."
+              ],
+              tools: ["Burp Intruder", "hydra", "ffuf"],
+              commands: [
+                "hydra -L users.txt -P passwords.txt https://localhost/login http-post-form 'username=^USER^&password=^PASS^:F=Inválido:S=Bem-vindo'",
+                "ffuf -w users.txt -X POST -d 'email=FUZZ' -u https://localhost/reset-password -H 'Content-Type: application/x-www-form-urlencoded'"
+              ],
+              steps: [
+                "Liste endpoints de autenticação e recuperação.",
+                "Envie combinações controladas monitorando respostas e códigos HTTP.",
+                "Verifique se bloqueios temporários/MFA são acionados após tentativas excessivas.",
+                "Documente mensagens genéricas e ausência de enumeração."
+              ],
+              mitigation: [
+                "Implementar rate limiting adaptativo e captcha progressivo.",
+                "Fornecer respostas genéricas independentemente do usuário.",
+                "Integrar detecção de brute force com SIEM/SOAR para bloqueio automático."
+              ],
+              evidence: [
+                "Log demonstrando bloqueio após N tentativas.",
+                "Capturas de respostas uniformes para usuários inválidos.",
+                "Regras de firewall/gateway aplicadas contra brute force."
+              ],
+              references: ["OWASP Authentication Cheat Sheet", "NIST 800-63B"]
+            }
+          },
+          {
+            id: "a07-2",
+            title: "Avaliar robustez de MFA e gerenciamento de sessão",
+            description:
+              "Confirme cobertura de MFA para contas privilegiadas, renovação de tokens e revogação ao alterar credenciais.",
+            guide: {
+              overview:
+                "Sessões seguras exigem MFA consistente, renovação periódica e invalidação imediata em eventos de risco.",
+              impact:
+                "Falhas permitem sequestro de sessão ou bypass de MFA via reuso de tokens expirados.",
+              detection: [
+                "Teste fluxo de login verificando se MFA é obrigatório nos contextos definidos.",
+                "Capture tokens e avalie tempo de expiração, escopo e revogação.",
+                "Analise integrações SSO para tokens antigos ainda válidos."
+              ],
+              tools: ["Burp Suite", "jwt_tool", "Auth Analyzer"],
+              commands: [
+                "python3 jwt_tool.py -p <token> -t HS256",
+                "burpsuite -> Repeater -> Reutilizar refresh token pós-logout"
+              ],
+              steps: [
+                "Identifique funções privilegiadas e políticas de MFA associadas.",
+                "Teste renovação de refresh tokens e revogação ao alterar senha/dispositivo.",
+                "Verifique invalidação de sessões em paralelo (logout global).",
+                "Documente exceções e proponha endurecimento de políticas."
+              ],
+              mitigation: [
+                "Aplicar MFA obrigatório para contas sensíveis e acessos externos.",
+                "Implementar rotinas de revogação centralizada (token blacklist, push logout).",
+                "Monitorar indicadores de risco e aplicar step-up authentication."
+              ],
+              evidence: [
+                "Logs de revogação de tokens durante o teste.",
+                "Fluxograma de MFA atualizado com escopos cobertos.",
+                "Capturas de respostas negando tokens reutilizados."
+              ],
+              references: ["OWASP Top 10 – A07", "CIS Controls IG2 – 6"]
+            }
+          }
+        ]
+      },
+      {
+        id: "a08",
+        title: "A08 – Integridade de Software e Dados",
+        summary: "Proteção da cadeia de entrega, assinaturas, validação de integrações e controles de deserialização.",
+        items: [
+          {
+            id: "a08-1",
+            title: "Testar integridade do pipeline CI/CD",
+            description:
+              "Avalie controles de assinatura de artefatos, proteção de pipelines e segregação de credenciais em automações.",
+            guide: {
+              overview:
+                "Pipelines comprometidos propagam código malicioso para produção e expõem segredos sensíveis.",
+              impact:
+                "Ataques na cadeia de build resultam em backdoors, supply chain e manipulação de releases.",
+              detection: [
+                "Revise pipelines buscando etapas com execução não monitorada.",
+                "Valide uso de assinatura/verificação de artefatos (SLSA, sigstore).",
+                "Cheque segregação de credenciais e uso de ambientes efêmeros."
+              ],
+              tools: ["slsa-verifier", "cosign", "OPA"],
+              commands: [
+                "cosign verify-blob --key cosign.pub build.tar.gz.sig",
+                "opa eval --data policies.rego --input cicd.json 'data.cicd.allow'"
+              ],
+              steps: [
+                "Mapeie pipelines de build, entrega e deploy.",
+                "Confirme assinatura/verificação em cada estágio e segregação de permissões.",
+                "Analise logs para execução manual ou bypass de revisões.",
+                "Proponha adoção de SLSA nível 2+ e controles de aprovação dupla."
+              ],
+              mitigation: [
+                "Implementar políticas de pipeline como código com revisão obrigatória.",
+                "Assinar artefatos e verificar antes do deploy (cosign/in-toto).",
+                "Isolar runners com credenciais mínimas e rotação frequente."
+              ],
+              evidence: [
+                "Relatório do pipeline destacando etapas protegidas.",
+                "Assinaturas verificadas anexadas ao laudo.",
+                "Políticas OPA/SLSA armazenadas no repositório."
+              ],
+              references: ["OWASP Top 10 – A08", "SLSA Framework"]
+            }
+          },
+          {
+            id: "a08-2",
+            title: "Validar integridade de dados e processos de atualização",
+            description:
+              "Teste mecanismos de atualização, deserialização e jobs de integração garantindo validação de origem e checksums.",
+            guide: {
+              overview:
+                "Dados importados e jobs automáticos precisam de validação de integridade, assinatura e verificação de origem.",
+              impact:
+                "Falhas permitem que atacantes injetem payloads maliciosos em atualizações, corrompendo dados críticos.",
+              detection: [
+                "Intercepte processos de update verificando se há checagem de assinatura/hash.",
+                "Avalie validações de deserialização e listas de permissões de tipos.",
+                "Monitore logs para dados rejeitados ou ausência de validação."
+              ],
+              tools: ["Burp Suite", "jq", "serde-safety"],
+              commands: [
+                "curl -X POST https://localhost/import -F 'file=@payload.xml'",
+                "python3 scripts/fuzz_deserialization.py --target https://localhost/api/v1/import"
+              ],
+              steps: [
+                "Identifique canais de ingestão de dados (imports, webhooks, feeds).",
+                "Modifique payloads para remover assinaturas ou alterar metadados.",
+                "Teste inclusão de classes arbitrárias e objetos inesperados.",
+                "Documente se o sistema rejeita ou sanitiza entradas inválidas."
+              ],
+              mitigation: [
+                "Aplicar whitelists de tipos na deserialização.",
+                "Assinar e verificar todas as atualizações/plugins.",
+                "Implementar checksums e validação de integridade em pipelines de dados."
+              ],
+              evidence: [
+                "Logs mostrando rejeição de payload sem assinatura.",
+                "Configuração de verificação de hash em jobs de update.",
+                "Scripts de teste comprovando validação de integridade."
+              ],
+              references: ["OWASP Deserialization Cheat Sheet", "CWE-502"]
+            }
+          }
+        ]
+      },
+      {
+        id: "a09",
+        title: "A09 – Logging e Monitoramento Insuficientes",
+        summary: "Cobertura de eventos de segurança, retenção adequada e integração com detecção/resposta.",
+        items: [
+          {
+            id: "a09-1",
+            title: "Avaliar cobertura de logging em eventos críticos",
+            description:
+              "Confirme registro de autenticação, alterações de privilégios, falhas de autorização e erros de validação.",
+            guide: {
+              overview:
+                "Logs consistentes são fundamentais para resposta a incidentes e investigação forense.",
+              impact:
+                "Sem logs adequados, ataques passam despercebidos e investigações ficam comprometidas.",
+              detection: [
+                "Realize testes provocando falhas de login e autorização.",
+                "Verifique se registros incluem contexto (usuário, IP, ID de requisição).",
+                "Analise políticas de retenção e integridade dos logs."
+              ],
+              tools: ["Splunk", "Elastic", "fluent-bit"],
+              commands: [
+                "curl -X POST https://localhost/login -d 'username=admin&password=errado'",
+                "kubectl logs deploy/api --since=5m | grep AUTH"
+              ],
+              steps: [
+                "Liste eventos críticos esperados pela política corporativa.",
+                "Gere eventos e confirme se foram registrados no SIEM.",
+                "Analise se dados sensíveis são mascarados conforme LGPD.",
+                "Recomende ajustes de retenção e centralização caso necessário."
+              ],
+              mitigation: [
+                "Padronizar logging estruturado com correlação de requisições.",
+                "Enviar logs para repositório central imutável (WORM).",
+                "Automatizar testes de logging em pipelines de QA."
+              ],
+              evidence: [
+                "Export de log demonstrando evento crítico registrado.",
+                "Diagrama da arquitetura de logging centralizada.",
+                "Checklist de cobertura atualizado com gaps e planos."
+              ],
+              references: ["OWASP Logging Cheat Sheet", "NIST 800-92"]
+            }
+          },
+          {
+            id: "a09-2",
+            title: "Verificar alertas e resposta automatizada",
+            description:
+              "Teste integrações SIEM/SOAR garantindo alertas oportunos, playbooks e escalonamento de incidentes.",
+            guide: {
+              overview:
+                "Monitoramento deve gerar alertas acionáveis com playbooks validados para resposta rápida.",
+              impact:
+                "Sem alertas, ataques persistem por longos períodos aumentando impacto e custo de recuperação.",
+              detection: [
+                "Dispare eventos simulados e acompanhe geração de alertas.",
+                "Verifique tempos de resposta e escalonamento conforme SLA.",
+                "Analise se playbooks estão atualizados e testados periodicamente."
+              ],
+              tools: ["TheHive", "Shuffle SOAR", "Sigma"],
+              commands: [
+                "python3 scripts/generate_sigma_event.py --rule brute_force.yml",
+                "curl -X POST https://soar.local/api/playbooks/trigger -d '{\"type\":\"mfa-bypass\"}'"
+              ],
+              steps: [
+                "Mapeie integrações de detecção (IDS, WAF, IAM).",
+                "Gere eventos de teste e acompanhe pipeline de alertas.",
+                "Verifique documentação de resposta e exercício tabletop recente.",
+                "Documente tempos e responsáveis envolvidos."
+              ],
+              mitigation: [
+                "Atualizar regras Sigma/detetores com base nas ameaças atuais.",
+                "Implementar playbooks automatizados com validação contínua.",
+                "Estabelecer exercícios regulares de resposta a incidentes."
+              ],
+              evidence: [
+                "Alertas gerados com timestamp e responsável.",
+                "Playbook revisado e anexado ao relatório.",
+                "Registro de tabletop com lições aprendidas."
+              ],
+              references: ["OWASP Top 10 – A09", "MITRE D3FEND"]
+            }
+          }
+        ]
+      },
+      {
+        id: "a10",
+        title: "A10 – Server-Side Request Forgery (SSRF)",
+        summary: "Validação de destinos externos, isolamento de rede e proteção contra abuso de metadados.",
+        items: [
+          {
+            id: "a10-1",
+            title: "Explorar SSRF para recursos internos",
+            description:
+              "Envie URLs controladas para endpoints que realizam requisições server-side e avalie acesso a redes internas.",
+            guide: {
+              overview:
+                "Aplicações devem validar destinos permitidos, utilizar listas de permissão e segmentação de rede.",
+              impact:
+                "SSRF possibilita descoberta de serviços internos, exploração de APIs privilegiadas e escalonamento lateral.",
+              detection: [
+                "Identifique funcionalidades que aceitam URLs (webhooks, importação de imagens).",
+                "Teste requisições para 127.0.0.1, 169.254.169.254 e hosts internos.",
+                "Monitore logs de firewall para requisições inusitadas originadas do servidor."
+              ],
+              tools: ["Burp Collaborator", "Interactsh", "curl"],
+              commands: [
+                "curl -X POST https://localhost/webhook -d '{\"url\":\"http://169.254.169.254/latest/meta-data/\"}'",
+                "interactsh-client --payload https://<payload>.oast.live"
+              ],
+              steps: [
+                "Mapeie parâmetros suscetíveis (url, feed, callback).",
+                "Substitua por endereço controlado e monitore callbacks.",
+                "Teste respostas diferenciadas (tempo, status) indicando acesso interno.",
+                "Documente serviços acessíveis e potenciais impactos."
+              ],
+              mitigation: [
+                "Aplicar listas de permissão estritas de destinos e esquemas.",
+                "Isolar servidores sem acesso direto a redes internas.",
+                "Utilizar proxy de saída com validação e monitoramento centralizado."
+              ],
+              evidence: [
+                "Captura de requisição SSRF e resposta obtida.",
+                "Logs de firewall/proxy mostrando bloqueio após ajuste.",
+                "Política de whitelisting atualizada com endpoints permitidos."
+              ],
+              references: ["OWASP SSRF Prevention Cheat Sheet", "AWS SSRF Mitigations"]
+            }
+          },
+          {
+            id: "a10-2",
+            title: "Validar sanitização de metadados e protocolos",
+            description:
+              "Confirme bloqueio de esquemas perigosos (file://, gopher://) e header injection em requisições server-side.",
+            guide: {
+              overview:
+                "Filtros devem validar esquema, host, porta e normalizar entradas para evitar bypasses.",
+              impact:
+                "Sem sanitização, atacantes acessam arquivos locais, sockets internos ou manipulam cabeçalhos para SSRF avançado.",
+              detection: [
+                "Envie URLs com redirecionamentos, IPs codificados e esquemas alternativos.",
+                "Teste variantes com DNS rebinding e IPv6 encurtado.",
+                "Analise código para uso de bibliotecas inseguras ao construir requisições."
+              ],
+              tools: ["Burp Suite", "dnschef", "curl"],
+              commands: [
+                "curl -X POST https://localhost/fetch -d '{\"url\":\"http://127.1\"}'",
+                "python3 dnschef.py --fakeip 127.0.0.1"
+              ],
+              steps: [
+                "Varie formatos de IP (octal, hexadecimal, IPv6).",
+                "Teste redirecionamentos 302 apontando para alvos internos.",
+                "Verifique se cabeçalhos customizados podem ser injetados (Host, X-Forwarded-For).",
+                "Documente bypasses e recomende normalização centralizada."
+              ],
+              mitigation: [
+                "Normalizar entradas antes da validação e aplicar listas de permissão.",
+                "Bloquear protocolos perigosos e forçar resolução DNS interna.",
+                "Aplicar validação dupla (aplicação + proxy) com auditoria."
+              ],
+              evidence: [
+                "Respostas demonstrando bloqueio de esquemas inválidos.",
+                "Trechos de código com validação atualizada.",
+                "Configuração de proxy/egress controlando destinos."
+              ],
+              references: ["PortSwigger SSRF Cheatsheet", "CWE-918"]
+            }
+          }
+        ]
+      },
+      {
         id: "llm",
         title: "OWASP LLM Top 10",
         summary: "Checklist especializado para segurança de modelos de linguagem e chatbots.",
@@ -352,141 +953,6 @@ const checklistData = [
                 "Registro de atualização controlada com aprovação da segurança."
               ],
               references: ["OWASP LLM Top 10", "PTES – Pre-engagement"]
-            }
-          }
-        ]
-      }
-    ]
-  },
-  {
-    id: "owasp-api",
-    name: "OWASP API",
-    description: "Checklist atualizado com foco no OWASP API Security Top 10 (2023).",
-    sections: [
-      {
-        id: "api1",
-        title: "API1 – Broken Object Level Authorization",
-        summary: "Proteções contra IDOR e validação rigorosa de identificadores.",
-        items: [
-          {
-            id: "api1-1",
-            title: "Manipular IDs de recursos",
-            description: "Troque IDs e GUIDs para garantir que o backend valida ownership.",
-            guide: {
-              overview:
-                "Explore endpoints com IDs previsíveis e monitore respostas HTTP para detectar exposições.",
-              impact:
-                "Falhas permitem leitura ou alteração de dados de outros clientes, violando privacidade e compliance.",
-              detection: [
-                "Capture respostas HTTP ao variar IDs válidos e inválidos.",
-                "Analise logs de auditoria para acessos não autorizados.",
-                "Revisite controles de autorização aplicados em APIs internas."
-              ],
-              tools: ["Burp Suite", "Hoppscotch", "Rest Assured"],
-              commands: [
-                "burpsuite -> Intruder -> Pitchfork com lista de IDs",
-                "curl -H 'Authorization: Bearer <token>' https://localhost/api/v1/users/123"
-              ],
-              steps: [
-                "Identifique endpoints com IDs no caminho ou no corpo.",
-                "Substitua pelo ID de outro usuário conhecido.",
-                "Observe códigos 403/404 vs 200.",
-                "Revise políticas ABAC/RBAC implementadas no gateway."
-              ],
-              mitigation: [
-                "Aplicar verificações de autorização por objeto em todos os handlers.",
-                "Adicionar testes automatizados de IDOR.",
-                "Utilizar identificadores não previsíveis associados a políticas de acesso."
-              ],
-              evidence: [
-                "Logs mostrando acesso negado após correção.",
-                "Captura de requisições antes/depois.",
-                "Casos de teste automatizados anexados ao pipeline."
-              ],
-              references: ["OWASP API Security Top 10", "NIST 800-204"]
-            }
-          },
-          {
-            id: "api1-2",
-            title: "Validar filtros e parâmetros mass assignment",
-            description: "Garante que campos sensíveis não podem ser atualizados via API pública.",
-            guide: {
-              overview:
-                "Limite campos atualizáveis usando DTOs e listas de permissão explícitas.",
-              impact:
-                "Mass assignment permite escalonamento de privilégios ou alteração de atributos críticos em massa.",
-              detection: [
-                "Compare payloads aceitos com modelos internos.",
-                "Reveja validações de input e serialização automática.",
-                "Analise logs de alterações para detectar campos inesperados."
-              ],
-              tools: ["Postman", "Burp Suite", "Insomnia"],
-              commands: [
-                "curl -X PATCH https://localhost/api/v1/users/123 -d '{\"role\":\"admin\"}'",
-                "burpsuite -> Repeater -> Incluir campos ocultos"
-              ],
-              steps: [
-                "Recolha schema Swagger/OpenAPI e compare com modelos internos.",
-                "Envie campos extras (role, isAdmin) e avalie respostas.",
-                "Confirme validação server-side e filtragem de entrada.",
-                "Implemente testes de unidade e integração cobrindo casos negativos."
-              ],
-              mitigation: [
-                "Utilize DTOs e binding explícito, ignorando campos não permitidos.",
-                "Implemente validação server-side com whitelists.",
-                "Crie testes de regressão para atributos sensíveis."
-              ],
-              evidence: [
-                "Captura do payload rejeitado/aceito.",
-                "Trechos de código demonstrando whitelist.",
-                "Relatório de testes unitários cobrindo mass assignment."
-              ],
-              references: ["OWASP API Security – API1", "OWASP Cheat Sheet – Mass Assignment"]
-            }
-          }
-        ]
-      },
-      {
-        id: "api4",
-        title: "API4 – Rate Limiting e DDoS",
-        summary: "Proteção contra abusos e exaustão de recursos em APIs.",
-        items: [
-          {
-            id: "api4-1",
-            title: "Testar ausência de rate limit",
-            description: "Envie requisições rápidas para avaliar bloqueios e respostas.",
-            guide: {
-              overview:
-                "Rate limiting deve ser adaptativo por IP, usuário e token, com monitoramento centralizado.",
-              impact:
-                "Sem limitação, atacantes esgotam recursos, forçam brute force e derrubam APIs críticas.",
-              detection: [
-                "Observe ausência de cabeçalhos Retry-After ou limites por consumidor.",
-                "Monitore gráficos de latência/códigos 429.",
-                "Avalie logs WAF/API gateway para bursts não mitigados."
-              ],
-              tools: ["ffuf", "ab", "hey", "k6"],
-              commands: [
-                "hey -z 30s -q 5 -c 50 https://localhost/api/v1/login",
-                "ffuf -X POST -u https://localhost/api/v1/reset -d 'email=teste@corp' -w emails.txt"
-              ],
-              steps: [
-                "Teste limites por IP, usuário e token.",
-                "Verifique cabeçalhos Retry-After e mensagens de erro.",
-                "Avalie logs para detectar aumento de latência.",
-                "Recomende circuit breaker ou CAPTCHA para endpoints críticos."
-              ],
-              mitigation: [
-                "Configurar rate limiting multi-camada (gateway, app, CDN).",
-                "Implementar bloqueio progressivo e listas dinâmicas.",
-                "Adicionar monitoramento e alertas de anomalias em tempo real."
-              ],
-              evidence: [
-                "Gráficos mostrando limite aplicado.",
-                "Captura de resposta 429 com Retry-After.",
-                "Configuração do gateway com políticas de throttling."
-              ],
-              references: ["OWASP API Security – API4"]
             }
           }
         ]
@@ -1081,3 +1547,4 @@ const checklistData = [
   }
 ];
 
+export { checklistData };

@@ -419,3 +419,5 @@ const serverHardening = {
     }
   ]
 };
+
+export { serverHardening };
