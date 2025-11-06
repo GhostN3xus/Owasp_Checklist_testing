@@ -51,6 +51,7 @@ const securityTools = [
   }
 ];
 
+
 if (typeof globalThis !== "undefined") {
   globalThis.securityTools = securityTools;
 }
@@ -58,3 +59,4 @@ if (typeof globalThis !== "undefined") {
 if (typeof module !== "undefined" && module.exports) {
   module.exports = securityTools;
 }
+
