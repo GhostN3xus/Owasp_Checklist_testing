@@ -444,3 +444,42 @@ body {
     background: #fff;
   }
 }
+
+/* Guide container styles */
+.guide-container {
+  display: flex;
+  gap: 1.5rem;
+  height: 100%;
+}
+
+#guide-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 0 0 200px;
+}
+
+#guide-list button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #2d3748;
+  border: 1px solid #4a5568;
+  color: #e2e8f0;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 0.375rem;
+  margin-bottom: 0.5rem;
+}
+
+#guide-list button:hover {
+  background: #4a5568;
+}
+
+.guide-content-container {
+  flex: 1;
+  background: #1a202c;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  overflow-y: auto;
+  height: calc(100vh - 120px); /* Adjust height as needed */
+}

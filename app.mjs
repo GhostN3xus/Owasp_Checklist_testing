@@ -5,8 +5,10 @@ import { cloudSecurityChecklist } from "./cloudSecurity.mjs";
 import { secureCodeChecklist } from "./secureCodeChecklist.mjs";
 import { owaspCheatSheetChecklist } from "./owaspCheatSheetChecklist.mjs";
 import { calculateProgress, renderStatusBadge } from "./src/logic.js";
+import showdown from 'showdown';
 
 const checklistData = [...originalChecklistData, cloudSecurityChecklist, secureCodeChecklist, owaspCheatSheetChecklist];
+const markdownConverter = new showdown.Converter();
 
 (() => {
   const TABS = checklistData.map((category) => ({
@@ -23,6 +25,13 @@ const checklistData = [...originalChecklistData, cloudSecurityChecklist, secureC
     description: serverHardening.overview,
     type: "server",
     payload: serverHardening
+  });
+
+  TABS.push({
+    id: "guides",
+    name: "Guias de Segurança",
+    description: "Documentação prática para testes de segurança.",
+    type: "guides"
   });
 
   const stateKey = "appsec-dashboard-state-v1";
@@ -138,6 +147,8 @@ const checklistData = [...originalChecklistData, cloudSecurityChecklist, secureC
       renderChecklist(tab.payload);
     } else if (tab.type === "server") {
       renderServerHardening(tab.payload);
+    } else if (tab.type === "guides") {
+      renderGuides();
     }
   }
 
@@ -207,6 +218,47 @@ const checklistData = [...originalChecklistData, cloudSecurityChecklist, secureC
 
       categoryContentEl.appendChild(card);
     });
+  }
+
+  function renderGuides() {
+    categoryContentEl.innerHTML = `
+      <div class="guide-container">
+        <ul id="guide-list"></ul>
+        <div id="guide-content" class="guide-content-container"></div>
+      </div>
+    `;
+
+    const guideListEl = document.getElementById("guide-list");
+    const guideContentEl = document.getElementById("guide-content");
+
+    const guides = [
+      { title: "CSPM", file: "CSPM-PRACTICAL-GUIDE.md" },
+      { title: "DAST", file: "DAST-PRACTICAL-GUIDE.md" },
+      { title: "Segurança de API", file: "API-SECURITY-GUIDE.md" },
+      { title: "Automação DevSecOps", file: "DEVSECOPS-AUTOMATION-GUIDE.md" },
+      { title: "Exemplo de Relatório", file: "SAMPLE-SECURITY-REPORT.md" },
+    ];
+
+    guides.forEach(guide => {
+      const li = document.createElement("li");
+      const button = document.createElement("button");
+      button.textContent = guide.title;
+      button.addEventListener("click", () => loadGuideContent(guide.file));
+      li.appendChild(button);
+      guideListEl.appendChild(li);
+    });
+
+    function loadGuideContent(file) {
+      fetch(file)
+        .then(response => response.text())
+        .then(text => {
+          const html = markdownConverter.makeHtml(text);
+          guideContentEl.innerHTML = html;
+        })
+        .catch(error => {
+          guideContentEl.innerHTML = `<p class="error">Erro ao carregar o guia: ${error}</p>`;
+        });
+    }
   }
 
   function buildItem(item, { categoryId, sectionId, stackName }) {
@@ -326,7 +378,6 @@ const checklistData = [...originalChecklistData, cloudSecurityChecklist, secureC
   }
 
   function refreshProgressBars() {
-    // Re-render the active tab to update progress indicators
     renderActiveTab(activeTabId);
   }
 
