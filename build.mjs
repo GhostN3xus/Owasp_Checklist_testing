@@ -6,4 +6,5 @@ await esbuild.build({
   outfile: 'bundle.js',
   format: 'esm',
   minify: true,
+  resolveExtensions: ['.mjs', '.js'],
 });
