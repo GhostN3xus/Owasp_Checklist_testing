@@ -4,7 +4,7 @@ import { serverHardening } from "./serverConfig.mjs";
 import { cloudSecurityChecklist } from "./cloudSecurity.mjs";
 import { secureCodeChecklist } from "./secureCodeChecklist.mjs";
 import { owaspCheatSheetChecklist } from "./owaspCheatSheetChecklist.mjs";
-import { calculateProgress, renderStatusBadge } from "./src/logic.js";
+import { calculateProgress, renderStatusBadge } from "./logic.js";
 
 const checklistData = [...originalChecklistData, cloudSecurityChecklist, secureCodeChecklist, owaspCheatSheetChecklist];
 
