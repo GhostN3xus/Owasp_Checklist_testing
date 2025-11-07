@@ -4,6 +4,7 @@
   "description": "Painel interativo para conduzir avaliações de segurança com base em OWASP Top 10, OWASP API Security, PTES, SAST, DAST e hardening de servidores. O projeto foi desenhado para funcionar **100% offline**: basta abrir `index.html` no navegador e começar a checklist.",
   "main": "index.js",
   "scripts": {
+    "start": "npm run build && node server.mjs",
     "build": "node build.mjs",
     "test": "vitest"
   },
@@ -22,5 +23,8 @@
   "devDependencies": {
     "esbuild": "^0.25.12",
     "vitest": "^4.0.7"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
   }
 }
