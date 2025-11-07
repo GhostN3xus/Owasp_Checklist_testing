@@ -3,13 +3,12 @@ import { serverHardening } from "./serverConfig.mjs";
 import { cloudSecurityChecklist } from "./cloudSecurity.mjs";
 import { secureCodeChecklist } from "./secureCodeChecklist.mjs";
 import { owaspCheatSheetChecklist } from "./owaspCheatSheetChecklist.mjs";
-import { calculateProgress, renderStatusBadge } from "./logic.js";
+import { renderStatusBadge } from "./logic.js";
 
 async function main() {
   const response = await fetch('/api/data');
   const originalChecklistData = await response.json();
   const checklistData = [...originalChecklistData, cloudSecurityChecklist, secureCodeChecklist, owaspCheatSheetChecklist];
-
 
   const TABS = checklistData.map((category) => ({
     id: category.id,
@@ -30,13 +29,12 @@ async function main() {
   TABS.push({
     id: "tools",
     name: "Tools",
-    description: "Uma lista de ferramentas de segurança e testes que podem ser executados.",
+    description: "Uma lista de ferramentas de segurança e testes.",
     type: "tools",
     payload: securityTools
   });
 
-  const stateKey = "appsec-dashboard-state-v1";
-  const tabListEl = document.getElementById("tab-list");
+  const sidebarNavEl = document.getElementById("tab-list");
   const categoryContentEl = document.getElementById("category-content");
   const currentTabTitleEl = document.getElementById("current-tab-title");
   const currentTabDescriptionEl = document.getElementById("current-tab-description");
@@ -53,21 +51,18 @@ async function main() {
   const modalCloseBtn = document.getElementById("close-modal");
   const notificationContainerEl = document.getElementById("notification-container");
 
-  const cardTemplate = document.getElementById("checklist-card-template");
   const itemTemplate = document.getElementById("checklist-item-template");
 
-  let state = loadState();
+  let state = await loadState();
+  let activeItemId = null;
 
   async function loadState() {
     try {
       const response = await fetch('/api/state');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       return await response.json();
     } catch (error) {
-      console.error("Falha ao carregar estado, usando padrão.", error);
-      alert("Erro ao carregar dados salvos. Suas alterações não serão recuperadas.");
+      console.error("Falha ao carregar estado.", error);
       return { items: {}, meta: {} };
     }
   }
@@ -76,9 +71,7 @@ async function main() {
     try {
       const response = await fetch('/api/state', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(state),
       });
       if (response.ok) {
@@ -97,11 +90,7 @@ async function main() {
     notification.className = `notification ${type}`;
     notification.textContent = message;
     notificationContainerEl.appendChild(notification);
-
-    setTimeout(() => {
-      notification.classList.add('show');
-    }, 10);
-
+    setTimeout(() => notification.classList.add('show'), 10);
     setTimeout(() => {
       notification.classList.remove('show');
       notification.addEventListener('transitionend', () => notification.remove());
@@ -112,7 +101,7 @@ async function main() {
     state = { items: {}, meta: {} };
     projectInput.value = "";
     testerInput.value = "";
-    renderActiveTab(activeTabId);
+    renderContent();
     saveState();
     showNotification("Os dados foram resetados.", "success");
   }
@@ -121,7 +110,6 @@ async function main() {
     if (!state.items[itemId]) {
       state.items[itemId] = { checked: false, status: "", notes: "", attachments: [] };
     }
-    // Garantir que "attachments" seja sempre um array
     if (!Array.isArray(state.items[itemId].attachments)) {
       state.items[itemId].attachments = [];
     }
@@ -133,216 +121,165 @@ async function main() {
     saveState();
   }
 
-  function renderTabs() {
-    tabListEl.innerHTML = "";
-    TABS.forEach((tab) => {
-      const button = document.createElement("button");
-      button.className = "tab-button";
-      button.textContent = tab.name;
-      button.dataset.tab = tab.id;
-      if (tab.id === activeTabId) {
-        button.classList.add("active");
+  function renderNavigation() {
+    sidebarNavEl.innerHTML = "";
+    const navUl = document.createElement("ul");
+
+    TABS.forEach((category) => {
+      const categoryLi = document.createElement("li");
+      const categoryButton = document.createElement("button");
+      categoryButton.className = "nav-category";
+      categoryButton.textContent = category.name;
+      categoryLi.appendChild(categoryButton);
+
+      let sections = [];
+      if (category.type === "checklist") sections = category.payload.sections || [];
+      else if (category.type === "server") sections = category.payload.stacks || [];
+      else if (category.type === "tools") sections = [{ id: "all", title: "Todas as Ferramentas" }];
+
+      if (sections.length > 0) {
+        const subList = document.createElement("ul");
+        subList.className = "nav-submenu";
+        sections.forEach((section) => {
+          const sectionLi = document.createElement("li");
+          const sectionButton = document.createElement("button");
+          sectionButton.className = "nav-link";
+          sectionButton.textContent = section.title || section.name;
+          sectionButton.dataset.id = makeSectionId(category.id, section.id);
+
+          if (sectionButton.dataset.id === activeItemId) {
+            sectionButton.setAttribute("aria-current", "true");
+          }
+
+          sectionButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            activeItemId = e.currentTarget.dataset.id;
+            renderUI();
+          });
+
+          sectionLi.appendChild(sectionButton);
+          subList.appendChild(sectionLi);
+        });
+        categoryLi.appendChild(subList);
       }
-      button.addEventListener("click", () => {
-        activeTabId = tab.id;
-        renderActiveTab(activeTabId);
-        renderTabs();
-      });
-      tabListEl.appendChild(button);
+      navUl.appendChild(categoryLi);
     });
+    sidebarNavEl.appendChild(navUl);
   }
 
-  function renderActiveTab(tabId) {
-    const tab = TABS.find((entry) => entry.id === tabId);
-    if (!tab) {
-      currentTabTitleEl.textContent = "Selecione uma aba";
-      currentTabDescriptionEl.textContent = "Escolha um domínio de segurança para iniciar a avaliação.";
-      categoryContentEl.innerHTML = "";
+  function renderContent() {
+    if (!activeItemId) {
+      currentTabTitleEl.textContent = "Selecione uma categoria";
+      currentTabDescriptionEl.textContent = "Escolha um tópico na barra de navegação para começar.";
+      categoryContentEl.innerHTML = '<p class="empty-state">Bem-vindo ao AppSec Dashboard!</p>';
       return;
     }
 
-    currentTabTitleEl.textContent = tab.name;
-    currentTabDescriptionEl.textContent = tab.description;
+    const [categoryId, sectionId] = activeItemId.split("::");
+    const category = TABS.find((tab) => tab.id === categoryId);
+    if (!category) return;
 
-    if (tab.type === "checklist") {
-      renderChecklist(tab.payload);
-    } else if (tab.type === "server") {
-      renderServerHardening(tab.payload);
-    } else if (tab.type === "tools") {
-      renderToolsTab(tab.payload);
+    if (category.type === "checklist") {
+      const section = category.payload.sections.find((s) => s.id === sectionId);
+      if (section) renderChecklistContent(section, category.payload.id);
+    } else if (category.type === "server") {
+      const stack = category.payload.stacks.find((s) => s.id === sectionId);
+      if (stack) renderServerContent(stack, category.payload.id);
+    } else if (category.type === "tools") {
+      renderToolsContent(category.payload);
     }
   }
 
-  function renderToolsTab(tools) {
-    categoryContentEl.innerHTML = "";
-    const searchTerm = searchInput.value.toLowerCase();
+    function renderChecklistContent(section, categoryId) {
+        const searchTerm = searchInput.value.toLowerCase();
+        const statusFilter = statusFilterEl.value;
+        currentTabTitleEl.textContent = section.title;
+        currentTabDescriptionEl.textContent = section.summary;
 
-    if (!Array.isArray(tools) || tools.length === 0) {
-      categoryContentEl.innerHTML = '<p class="empty-state">Nenhuma ferramenta cadastrada.</p>';
-      return;
-    }
-
-    const filteredTools = tools.filter(
-      (tool) =>
-        tool.name.toLowerCase().includes(searchTerm) ||
-        tool.description.toLowerCase().includes(searchTerm) ||
-        tool.category.toLowerCase().includes(searchTerm)
-    );
-
-    if (filteredTools.length === 0) {
-      categoryContentEl.innerHTML = '<p class="empty-state">Nenhuma ferramenta encontrada.</p>';
-      return;
-    }
-
-    const toolsList = document.createElement("ul");
-    toolsList.className = "tools-list";
-
-    filteredTools.forEach((tool) => {
-      const li = document.createElement("li");
-      li.className = "tool-item";
-      li.innerHTML = `
-        <div class="tool-header">
-          <h3 class="tool-name">${tool.name}</h3>
-          <span class="tool-category">${tool.category}</span>
-        </div>
-        <p class="tool-description">${tool.description}</p>
-        ${tool.command ? `<pre class="tool-command">${tool.command}</pre>` : ""}
-      `;
-      toolsList.appendChild(li);
-    });
-
-    categoryContentEl.appendChild(toolsList);
-  }
-
-  function renderChecklist(category) {
-    categoryContentEl.innerHTML = "";
-    const searchTerm = searchInput.value.toLowerCase();
-    const statusFilter = statusFilterEl.value;
-
-    if (!category.sections || category.sections.length === 0) {
-      categoryContentEl.innerHTML = '<p class="empty-state">Nenhum item cadastrado ainda.</p>';
-      return;
-    }
-
-    category.sections.forEach((section) => {
-      const filteredItems = section.items.filter((item) => {
-        const itemState = getItemState(makeItemId(category.id, section.id, item.id));
-        const matchesSearch =
-          item.title.toLowerCase().includes(searchTerm) ||
-          item.description.toLowerCase().includes(searchTerm);
-        const matchesStatus =
-          statusFilter === "all" || itemState.status === statusFilter;
-        return matchesSearch && matchesStatus;
-      });
-
-      if (filteredItems.length === 0) {
-        return;
-      }
-
-      const card = cardTemplate.content.firstElementChild.cloneNode(true);
-      const cardTitle = card.querySelector(".card-title");
-      const cardHeader = card.querySelector(".card-header");
-      const cardSummary = card.querySelector(".card-summary");
-      const progressLabel = card.querySelector(".progress-label");
-      const progressValue = card.querySelector(".progress-value");
-      const cardBody = card.querySelector(".card-body");
-
-      cardTitle.textContent = section.title;
-      cardSummary.textContent = section.summary;
-
-      cardBody.innerHTML = "";
-
-      const itemStates = filteredItems.map((item) => getItemState(makeItemId(category.id, section.id, item.id)));
-      const progress = calculateProgress(itemStates);
-      progressLabel.textContent = `${progress.completed}/${progress.total} completos`;
-      progressValue.style.width = `${progress.percent}%`;
-
-      filteredItems.forEach((item) => {
-        const element = buildItem(item, { categoryId: category.id, sectionId: section.id });
-        cardBody.appendChild(element);
-      });
-
-      cardHeader.addEventListener("click", () => {
-        const isExpanded = card.classList.contains("expanded");
-
-        // Close all other cards
-        document.querySelectorAll(".checklist-card.expanded").forEach((openCard) => {
-          openCard.classList.remove("expanded");
+        const filteredItems = section.items.filter(item => {
+            const itemState = getItemState(makeItemId(categoryId, section.id, item.id));
+            const matchesSearch = item.title.toLowerCase().includes(searchTerm) || item.description.toLowerCase().includes(searchTerm);
+            const matchesStatus = statusFilter === "all" || itemState.status === statusFilter;
+            return matchesSearch && matchesStatus;
         });
 
-        // Toggle the current card
-        if (!isExpanded) {
-          card.classList.add("expanded");
+        if (filteredItems.length === 0) {
+            categoryContentEl.innerHTML = '<p class="empty-state">Nenhum item corresponde aos filtros.</p>';
+            return;
         }
-      });
 
-      categoryContentEl.appendChild(card);
-    });
-  }
-
-  function renderServerHardening(payload) {
-    categoryContentEl.innerHTML = "";
-    const searchTerm = searchInput.value.toLowerCase();
-    const statusFilter = statusFilterEl.value;
-
-    if (!payload.stacks || payload.stacks.length === 0) {
-      categoryContentEl.innerHTML = '<p class="empty-state">Nenhum checklist configurado.</p>';
-      return;
+        const itemsContainer = document.createElement('div');
+        itemsContainer.className = 'items-container';
+        filteredItems.forEach(item => {
+            itemsContainer.appendChild(buildItem(item, { categoryId, sectionId: section.id }));
+        });
+        categoryContentEl.innerHTML = '';
+        categoryContentEl.appendChild(itemsContainer);
     }
 
-    payload.stacks.forEach((stack) => {
-      const filteredItems = stack.items.filter((item) => {
-        const itemState = getItemState(makeItemId(payload.id || "server", stack.id, item.id));
-        const matchesSearch =
-          item.title.toLowerCase().includes(searchTerm) ||
-          item.description.toLowerCase().includes(searchTerm);
-        const matchesStatus =
-          statusFilter === "all" || itemState.status === statusFilter;
-        return matchesSearch && matchesStatus;
-      });
+    function renderServerContent(stack, categoryId) {
+        const searchTerm = searchInput.value.toLowerCase();
+        const statusFilter = statusFilterEl.value;
+        currentTabTitleEl.textContent = stack.name;
+        currentTabDescriptionEl.textContent = stack.summary;
 
-      if (filteredItems.length === 0) {
-        return;
-      }
-      const card = cardTemplate.content.firstElementChild.cloneNode(true);
-      const cardTitle = card.querySelector(".card-title");
-      const cardHeader = card.querySelector(".card-header");
-      const cardSummary = card.querySelector(".card-summary");
-      const progressLabel = card.querySelector(".progress-label");
-      const progressValue = card.querySelector(".progress-value");
-      const cardBody = card.querySelector(".card-body");
-
-      cardTitle.textContent = stack.name;
-      cardSummary.textContent = stack.summary;
-
-      const itemStates = filteredItems.map((item) => getItemState(makeItemId(payload.id || "server", stack.id, item.id)));
-      const progress = calculateProgress(itemStates);
-      progressLabel.textContent = `${progress.completed}/${progress.total} completos`;
-      progressValue.style.width = `${progress.percent}%`;
-
-      cardBody.innerHTML = "";
-      filteredItems.forEach((item) => {
-        const element = buildItem(item, { categoryId: "server-config", sectionId: stack.id, stackName: stack.name });
-        cardBody.appendChild(element);
-      });
-
-      cardHeader.addEventListener("click", () => {
-        const isExpanded = card.classList.contains("expanded");
-
-        // Close all other cards
-        document.querySelectorAll(".checklist-card.expanded").forEach((openCard) => {
-          openCard.classList.remove("expanded");
+        const filteredItems = stack.items.filter(item => {
+            const itemState = getItemState(makeItemId(categoryId, stack.id, item.id));
+            const matchesSearch = item.title.toLowerCase().includes(searchTerm) || item.description.toLowerCase().includes(searchTerm);
+            const matchesStatus = statusFilter === "all" || itemState.status === statusFilter;
+            return matchesSearch && matchesStatus;
         });
 
-        // Toggle the current card
-        if (!isExpanded) {
-          card.classList.add("expanded");
+        if (filteredItems.length === 0) {
+            categoryContentEl.innerHTML = '<p class="empty-state">Nenhum item corresponde aos filtros.</p>';
+            return;
         }
-      });
 
-      categoryContentEl.appendChild(card);
-    });
-  }
+        const itemsContainer = document.createElement('div');
+        itemsContainer.className = 'items-container';
+        filteredItems.forEach(item => {
+            itemsContainer.appendChild(buildItem(item, { categoryId, sectionId: stack.id, stackName: stack.name }));
+        });
+        categoryContentEl.innerHTML = '';
+        categoryContentEl.appendChild(itemsContainer);
+    }
+
+    function renderToolsContent(tools) {
+        currentTabTitleEl.textContent = "Ferramentas de Pentest";
+        currentTabDescriptionEl.textContent = "Uma lista de ferramentas úteis para testes de segurança.";
+        const searchTerm = searchInput.value.toLowerCase();
+
+        const filteredTools = tools.filter(tool =>
+            tool.name.toLowerCase().includes(searchTerm) ||
+            tool.description.toLowerCase().includes(searchTerm) ||
+            tool.category.toLowerCase().includes(searchTerm)
+        );
+
+        if (filteredTools.length === 0) {
+            categoryContentEl.innerHTML = '<p class="empty-state">Nenhuma ferramenta encontrada.</p>';
+            return;
+        }
+
+        const toolsList = document.createElement("ul");
+        toolsList.className = "tools-list";
+        filteredTools.forEach((tool) => {
+            const li = document.createElement("li");
+            li.className = "tool-item";
+            li.innerHTML = `
+                <div class="tool-header">
+                    <h3 class="tool-name">${tool.name}</h3>
+                    <span class="tool-category">${tool.category}</span>
+                </div>
+                <p class="tool-description">${tool.description}</p>
+                ${tool.command ? `<pre class="tool-command">${tool.command}</pre>` : ""}
+            `;
+            toolsList.appendChild(li);
+        });
+
+        categoryContentEl.innerHTML = '';
+        categoryContentEl.appendChild(toolsList);
+    }
+
 
   function buildItem(item, { categoryId, sectionId, stackName }) {
     const element = itemTemplate.content.firstElementChild.cloneNode(true);
@@ -350,6 +287,7 @@ async function main() {
     const titleEl = element.querySelector(".item-title");
     const descriptionEl = element.querySelector(".item-description");
     const statusSelect = element.querySelector(".item-status");
+    const itemTitleCheckbox = element.querySelector(".checkbox");
     const notesEl = element.querySelector(".item-notes");
     const guideBtn = element.querySelector(".item-guide");
     const evidenceInput = element.querySelector('.item-evidence-input');
@@ -367,47 +305,31 @@ async function main() {
 
     renderAttachments();
 
-    checkbox.addEventListener("change", () => {
-      updateItemState(itemId, { checked: checkbox.checked });
-      refreshProgressBars();
+    itemTitleCheckbox.addEventListener("click", (e) => {
+        if (e.target.type !== 'checkbox') {
+            element.classList.toggle("expanded");
+        }
     });
 
-    statusSelect.addEventListener("change", () => {
-      updateItemState(itemId, { status: statusSelect.value });
-    });
-
-    notesEl.addEventListener("input", (event) => {
-      updateItemState(itemId, { notes: event.target.value });
-    });
+    checkbox.addEventListener("change", () => updateItemState(itemId, { checked: checkbox.checked }));
+    statusSelect.addEventListener("change", () => updateItemState(itemId, { status: statusSelect.value }));
+    notesEl.addEventListener("input", (event) => updateItemState(itemId, { notes: event.target.value }));
 
     uploadBtn.addEventListener('click', async () => {
       const file = evidenceInput.files[0];
-      if (!file) {
-        alert('Selecione um arquivo para fazer upload.');
-        return;
-      }
-
+      if (!file) return;
       const formData = new FormData();
       formData.append('evidence', file);
-
       try {
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error('Falha no upload.');
-        }
-
+        const response = await fetch('/api/upload', { method: 'POST', body: formData });
+        if (!response.ok) throw new Error('Falha no upload.');
         const result = await response.json();
         const updatedAttachments = [...itemState.attachments, result.filePath];
         updateItemState(itemId, { attachments: updatedAttachments });
-        evidenceInput.value = ''; // Reset file input
+        evidenceInput.value = '';
         renderAttachments();
         showNotification("Arquivo enviado com sucesso!");
       } catch (error) {
-        console.error('Erro no upload:', error);
         showNotification("Falha no upload do arquivo.", "error");
       }
     });
@@ -427,21 +349,7 @@ async function main() {
       }
     }
 
-    guideBtn.addEventListener("click", () => {
-      openGuideModal(
-        item.title,
-        item.description,
-        item.guide || {
-          overview: item.notes,
-          commands: item.verification,
-          tools: [stackName],
-          steps: [
-            "Documente evidências (logs, screenshots) para cada configuração aplicada."
-          ],
-          references: ["CIS Benchmarks", "OWASP Server Security"]
-        }
-      );
-    });
+    guideBtn.addEventListener("click", () => openGuideModal(item.title, item.description, item.guide));
 
     return element;
   }
@@ -508,13 +416,12 @@ async function main() {
     modalEl.classList.add("hidden");
   }
 
-  function makeItemId(categoryId, sectionId, itemId) {
-    return `${categoryId}::${sectionId}::${itemId}`;
+  function makeSectionId(categoryId, sectionId) {
+    return `${categoryId}::${sectionId}`;
   }
 
-  function refreshProgressBars() {
-    // Re-render the active tab to update progress indicators
-    renderActiveTab(activeTabId);
+  function makeItemId(categoryId, sectionId, itemId) {
+    return `${categoryId}::${sectionId}::${itemId}`;
   }
 
   function exportToPdf() {
@@ -568,19 +475,21 @@ async function main() {
 
   function buildReportSections() {
     const sections = [];
+    TABS.forEach((category) => {
+        if (category.type === 'tools') return; // Skip tools category in PDF report for now
 
-    checklistData.forEach((category) => {
-      sections.push(`<h2>${escapeHtml(category.name)}</h2>`);
-      category.sections.forEach((section) => {
-        sections.push(`<h3>${escapeHtml(section.title)}</h3>`);
-        sections.push(buildItemsTable(category.id, section.id, section.items));
-      });
-    });
+        sections.push(`<h2>${escapeHtml(category.name)}</h2>`);
+        let categorySections = [];
+        if (category.type === 'checklist') {
+            categorySections = category.payload.sections || [];
+        } else if (category.type === 'server') {
+            categorySections = category.payload.stacks || [];
+        }
 
-    sections.push(`<h2>Server Config</h2>`);
-    serverHardening.stacks.forEach((stack) => {
-      sections.push(`<h3>${escapeHtml(stack.name)}</h3>`);
-      sections.push(buildItemsTable("server-config", stack.id, stack.items));
+        categorySections.forEach((section) => {
+            sections.push(`<h3>${escapeHtml(section.title || section.name)}</h3>`);
+            sections.push(buildItemsTable(category.id, section.id, section.items));
+        });
     });
 
     return sections.join("\n");
@@ -644,49 +553,45 @@ async function main() {
   }
 
   function persistMeta() {
-    state.meta = {
-      project: projectInput.value,
-      tester: testerInput.value
-    };
+    state.meta = { project: projectInput.value, tester: testerInput.value };
     saveState();
   }
 
+    function renderUI() {
+        renderNavigation();
+        renderContent();
+    }
+
   projectInput.addEventListener("input", persistMeta);
   testerInput.addEventListener("input", persistMeta);
-
-  searchInput.addEventListener("input", () => {
-    renderActiveTab(activeTabId);
-  });
-
-  statusFilterEl.addEventListener("change", () => {
-    renderActiveTab(activeTabId);
-  });
-
+  searchInput.addEventListener("input", renderContent);
+  statusFilterEl.addEventListener("change", renderContent);
   exportPdfBtn.addEventListener("click", exportToPdf);
   resetBtn.addEventListener("click", () => {
-    if (confirm("Deseja realmente apagar todos os dados salvos?")) {
-      resetState();
-    }
+    if (confirm("Deseja realmente apagar todos os dados salvos?")) resetState();
   });
-
   modalCloseBtn.addEventListener("click", closeModal);
   modalEl.addEventListener("click", (event) => {
-    if (event.target === modalEl) {
-      closeModal();
-    }
+    if (event.target === modalEl) closeModal();
   });
-
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !modalEl.classList.contains("hidden")) {
-      closeModal();
-    }
+    if (event.key === "Escape" && !modalEl.classList.contains("hidden")) closeModal();
   });
 
-  let activeTabId = TABS[0]?.id;
-  state = await loadState();
+  // Initialize the first section as active by default
+  const firstCategory = TABS[0];
+  if (firstCategory) {
+    let firstSectionId;
+    if (firstCategory.type === "checklist") firstSectionId = firstCategory.payload?.sections?.[0]?.id;
+    else if (firstCategory.type === "server") firstSectionId = firstCategory.payload?.stacks?.[0]?.id;
+    else if (firstCategory.type === "tools") firstSectionId = "all";
+    if (firstSectionId) {
+      activeItemId = makeSectionId(firstCategory.id, firstSectionId);
+    }
+  }
+
   restoreMeta();
-  renderTabs();
-  renderActiveTab(activeTabId);
+  renderUI();
 }
 
 document.addEventListener("DOMContentLoaded", main);

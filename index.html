@@ -12,24 +12,12 @@
     <aside class="sidebar">
       <h1>🧠 AppSec Dashboard</h1>
       <p class="tagline">OWASP • PTES • SAST • DAST • Hardening</p>
-      <nav id="tab-list" class="tab-list">
-        <!-- Tabs injected by app.js -->
+      <nav id="tab-list" class="sidebar-nav">
+        <!-- Navigation injected by app.js -->
       </nav>
       <div class="sidebar-actions">
         <button id="export-pdf" class="primary">📄 Exportar PDF</button>
         <button id="reset-state" class="danger">🧹 Resetar Dados</button>
-      </div>
-      <div class="sidebar-tools">
-        <h2>Pentest Tools</h2>
-        <ul>
-          <li>Nmap</li>
-          <li>Burp Suite</li>
-          <li>Metasploit</li>
-          <li>Wireshark</li>
-          <li>Aircrack-ng</li>
-          <li>Nikto</li>
-          <li>SQLMap</li>
-        </ul>
       </div>
     </aside>
     <main class="container">
@@ -77,24 +65,6 @@
       </div>
     </div>
   </div>
-
-  <template id="checklist-card-template">
-    <article class="checklist-card">
-      <header class="card-header">
-        <div>
-          <h3 class="card-title"></h3>
-          <p class="card-summary"></p>
-        </div>
-        <div class="card-progress">
-          <span class="progress-label"></span>
-          <div class="progress-bar">
-            <div class="progress-value"></div>
-          </div>
-        </div>
-      </header>
-      <div class="card-body"></div>
-    </article>
-  </template>
 
   <template id="checklist-item-template">
     <div class="checklist-item">
