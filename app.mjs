@@ -1,4 +1,5 @@
 import { securityTools } from "./securityTools.mjs";
+import { securityTools } from "./securityTools.mjs";
 import { serverHardening } from "./serverConfig.mjs";
 import { cloudSecurityChecklist } from "./cloudSecurity.mjs";
 import { secureCodeChecklist } from "./secureCodeChecklist.mjs";
@@ -44,7 +45,6 @@ async function main() {
   const resetBtn = document.getElementById("reset-state");
   const projectInput = document.getElementById("project-name");
   const testerInput = document.getElementById("tester-name");
-  const toolListEl = document.getElementById("tool-list");
   const searchInput = document.getElementById("search-input");
   const statusFilterEl = document.getElementById("status-filter");
   const modalEl = document.getElementById("guide-modal");
@@ -150,19 +150,6 @@ async function main() {
         renderTabs();
       });
       tabListEl.appendChild(button);
-    });
-  }
-
-  function renderTools() {
-    if (!Array.isArray(securityTools) || securityTools.length === 0) {
-      toolListEl.innerHTML = '<li class="empty-state">Sem ferramentas cadastradas.</li>';
-      return;
-    }
-    toolListEl.innerHTML = "";
-    securityTools.forEach((tool) => {
-      const li = document.createElement("li");
-      li.innerHTML = `<strong>${tool.name}</strong> · <span>${tool.category}</span><br/><span>${tool.description}</span>`;
-      toolListEl.appendChild(li);
     });
   }
 
@@ -670,7 +657,6 @@ async function main() {
   state = await loadState();
   restoreMeta();
   renderTabs();
-  renderTools();
   renderActiveTab(activeTabId);
 }
 
