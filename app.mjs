@@ -46,11 +46,13 @@ async function main() {
   const testerInput = document.getElementById("tester-name");
   const toolListEl = document.getElementById("tool-list");
   const searchInput = document.getElementById("search-input");
+  const statusFilterEl = document.getElementById("status-filter");
   const modalEl = document.getElementById("guide-modal");
   const modalTitleEl = document.getElementById("modal-title");
   const modalDescriptionEl = document.getElementById("modal-description");
   const modalBodyContentEl = document.getElementById("modal-body-content");
   const modalCloseBtn = document.getElementById("close-modal");
+  const notificationContainerEl = document.getElementById("notification-container");
 
   const cardTemplate = document.getElementById("checklist-card-template");
   const itemTemplate = document.getElementById("checklist-item-template");
@@ -73,17 +75,38 @@ async function main() {
 
   async function saveState() {
     try {
-      await fetch('/api/state', {
+      const response = await fetch('/api/state', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(state),
       });
+      if (response.ok) {
+        showNotification("Progresso salvo com sucesso!");
+      } else {
+        throw new Error("Falha ao salvar o estado.");
+      }
     } catch (error) {
       console.error("Não foi possível salvar o estado no servidor.", error);
-      alert("Erro ao salvar o estado.");
+      showNotification("Erro ao salvar o estado.", "error");
     }
+  }
+
+  function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    notificationContainerEl.appendChild(notification);
+
+    setTimeout(() => {
+      notification.classList.add('show');
+    }, 10);
+
+    setTimeout(() => {
+      notification.classList.remove('show');
+      notification.addEventListener('transitionend', () => notification.remove());
+    }, 4000);
   }
 
   function resetState() {
@@ -92,6 +115,7 @@ async function main() {
     testerInput.value = "";
     renderActiveTab(activeTabId);
     saveState();
+    showNotification("Os dados foram resetados.", "success");
   }
 
   function getItemState(itemId) {
@@ -207,6 +231,7 @@ async function main() {
   function renderChecklist(category) {
     categoryContentEl.innerHTML = "";
     const searchTerm = searchInput.value.toLowerCase();
+    const statusFilter = statusFilterEl.value;
 
     if (!category.sections || category.sections.length === 0) {
       categoryContentEl.innerHTML = '<p class="empty-state">Nenhum item cadastrado ainda.</p>';
@@ -214,11 +239,15 @@ async function main() {
     }
 
     category.sections.forEach((section) => {
-      const filteredItems = section.items.filter(
-        (item) =>
+      const filteredItems = section.items.filter((item) => {
+        const itemState = getItemState(makeItemId(category.id, section.id, item.id));
+        const matchesSearch =
           item.title.toLowerCase().includes(searchTerm) ||
-          item.description.toLowerCase().includes(searchTerm)
-      );
+          item.description.toLowerCase().includes(searchTerm);
+        const matchesStatus =
+          statusFilter === "all" || itemState.status === statusFilter;
+        return matchesSearch && matchesStatus;
+      });
 
       if (filteredItems.length === 0) {
         return;
@@ -253,17 +282,23 @@ async function main() {
   function renderServerHardening(payload) {
     categoryContentEl.innerHTML = "";
     const searchTerm = searchInput.value.toLowerCase();
+    const statusFilter = statusFilterEl.value;
+
     if (!payload.stacks || payload.stacks.length === 0) {
       categoryContentEl.innerHTML = '<p class="empty-state">Nenhum checklist configurado.</p>';
       return;
     }
 
     payload.stacks.forEach((stack) => {
-      const filteredItems = stack.items.filter(
-        (item) =>
+      const filteredItems = stack.items.filter((item) => {
+        const itemState = getItemState(makeItemId(payload.id || "server", stack.id, item.id));
+        const matchesSearch =
           item.title.toLowerCase().includes(searchTerm) ||
-          item.description.toLowerCase().includes(searchTerm)
-      );
+          item.description.toLowerCase().includes(searchTerm);
+        const matchesStatus =
+          statusFilter === "all" || itemState.status === statusFilter;
+        return matchesSearch && matchesStatus;
+      });
 
       if (filteredItems.length === 0) {
         return;
@@ -354,9 +389,10 @@ async function main() {
         updateItemState(itemId, { attachments: updatedAttachments });
         evidenceInput.value = ''; // Reset file input
         renderAttachments();
+        showNotification("Arquivo enviado com sucesso!");
       } catch (error) {
         console.error('Erro no upload:', error);
-        alert('Não foi possível fazer o upload do arquivo.');
+        showNotification("Falha no upload do arquivo.", "error");
       }
     });
 
@@ -603,6 +639,10 @@ async function main() {
   testerInput.addEventListener("input", persistMeta);
 
   searchInput.addEventListener("input", () => {
+    renderActiveTab(activeTabId);
+  });
+
+  statusFilterEl.addEventListener("change", () => {
     renderActiveTab(activeTabId);
   });
 

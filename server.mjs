@@ -2,12 +2,20 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import multer from 'multer';
+import { Low } from 'lowdb';
+import { JSONFile } from 'lowdb/node';
 import { checklistData } from './data.mjs';
 
 const app = express();
 const port = process.env.PORT || 3000;
 const stateFilePath = './state.json';
 const uploadDir = './uploads';
+
+// Setup lowdb
+const adapter = new JSONFile(stateFilePath);
+const defaultData = { items: {}, meta: {} };
+const db = new Low(adapter, defaultData);
+await db.read();
 
 // Create uploads directory
 if (!fs.existsSync(uploadDir)) {
@@ -29,12 +37,6 @@ const upload = multer({ storage });
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-// Load initial state from file
-let state = { items: {}, meta: {} };
-if (fs.existsSync(stateFilePath)) {
-  state = JSON.parse(fs.readFileSync(stateFilePath));
-}
-
 // Serve static files
 app.use(express.static('dist'));
 app.use('/uploads', express.static(path.resolve(uploadDir)));
@@ -54,12 +56,12 @@ app.post('/api/upload', upload.single('evidence'), (req, res) => {
 
 // API endpoints for state persistence
 app.get('/api/state', (req, res) => {
-  res.json(state);
+  res.json(db.data);
 });
 
-app.post('/api/state', (req, res) => {
-  state = req.body;
-  fs.writeFileSync(stateFilePath, JSON.stringify(state, null, 2));
+app.post('/api/state', async (req, res) => {
+  db.data = req.body;
+  await db.write();
   res.status(200).send('State saved');
 });
 

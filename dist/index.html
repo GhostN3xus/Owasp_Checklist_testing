@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OWASP AppSec Checklist Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -25,7 +26,7 @@
         </ul>
       </section>
     </aside>
-    <main class="content">
+    <main class="container">
       <header class="content-header">
         <div class="header-main">
           <h2 id="current-tab-title">Selecione uma aba</h2>
@@ -33,6 +34,13 @@
         </div>
         <div class="header-controls">
           <input type="search" id="search-input" placeholder="Pesquisar itens..." />
+          <select id="status-filter">
+            <option value="all">Todos os Status</option>
+            <option value="passed">Passou</option>
+            <option value="failed">Falhou</option>
+            <option value="na">N/A</option>
+            <option value="">Não definido</option>
+          </select>
           <div class="project-meta">
             <label>
               Projeto
@@ -50,6 +58,8 @@
       </section>
     </main>
   </div>
+
+  <div id="notification-container" class="notification-container"></div>
 
   <div id="guide-modal" class="modal hidden">
     <div class="modal-content">
