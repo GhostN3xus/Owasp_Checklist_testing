@@ -47,6 +47,32 @@ export const secureCodeChecklist = {
             mitigation: ["Implemente verificações de permissão em um middleware ou decorador centralizado.", "Use identificadores de objeto indiretos e aleatórios (UUIDs)."],
             references: ["OWASP Cheat Sheet: Access Control"]
           }
+        },
+        {
+          id: "cr-crypto",
+          title: "Criptografia",
+          description: "Verifique se dados sensíveis em trânsito e em repouso são criptografados com algoritmos fortes e se o gerenciamento de chaves é seguro.",
+          guide: {
+            overview: "Procure por algoritmos criptográficos fracos ou obsoletos (ex: MD5, SHA1). Verifique se as chaves de criptografia não estão hardcoded.",
+            impact: "Criptografia fraca pode levar à exposição de dados sensíveis.",
+            detection: ["Busque por `MD5`, `SHA1`, `DES`, `RC4` no código.", "Verifique a configuração de TLS/SSL nos servidores web."],
+            tools: ["Revisão Manual", "SSLyze", "TestSSL.sh"],
+            mitigation: ["Use algoritmos fortes como AES-256 para criptografia simétrica e RSA-2048 ou superior para assimétrica.", "Armazene chaves em um cofre de segredos."],
+            references: ["OWASP Cheat Sheet: Cryptographic Storage"]
+          }
+        },
+        {
+          id: "cr-logging-monitoring",
+          title: "Logging e Monitoramento",
+          description: "Garanta que eventos de segurança relevantes (logins, falhas de acesso, transações críticas) são registrados para permitir a detecção de incidentes.",
+          guide: {
+            overview: "Verifique se o código registra informações suficientes para rastrear a atividade de um usuário sem logar dados sensíveis (senhas, tokens).",
+            impact: "Logging inadequado dificulta ou impossibilita a detecção e a resposta a incidentes de segurança.",
+            detection: ["Inspecione o código em busca de chamadas para bibliotecas de log.", "Verifique se os logs não contêm senhas, chaves de API ou PII."],
+            tools: ["Revisão Manual"],
+            mitigation: ["Implemente um framework de logging centralizado.", "Defina quais eventos de segurança devem ser registrados e em qual nível de detalhe."],
+            references: ["OWASP Cheat Sheet: Logging"]
+          }
         }
       ]
     },
@@ -68,29 +94,72 @@ export const secureCodeChecklist = {
           }
         },
         {
-          id: "sdp-dependency-management",
-          title: "Gerenciamento de Dependências",
-          description: "Mantenha as dependências do projeto atualizadas e use ferramentas para escanear por vulnerabilidades conhecidas (CVEs).",
+          id: "sdp-sast-dast",
+          title: "Integração de SAST e DAST",
+          description: "Integre ferramentas de teste de segurança estático (SAST) e dinâmico (DAST) no pipeline de CI/CD para identificar vulnerabilidades automaticamente.",
           guide: {
-            overview: "Use ferramentas como o Dependabot ou o Renovate para automatizar a atualização de dependências. Use scanners de SCA (Software Composition Analysis).",
+            overview: "SAST analisa o código-fonte em busca de falhas, enquanto DAST testa a aplicação em execução. A integração contínua permite a detecção precoce de problemas.",
+            impact: "A automação de testes de segurança reduz a janela de exposição de vulnerabilidades.",
+            tools: ["SAST: Semgrep, SonarQube, Checkmarx", "DAST: OWASP ZAP, Burp Suite, Invicti"],
+            mitigation: ["Configure o pipeline para falhar se vulnerabilidades críticas forem encontradas.", "Treine a equipe para analisar e corrigir os resultados das ferramentas."],
+            references: ["OWASP DevSecOps Guideline"]
+          }
+        },
+        {
+          id: "sdp-security-champions",
+          title: "Programa de Security Champions",
+          description: "Crie um programa de Security Champions para disseminar o conhecimento de segurança e escalar a cultura de AppSec na equipe de desenvolvimento.",
+          guide: {
+            overview: "Security Champions são desenvolvedores com interesse em segurança que atuam como um ponto de contato e multiplicadores de conhecimento dentro de suas equipes.",
+            impact: "Aumenta a conscientização sobre segurança e a autonomia das equipes para resolver problemas de segurança.",
+            mitigation: ["Forneça treinamento contínuo para os Security Champions.", "Crie um canal de comunicação para que eles possam colaborar e tirar dúvidas."],
+            references: ["OWASP Security Champions Playbook"]
+          }
+        }
+      ]
+    },
+    {
+      id: "sca",
+      title: "Análise de Composição de Software (SCA)",
+      summary: "Gerenciamento e análise de segurança de dependências de terceiros.",
+      items: [
+        {
+          id: "sca-vulnerability-scanning",
+          title: "Varredura de Vulnerabilidades em Dependências",
+          description: "Utilize ferramentas de SCA para escanear continuamente as dependências do projeto em busca de vulnerabilidades conhecidas (CVEs).",
+          guide: {
+            overview: "Integre ferramentas de SCA ao seu pipeline de CI/CD e ao seu ambiente de desenvolvimento local para identificar componentes vulneráveis.",
             impact: "Dependências vulneráveis podem ser exploradas por invasores para comprometer a aplicação.",
-            tools: ["npm audit", "pip-audit", "Snyk", "Trivy"],
-            commands: ["npm audit", "trivy fs ."],
-            mitigation: ["Mantenha um inventário de dependências (SBOM).", "Defina uma política para atualização de dependências com vulnerabilidades críticas."],
+            tools: ["npm audit", "pip-audit", "Snyk", "Trivy", "OWASP Dependency-Check"],
+            commands: ["npm audit --audit-level=critical", "trivy fs ."],
+            mitigation: ["Automatize a criação de pull requests para atualizar dependências vulneráveis.", "Defina uma política clara para lidar com vulnerabilidades (ex: corrigir todas as críticas em 48h)."],
             references: ["OWASP Top 10: A06-Vulnerable and Outdated Components"]
           }
         },
         {
-          id: "sdp-secrets-management",
-          title: "Gerenciamento de Segredos",
-          description: "Não armazene segredos (senhas, chaves de API, tokens) no código-fonte. Use um cofre de segredos.",
+          id: "sca-sbom",
+          title: "Manutenção de um SBOM (Software Bill of Materials)",
+          description: "Gere e mantenha um SBOM para ter um inventário completo de todas as dependências (diretas e transitivas) do seu projeto.",
           guide: {
-            overview: "Utilize serviços como HashiCorp Vault, AWS Secrets Manager ou Azure Key Vault para gerenciar segredos. Injete segredos no ambiente de execução.",
-            impact: "Segredos no código-fonte podem vazar através de repositórios públicos, comprometendo sistemas inteiros.",
-            tools: ["Git-secrets", "TruffleHog", "Vault"],
-            commands: ["trufflehog filesystem ."],
-            mitigation: ["Implemente varredura de segredos no pipeline de CI/CD para bloquear commits com segredos.", "Rotacione segredos regularmente."],
-            references: ["OWASP Cheat Sheet: Secrets Management"]
+            overview: "Um SBOM é um arquivo que lista todos os componentes de software em uma aplicação. Formatos comuns incluem CycloneDX e SPDX.",
+            impact: "Um SBOM é essencial para a transparência da cadeia de suprimentos de software e para responder rapidamente a novas vulnerabilidades.",
+            tools: ["CycloneDX CLI", "SPDX SBOM Generator", "Syft"],
+            commands: ["syft . -o cyclonedx-json"],
+            mitigation: ["Gere o SBOM a cada build no pipeline de CI/CD.", "Armazene os SBOMs em um repositório centralizado para fácil acesso."],
+            references: ["NTIA: The Minimum Elements For a Software Bill of Materials"]
+          }
+        },
+        {
+          id: "sca-license-compliance",
+          title: "Conformidade de Licenças",
+          description: "Verifique as licenças das dependências para garantir que elas são compatíveis com as políticas da sua organização e não introduzem riscos legais.",
+          guide: {
+            overview: "Use ferramentas de SCA para identificar as licenças de todas as dependências e compará-las com uma lista de licenças aprovadas.",
+            impact: "O uso de dependências com licenças restritivas pode levar a obrigações legais indesejadas, como a necessidade de abrir o código-fonte do seu produto.",
+            tools: ["FOSSA", "Snyk License Compliance", "Trivy"],
+            commands: ["trivy fs --format cyclonedx . | cyclonedx-cli-linux-x64 validate"],
+            mitigation: ["Defina uma política de licenças de software aprovadas.", "Integre a verificação de licenças no pipeline de CI/CD para bloquear dependências não conformes."],
+            references: ["OSI (Open Source Initiative)"]
           }
         }
       ]
