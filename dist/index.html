@@ -18,6 +18,11 @@
         <button id="export-pdf" class="primary">📄 Exportar PDF</button>
         <button id="reset-state" class="danger">🧹 Resetar Dados</button>
       </div>
+      <section class="useful-tools" id="useful-tools">
+        <h2>Ferramentas úteis</h2>
+        <ul id="tool-list">
+          <!-- Tools will be injected here by app.mjs -->
+        </ul>
       </section>
     </aside>
     <main class="content">
@@ -94,6 +99,13 @@
         <label>Notas
           <textarea class="item-notes" rows="2" placeholder="Evidências, payloads, observações..."></textarea>
         </label>
+        <div class="item-attachments">
+          <label>Anexos
+            <input type="file" class="item-evidence-input" />
+            <button class="item-upload-btn secondary">📤 Upload</button>
+          </label>
+          <ul class="item-attachments-list"></ul>
+        </div>
         <button class="item-guide secondary">📘 Guia real</button>
       </div>
     </div>

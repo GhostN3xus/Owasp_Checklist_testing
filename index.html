@@ -18,14 +18,10 @@
         <button id="export-pdf" class="primary">📄 Exportar PDF</button>
         <button id="reset-state" class="danger">🧹 Resetar Dados</button>
       </div>
-      <section class="useful-tools">
+      <section class="useful-tools" id="useful-tools">
         <h2>Ferramentas úteis</h2>
-        <ul>
-          <li><a href="https://portswigger.net/burp" target="_blank">Burp Suite</a></li>
-          <li><a href="https://www.zaproxy.org/" target="_blank">OWASP ZAP</a></li>
-          <li><a href="https://github.com/sqlmapproject/sqlmap" target="_blank">Sqlmap</a></li>
-          <li><a href="https://nmap.org/" target="_blank">Nmap</a></li>
-          <li><a href="https://github.com/projectdiscovery/nuclei" target="_blank">Nuclei</a></li>
+        <ul id="tool-list">
+          <!-- Tools will be injected here by app.mjs -->
         </ul>
       </section>
     </aside>
@@ -103,6 +99,13 @@
         <label>Notas
           <textarea class="item-notes" rows="2" placeholder="Evidências, payloads, observações..."></textarea>
         </label>
+        <div class="item-attachments">
+          <label>Anexos
+            <input type="file" class="item-evidence-input" />
+            <button class="item-upload-btn secondary">📤 Upload</button>
+          </label>
+          <ul class="item-attachments-list"></ul>
+        </div>
         <button class="item-guide secondary">📘 Guia real</button>
       </div>
     </div>
