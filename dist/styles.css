@@ -28,8 +28,20 @@ body {
 
 #app {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 1fr;
   min-height: 100vh;
+}
+
+@media (min-width: 768px) {
+  #app {
+    grid-template-columns: 280px 1fr;
+  }
+}
+
+@media (min-width: 1024px) {
+  #app {
+    grid-template-columns: 320px 1fr;
+  }
 }
 
 .sidebar {
@@ -160,6 +172,7 @@ body {
   display: flex;
   gap: 1.5rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 #search-input {
@@ -169,7 +182,14 @@ body {
   border-radius: 0.6rem;
   padding: 0.5rem 0.75rem;
   font-size: 1rem;
-  min-width: 280px;
+  width: 100%;
+}
+
+@media (min-width: 600px) {
+  #search-input {
+    width: auto;
+    min-width: 280px;
+  }
 }
 
 .content-header h2 {
@@ -205,8 +225,8 @@ body {
 
 .category-content {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
 }
 
 .checklist-card {
@@ -215,11 +235,18 @@ body {
   border: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  transition: all 0.2s ease-in-out;
   min-height: 320px;
 }
 
+.checklist-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.5);
+  border-color: var(--accent);
+}
+
 .card-header {
-  padding: 1.25rem 1.25rem 0.75rem;
+  padding: 1.25rem 1.5rem 0.75rem;
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
@@ -266,10 +293,10 @@ body {
 }
 
 .card-body {
-  padding: 1.25rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
   overflow-y: auto;
 }
 
@@ -277,10 +304,10 @@ body {
   background: var(--surface-alt);
   border: 1px solid var(--border);
   border-radius: 0.75rem;
-  padding: 1rem;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .checkbox {
@@ -311,9 +338,11 @@ body {
 }
 
 .item-controls {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  align-items: flex-end;
+  margin-top: 0.5rem;
 }
 
 .item-controls label {
@@ -421,26 +450,6 @@ body {
   font-style: italic;
 }
 
-@media (max-width: 1024px) {
-  #app {
-    grid-template-columns: 1fr;
-  }
-
-  .sidebar {
-    position: static;
-    height: auto;
-  }
-
-  .content-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .project-meta {
-    width: 100%;
-    flex-wrap: wrap;
-  }
-}
 
 @media print {
   body {
