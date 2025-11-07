@@ -37,6 +37,7 @@ async function main() {
   const projectInput = document.getElementById("project-name");
   const testerInput = document.getElementById("tester-name");
   const toolListEl = document.getElementById("tool-list");
+  const searchInput = document.getElementById("search-input");
   const modalEl = document.getElementById("guide-modal");
   const modalTitleEl = document.getElementById("modal-title");
   const modalDescriptionEl = document.getElementById("modal-description");
@@ -150,6 +151,7 @@ async function main() {
 
   function renderChecklist(category) {
     categoryContentEl.innerHTML = "";
+    const searchTerm = searchInput.value.toLowerCase();
 
     if (!category.sections || category.sections.length === 0) {
       categoryContentEl.innerHTML = '<p class="empty-state">Nenhum item cadastrado ainda.</p>';
@@ -157,6 +159,16 @@ async function main() {
     }
 
     category.sections.forEach((section) => {
+      const filteredItems = section.items.filter(
+        (item) =>
+          item.title.toLowerCase().includes(searchTerm) ||
+          item.description.toLowerCase().includes(searchTerm)
+      );
+
+      if (filteredItems.length === 0) {
+        return;
+      }
+
       const card = cardTemplate.content.firstElementChild.cloneNode(true);
       const cardTitle = card.querySelector(".card-title");
       const cardSummary = card.querySelector(".card-summary");
@@ -169,12 +181,12 @@ async function main() {
 
       cardBody.innerHTML = "";
 
-      const itemStates = section.items.map((item) => getItemState(makeItemId(category.id, section.id, item.id)));
+      const itemStates = filteredItems.map((item) => getItemState(makeItemId(category.id, section.id, item.id)));
       const progress = calculateProgress(itemStates);
       progressLabel.textContent = `${progress.completed}/${progress.total} completos`;
       progressValue.style.width = `${progress.percent}%`;
 
-      section.items.forEach((item) => {
+      filteredItems.forEach((item) => {
         const element = buildItem(item, { categoryId: category.id, sectionId: section.id });
         cardBody.appendChild(element);
       });
@@ -185,12 +197,22 @@ async function main() {
 
   function renderServerHardening(payload) {
     categoryContentEl.innerHTML = "";
+    const searchTerm = searchInput.value.toLowerCase();
     if (!payload.stacks || payload.stacks.length === 0) {
       categoryContentEl.innerHTML = '<p class="empty-state">Nenhum checklist configurado.</p>';
       return;
     }
 
     payload.stacks.forEach((stack) => {
+      const filteredItems = stack.items.filter(
+        (item) =>
+          item.title.toLowerCase().includes(searchTerm) ||
+          item.description.toLowerCase().includes(searchTerm)
+      );
+
+      if (filteredItems.length === 0) {
+        return;
+      }
       const card = cardTemplate.content.firstElementChild.cloneNode(true);
       const cardTitle = card.querySelector(".card-title");
       const cardSummary = card.querySelector(".card-summary");
@@ -201,13 +223,13 @@ async function main() {
       cardTitle.textContent = stack.name;
       cardSummary.textContent = stack.summary;
 
-      const itemStates = stack.items.map((item) => getItemState(makeItemId(payload.id || "server", stack.id, item.id)));
+      const itemStates = filteredItems.map((item) => getItemState(makeItemId(payload.id || "server", stack.id, item.id)));
       const progress = calculateProgress(itemStates);
       progressLabel.textContent = `${progress.completed}/${progress.total} completos`;
       progressValue.style.width = `${progress.percent}%`;
 
       cardBody.innerHTML = "";
-      stack.items.forEach((item) => {
+      filteredItems.forEach((item) => {
         const element = buildItem(item, { categoryId: "server-config", sectionId: stack.id, stackName: stack.name });
         cardBody.appendChild(element);
       });
@@ -466,6 +488,10 @@ async function main() {
 
   projectInput.addEventListener("input", persistMeta);
   testerInput.addEventListener("input", persistMeta);
+
+  searchInput.addEventListener("input", () => {
+    renderActiveTab(activeTabId);
+  });
 
   exportPdfBtn.addEventListener("click", exportToPdf);
   resetBtn.addEventListener("click", () => {

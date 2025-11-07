@@ -18,26 +18,35 @@
         <button id="export-pdf" class="primary">📄 Exportar PDF</button>
         <button id="reset-state" class="danger">🧹 Resetar Dados</button>
       </div>
-      <section class="sidebar-tools">
-        <h2>🔧 Ferramentas úteis</h2>
-        <ul id="tool-list"></ul>
+      <section class="useful-tools">
+        <h2>Ferramentas úteis</h2>
+        <ul>
+          <li><a href="https://portswigger.net/burp" target="_blank">Burp Suite</a></li>
+          <li><a href="https://www.zaproxy.org/" target="_blank">OWASP ZAP</a></li>
+          <li><a href="https://github.com/sqlmapproject/sqlmap" target="_blank">Sqlmap</a></li>
+          <li><a href="https://nmap.org/" target="_blank">Nmap</a></li>
+          <li><a href="https://github.com/projectdiscovery/nuclei" target="_blank">Nuclei</a></li>
+        </ul>
       </section>
     </aside>
     <main class="content">
       <header class="content-header">
-        <div>
+        <div class="header-main">
           <h2 id="current-tab-title">Selecione uma aba</h2>
           <p id="current-tab-description">Escolha um domínio de segurança para iniciar a avaliação.</p>
         </div>
-        <div class="project-meta">
-          <label>
-            Projeto
-            <input id="project-name" type="text" placeholder="Ex: API de Pagamentos" />
-          </label>
-          <label>
-            Tester
-            <input id="tester-name" type="text" placeholder="Seu nome" />
-          </label>
+        <div class="header-controls">
+          <input type="search" id="search-input" placeholder="Pesquisar itens..." />
+          <div class="project-meta">
+            <label>
+              Projeto
+              <input id="project-name" type="text" placeholder="Ex: API de Pagamentos" />
+            </label>
+            <label>
+              Tester
+              <input id="tester-name" type="text" placeholder="Seu nome" />
+            </label>
+          </div>
         </div>
       </header>
       <section id="category-content" class="category-content">
