@@ -30,21 +30,26 @@ Painel interativo para conduzir avaliações de segurança com base em OWASP Top
 
 ## 🛠️ Como usar
 
-1. Abra o diretório do projeto em seu computador.
-2. Inicie um servidor local simples ou abra o arquivo `index.html` diretamente no navegador.
+1. **Instale as dependências:**
    ```bash
-   python3 -m http.server 8000
-   # Depois acesse http://localhost:8000
+   npm install
    ```
-3. Informe o nome do projeto e do tester na parte superior.
-4. Navegue pelas abas (OWASP Web, OWASP API, PTES, SAST, DAST, Server Config).
-5. Para cada item:
+2. **Inicie o servidor de desenvolvimento:**
+   ```bash
+   npm start
+   ```
+3. **Acesse a aplicação:**
+   Abra [http://localhost:3000](http://localhost:3000) no seu navegador.
+
+4. Informe o nome do projeto e do tester na parte superior.
+5. Navegue pelas abas (OWASP Web, OWASP API, PTES, SAST, DAST, Server Config).
+6. Para cada item:
    - Marque a checkbox quando concluir o teste.
    - Escolha o status (Passou, Falhou, N/A).
    - Registre notas e evidências coletadas (logs, prints, comandos executados).
    - Clique em **📘 Guia real** para abrir instruções aprofundadas com impacto, técnicas de detecção, mitigações e checklist de evidências.
-6. Clique em **📄 Exportar PDF** para gerar o relatório consolidado (use “Imprimir em PDF”).
-7. Utilize **🧹 Resetar Dados** para limpar o estado local e iniciar um novo ciclo.
+7. Clique em **📄 Exportar PDF** para gerar o relatório consolidado (use “Imprimir em PDF”).
+8. Utilize **🧹 Resetar Dados** para limpar o estado local e iniciar um novo ciclo.
 
 ## 📥 Exportação do relatório
 
@@ -61,11 +66,11 @@ Painel interativo para conduzir avaliações de segurança com base em OWASP Top
 5. **Revise mitigações sugeridas** e inclua recomendações específicas do ambiente analisado.
 6. **Gere o relatório PDF** para anexar à documentação do projeto ou sistema de acompanhamento de vulnerabilidades.
 
-## 🔒 Privacidade e funcionamento offline
+## 🔒 Privacidade e funcionamento
 
-- Nenhum dado é enviado para servidores externos; tudo permanece no navegador do usuário.
-- O estado (checkboxes, status, notas, nome do projeto/tester) é salvo em `localStorage`.
-- Para limpar dados basta usar o botão de reset ou remover o cache do navegador.
+- O projeto agora utiliza um servidor Node.js para fornecer os dados e salvar o progresso.
+- O estado (checkboxes, status, notas, nome do projeto/tester) é salvo no servidor.
+- Para limpar dados basta usar o botão de reset.
 
 ## 🤝 Contribuições
 

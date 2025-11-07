@@ -1,4 +1,3 @@
-import { checklistData as originalChecklistData } from "./data.mjs";
 import { securityTools } from "./securityTools.mjs";
 import { serverHardening } from "./serverConfig.mjs";
 import { cloudSecurityChecklist } from "./cloudSecurity.mjs";
@@ -6,9 +5,12 @@ import { secureCodeChecklist } from "./secureCodeChecklist.mjs";
 import { owaspCheatSheetChecklist } from "./owaspCheatSheetChecklist.mjs";
 import { calculateProgress, renderStatusBadge } from "./logic.js";
 
-const checklistData = [...originalChecklistData, cloudSecurityChecklist, secureCodeChecklist, owaspCheatSheetChecklist];
+async function main() {
+  const response = await fetch('/api/data');
+  const originalChecklistData = await response.json();
+  const checklistData = [...originalChecklistData, cloudSecurityChecklist, secureCodeChecklist, owaspCheatSheetChecklist];
 
-document.addEventListener("DOMContentLoaded", () => {
+
   const TABS = checklistData.map((category) => ({
     id: category.id,
     name: category.name,
@@ -46,10 +48,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let state = loadState();
 
-  function loadState() {
+  async function loadState() {
     try {
-      const raw = localStorage.getItem(stateKey);
-      return raw ? JSON.parse(raw) : { items: {}, meta: {} };
+      const response = await fetch('/api/state');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
     } catch (error) {
       console.error("Falha ao carregar estado, usando padrão.", error);
       alert("Erro ao carregar dados salvos. Suas alterações não serão recuperadas.");
@@ -57,16 +62,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function saveState() {
+  async function saveState() {
     try {
-      localStorage.setItem(stateKey, JSON.stringify(state));
+      await fetch('/api/state', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(state),
+      });
     } catch (error) {
-      console.error("Não foi possível salvar o estado local.", error);
-      if (error.name === 'QuotaExceededError') {
-        alert("Erro: Não foi possível salvar. O armazenamento local está cheio.");
-      } else {
-        alert("Erro desconhecido ao salvar o estado.");
-      }
+      console.error("Não foi possível salvar o estado no servidor.", error);
+      alert("Erro ao salvar o estado.");
     }
   }
 
@@ -481,8 +488,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   let activeTabId = TABS[0]?.id;
+  state = await loadState();
   restoreMeta();
   renderTabs();
   renderTools();
   renderActiveTab(activeTabId);
-});
+}
+
+document.addEventListener("DOMContentLoaded", main);
