@@ -250,6 +250,7 @@ body {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
+  cursor: pointer;
 }
 
 .card-title {
@@ -293,10 +294,14 @@ body {
 
 .card-body {
   padding: 1.5rem;
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 1.25rem;
   overflow-y: auto;
+}
+
+.checklist-card.expanded .card-body {
+  display: flex;
 }
 
 .checklist-item {

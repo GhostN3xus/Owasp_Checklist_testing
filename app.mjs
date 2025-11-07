@@ -241,6 +241,7 @@ async function main() {
 
       const card = cardTemplate.content.firstElementChild.cloneNode(true);
       const cardTitle = card.querySelector(".card-title");
+      const cardHeader = card.querySelector(".card-header");
       const cardSummary = card.querySelector(".card-summary");
       const progressLabel = card.querySelector(".progress-label");
       const progressValue = card.querySelector(".progress-value");
@@ -259,6 +260,20 @@ async function main() {
       filteredItems.forEach((item) => {
         const element = buildItem(item, { categoryId: category.id, sectionId: section.id });
         cardBody.appendChild(element);
+      });
+
+      cardHeader.addEventListener("click", () => {
+        const isExpanded = card.classList.contains("expanded");
+
+        // Close all other cards
+        document.querySelectorAll(".checklist-card.expanded").forEach((openCard) => {
+          openCard.classList.remove("expanded");
+        });
+
+        // Toggle the current card
+        if (!isExpanded) {
+          card.classList.add("expanded");
+        }
       });
 
       categoryContentEl.appendChild(card);
@@ -291,6 +306,7 @@ async function main() {
       }
       const card = cardTemplate.content.firstElementChild.cloneNode(true);
       const cardTitle = card.querySelector(".card-title");
+      const cardHeader = card.querySelector(".card-header");
       const cardSummary = card.querySelector(".card-summary");
       const progressLabel = card.querySelector(".progress-label");
       const progressValue = card.querySelector(".progress-value");
@@ -308,6 +324,20 @@ async function main() {
       filteredItems.forEach((item) => {
         const element = buildItem(item, { categoryId: "server-config", sectionId: stack.id, stackName: stack.name });
         cardBody.appendChild(element);
+      });
+
+      cardHeader.addEventListener("click", () => {
+        const isExpanded = card.classList.contains("expanded");
+
+        // Close all other cards
+        document.querySelectorAll(".checklist-card.expanded").forEach((openCard) => {
+          openCard.classList.remove("expanded");
+        });
+
+        // Toggle the current card
+        if (!isExpanded) {
+          card.classList.add("expanded");
+        }
       });
 
       categoryContentEl.appendChild(card);
