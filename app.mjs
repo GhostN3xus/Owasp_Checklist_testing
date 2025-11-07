@@ -27,6 +27,14 @@ async function main() {
     payload: serverHardening
   });
 
+  TABS.push({
+    id: "tools",
+    name: "Tools",
+    description: "Uma lista de ferramentas de segurança e testes que podem ser executados.",
+    type: "tools",
+    payload: securityTools
+  });
+
   const stateKey = "appsec-dashboard-state-v1";
   const tabListEl = document.getElementById("tab-list");
   const categoryContentEl = document.getElementById("category-content");
@@ -88,7 +96,11 @@ async function main() {
 
   function getItemState(itemId) {
     if (!state.items[itemId]) {
-      state.items[itemId] = { checked: false, status: "", notes: "" };
+      state.items[itemId] = { checked: false, status: "", notes: "", attachments: [] };
+    }
+    // Garantir que "attachments" seja sempre um array
+    if (!Array.isArray(state.items[itemId].attachments)) {
+      state.items[itemId].attachments = [];
     }
     return state.items[itemId];
   }
@@ -146,7 +158,50 @@ async function main() {
       renderChecklist(tab.payload);
     } else if (tab.type === "server") {
       renderServerHardening(tab.payload);
+    } else if (tab.type === "tools") {
+      renderToolsTab(tab.payload);
     }
+  }
+
+  function renderToolsTab(tools) {
+    categoryContentEl.innerHTML = "";
+    const searchTerm = searchInput.value.toLowerCase();
+
+    if (!Array.isArray(tools) || tools.length === 0) {
+      categoryContentEl.innerHTML = '<p class="empty-state">Nenhuma ferramenta cadastrada.</p>';
+      return;
+    }
+
+    const filteredTools = tools.filter(
+      (tool) =>
+        tool.name.toLowerCase().includes(searchTerm) ||
+        tool.description.toLowerCase().includes(searchTerm) ||
+        tool.category.toLowerCase().includes(searchTerm)
+    );
+
+    if (filteredTools.length === 0) {
+      categoryContentEl.innerHTML = '<p class="empty-state">Nenhuma ferramenta encontrada.</p>';
+      return;
+    }
+
+    const toolsList = document.createElement("ul");
+    toolsList.className = "tools-list";
+
+    filteredTools.forEach((tool) => {
+      const li = document.createElement("li");
+      li.className = "tool-item";
+      li.innerHTML = `
+        <div class="tool-header">
+          <h3 class="tool-name">${tool.name}</h3>
+          <span class="tool-category">${tool.category}</span>
+        </div>
+        <p class="tool-description">${tool.description}</p>
+        ${tool.command ? `<pre class="tool-command">${tool.command}</pre>` : ""}
+      `;
+      toolsList.appendChild(li);
+    });
+
+    categoryContentEl.appendChild(toolsList);
   }
 
   function renderChecklist(category) {
@@ -246,6 +301,9 @@ async function main() {
     const statusSelect = element.querySelector(".item-status");
     const notesEl = element.querySelector(".item-notes");
     const guideBtn = element.querySelector(".item-guide");
+    const evidenceInput = element.querySelector('.item-evidence-input');
+    const uploadBtn = element.querySelector('.item-upload-btn');
+    const attachmentsList = element.querySelector('.item-attachments-list');
 
     const itemId = makeItemId(categoryId, sectionId, item.id);
     const itemState = getItemState(itemId);
@@ -255,6 +313,8 @@ async function main() {
     checkbox.checked = itemState.checked;
     statusSelect.value = itemState.status || "";
     notesEl.value = itemState.notes || "";
+
+    renderAttachments();
 
     checkbox.addEventListener("change", () => {
       updateItemState(itemId, { checked: checkbox.checked });
@@ -268,6 +328,52 @@ async function main() {
     notesEl.addEventListener("input", (event) => {
       updateItemState(itemId, { notes: event.target.value });
     });
+
+    uploadBtn.addEventListener('click', async () => {
+      const file = evidenceInput.files[0];
+      if (!file) {
+        alert('Selecione um arquivo para fazer upload.');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('evidence', file);
+
+      try {
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Falha no upload.');
+        }
+
+        const result = await response.json();
+        const updatedAttachments = [...itemState.attachments, result.filePath];
+        updateItemState(itemId, { attachments: updatedAttachments });
+        evidenceInput.value = ''; // Reset file input
+        renderAttachments();
+      } catch (error) {
+        console.error('Erro no upload:', error);
+        alert('Não foi possível fazer o upload do arquivo.');
+      }
+    });
+
+    function renderAttachments() {
+      attachmentsList.innerHTML = '';
+      if (itemState.attachments && itemState.attachments.length > 0) {
+        itemState.attachments.forEach(filePath => {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = filePath;
+          a.textContent = filePath.split('/').pop();
+          a.target = '_blank';
+          li.appendChild(a);
+          attachmentsList.appendChild(li);
+        });
+      }
+    }
 
     guideBtn.addEventListener("click", () => {
       openGuideModal(
@@ -434,12 +540,19 @@ async function main() {
         const itemId = makeItemId(categoryId, sectionId, item.id);
         const itemState = getItemState(itemId);
         const statusBadge = renderStatusBadge(itemState.status);
+        const attachmentsHtml = (itemState.attachments || [])
+          .map(path => `<li><a href="${path}" target="_blank">${escapeHtml(path.split('/').pop())}</a></li>`)
+          .join('');
+
         return `
           <tr>
             <td>${escapeHtml(item.title)}</td>
             <td>${statusBadge}</td>
             <td>${itemState.checked ? "✔️" : ""}</td>
-            <td class="notes">${escapeHtml(itemState.notes || "")}</td>
+            <td class="notes">
+              ${escapeHtml(itemState.notes || "")}
+              ${attachmentsHtml ? `<h4>Anexos:</h4><ul>${attachmentsHtml}</ul>` : ''}
+            </td>
           </tr>
         `;
       })
