@@ -353,6 +353,22 @@ const checklistData = [
               ],
               references: ["OWASP Testing Guide – Business Logic", "PTES – Vulnerability Analysis"]
             }
+          },
+          {
+            id: "a04-3",
+            title: "Avaliar Riscos de IA e LLMs",
+            description: "Verifique se o uso de modelos de IA e LLMs segue as melhores práticas de segurança, como o OWASP Top 10 para LLMs.",
+            guide: {
+              overview: "Analise a cadeia de suprimentos de modelos, a proteção contra injeção de prompts e a validação de saídas.",
+              impact: "Falhas na segurança de LLMs podem levar a vazamento de dados, execução de código e ataques de negação de serviço.",
+              detection: ["Teste a aplicação com prompts maliciosos.", "Verifique a origem e a integridade dos modelos utilizados."],
+              tools: ["OWASP LLM Top 10", "Garize", "Rebuff"],
+              commands: ["npx garize --model your-model.h5"],
+              steps: ["Mapeie todos os componentes de IA/LLM.", "Realize testes de injeção de prompt.", "Verifique as políticas de uso de dados."],
+              mitigation: ["Implemente um gateway de LLM para filtrar prompts.", "Use modelos de fontes confiáveis.", "Monitore as interações com os modelos."],
+              evidence: ["Relatório de análise de modelo.", "Política de segurança para IA.", "Logs do gateway de LLM."],
+              references: ["OWASP Top 10 for Large Language Model Applications"]
+            }
           }
         ]
       },
