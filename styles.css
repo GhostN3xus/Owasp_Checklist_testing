@@ -692,3 +692,132 @@ body {
     width: auto;
   }
 }
+
+/* Reference Links Styling */
+.reference-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--accent);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.35rem;
+  border-bottom: 1px dotted var(--accent);
+}
+
+.reference-link:hover {
+  background: var(--accent-muted);
+  border-bottom: 1px solid var(--accent);
+  text-decoration: none;
+}
+
+.reference-link .external-icon {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.reference-link:hover .external-icon {
+  opacity: 1;
+}
+
+.modal-section ul li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+/* Enhanced Modal Styling */
+.modal-section h4 {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.75rem;
+}
+
+.modal-section ul {
+  list-style-position: inside;
+}
+
+.modal-section ul li {
+  color: var(--text);
+}
+
+/* Improved Hover States */
+.modal-section ul li:hover {
+  color: var(--accent);
+}
+
+/* Reference List Specific */
+.modal-section:has(h4:contains("Referências")) ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Mobile Responsiveness Improvements */
+@media (max-width: 768px) {
+  .modal-content {
+    width: min(95vw, 100%);
+  }
+
+  .sidebar {
+    padding: 1rem;
+  }
+
+  .header {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+/* Focus States for Accessibility */
+.reference-link:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+button:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Card Enhancement */
+.checklist-card {
+  border-left: 3px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.checklist-card.status-passed {
+  border-left-color: var(--success);
+}
+
+.checklist-card.status-failed {
+  border-left-color: var(--danger);
+}
+
+.checklist-card.status-na {
+  border-left-color: #60a5fa;
+}
+
+/* Loading States */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Print Improvements for References */
+@media print {
+  .reference-link {
+    color: #0066cc;
+    border-bottom: 1px solid #0066cc;
+  }
+
+  .external-icon {
+    display: none;
+  }
+}

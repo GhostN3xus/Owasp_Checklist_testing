@@ -4,6 +4,7 @@ import { cloudSecurityChecklist } from "./cloudSecurity.mjs";
 import { secureCodeChecklist } from "./secureCodeChecklist.mjs";
 import { owaspCheatSheetChecklist } from "./owaspCheatSheetChecklist.mjs";
 import { renderStatusBadge } from "./logic.js";
+import { getReferenceUrl, hasDocumentationLink } from "./documentationLinks.mjs";
 
 async function main() {
   const response = await fetch('/api/data');
@@ -391,6 +392,25 @@ async function main() {
             pre.textContent = command;
             wrapper.appendChild(pre);
           });
+        } else if (section.key === "references") {
+          const list = document.createElement("ul");
+          value.forEach((entry) => {
+            const li = document.createElement("li");
+            const url = getReferenceUrl(entry);
+            if (url) {
+              const link = document.createElement("a");
+              link.href = url;
+              link.target = "_blank";
+              link.rel = "noopener noreferrer";
+              link.className = "reference-link";
+              link.innerHTML = `${escapeHtml(entry)} <span class="external-icon">↗</span>`;
+              li.appendChild(link);
+            } else {
+              li.textContent = entry;
+            }
+            list.appendChild(li);
+          });
+          wrapper.appendChild(list);
         } else {
           const list = document.createElement("ul");
           value.forEach((entry) => {
