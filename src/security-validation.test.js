@@ -22,16 +22,26 @@ function validateEmail(email) {
     throw new Error('Email não pode estar vazio');
   }
 
-  if (email.length > 254) {
+  const normalized = email.trim().toLowerCase();
+
+  if (normalized.length === 0) {
+    throw new Error('Email não pode estar vazio');
+  }
+
+  if (normalized.length > 254) {
     throw new Error('Email muito longo (máximo 254 caracteres)');
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
+  const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+  if (!emailRegex.test(normalized)) {
     throw new Error('Email inválido: formato');
   }
 
-  return email.toLowerCase();
+  if (/['"\s]/.test(normalized.split('@')[0])) {
+    throw new Error('Email inválido: formato');
+  }
+
+  return normalized;
 }
 
 /**
@@ -70,22 +80,29 @@ function validateRedirectUrl(url, allowedDomains = []) {
  * @throws {Error} - Se montante inválido
  */
 function validateAmount(amount) {
-  const num = parseFloat(amount);
-
-  if (isNaN(num)) {
+  if (amount === null || amount === undefined || amount === '') {
     throw new Error('Deve ser um número válido');
   }
 
-  if (num < 0 || num > 999999.99) {
+  const numericValue = Number(amount);
+
+  if (Number.isNaN(numericValue)) {
+    throw new Error('Deve ser um número válido');
+  }
+
+  if (typeof amount === 'string') {
+    const trimmed = amount.trim();
+    if (!/^-?\d+(\.\d{1,2})?$/.test(trimmed)) {
+      throw new Error('Deve ser um número válido');
+    }
+  }
+
+  if (numericValue < 0 || numericValue > 999999.99) {
     throw new Error('Valor fora do range permitido (0 a 999999.99)');
   }
 
-  const rounded = Math.round(num * 100) / 100;
-  if (rounded !== num && Math.round(num * 100) / 100 !== num) {
-    throw new Error('Máximo 2 casas decimais');
-  }
-
-  return rounded;
+  const rounded = Math.round(numericValue * 100) / 100;
+  return Number(rounded.toFixed(2));
 }
 
 /**
@@ -100,7 +117,12 @@ function validateUserInput(text, maxLength = 500) {
     throw new Error('Entrada não pode estar vazia');
   }
 
-  if (text.length > maxLength) {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    throw new Error('Entrada não pode estar vazia');
+  }
+
+  if (trimmed.length > maxLength) {
     throw new Error(`Entrada muito longa (máximo ${maxLength} caracteres)`);
   }
 
@@ -108,18 +130,20 @@ function validateUserInput(text, maxLength = 500) {
     /<script/i,
     /javascript:/i,
     /onclick/i,
+    /onerror/i,
+    /onload/i,
     /<iframe/i,
     /<embed/i,
     /<object/i
   ];
 
   for (const pattern of dangerousPatterns) {
-    if (pattern.test(text)) {
+    if (pattern.test(trimmed)) {
       throw new Error('Conteúdo perigoso detectado (HTML/JavaScript tags)');
     }
   }
 
-  return text.trim();
+  return trimmed;
 }
 
 /**
@@ -285,7 +309,7 @@ describe('Security Validation - User Input (XSS Prevention)', () => {
     });
 
     it('should reject XSS payloads with event handlers', () => {
-      expect(() => validateUserInput('<img src=x onerror="alert(1)">')
+      expect(() => validateUserInput('<img src=x onerror="alert(1)">'))
         .toThrow('Conteúdo perigoso detectado');
       expect(() => validateUserInput('<div onclick="alert(1)">Click</div>'))
         .toThrow('Conteúdo perigoso detectado');

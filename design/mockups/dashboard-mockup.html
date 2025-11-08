@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Mockup • Dashboard AppSec Checklist</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #0e1f2f;
+      color: #f8f9fa;
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      min-height: 100vh;
+    }
+    aside {
+      padding: 2.5rem 2rem;
+      background: linear-gradient(180deg, rgba(19, 58, 84, 0.95), rgba(12, 27, 40, 0.95));
+      border-right: 1px solid rgba(0, 198, 255, 0.25);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .brand-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      background: radial-gradient(circle at 30% 20%, rgba(0, 198, 255, 0.9), rgba(0, 198, 255, 0.15));
+      display: grid;
+      place-items: center;
+      font-size: 1.6rem;
+    }
+    .nav-group {
+      margin-top: 2.5rem;
+      display: grid;
+      gap: 1rem;
+    }
+    .nav-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      border: 1px solid rgba(0, 198, 255, 0.14);
+    }
+    .workflow {
+      margin-top: 2.5rem;
+      display: grid;
+      gap: 1rem;
+    }
+    .workflow li {
+      list-style: none;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 16px;
+      border: 1px solid rgba(0, 198, 255, 0.14);
+      padding: 1rem 1.25rem;
+    }
+    main {
+      padding: 3rem;
+      display: grid;
+      gap: 2rem;
+      background: radial-gradient(circle at top left, rgba(0, 198, 255, 0.18), transparent 55%),
+        radial-gradient(circle at bottom right, rgba(61, 220, 151, 0.18), transparent 55%), #0e1f2f;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+    .header-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(180px, 1fr));
+      gap: 1.5rem;
+    }
+    .metric-card {
+      background: rgba(12, 28, 45, 0.92);
+      border-radius: 22px;
+      border: 1px solid rgba(0, 198, 255, 0.16);
+      padding: 1.5rem;
+      box-shadow: 0 16px 38px rgba(3, 16, 32, 0.45);
+    }
+    .metric-card strong {
+      font-size: 2rem;
+      display: block;
+      margin-top: 0.75rem;
+    }
+    .progress-panel {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 2rem;
+      background: rgba(12, 30, 46, 0.85);
+      border-radius: 22px;
+      border: 1px solid rgba(0, 198, 255, 0.18);
+      padding: 2rem;
+    }
+    .progress-chart {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: conic-gradient(#00c6ff 0 220deg, rgba(255, 255, 255, 0.08) 0 360deg);
+      display: grid;
+      place-items: center;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    .checklist-card {
+      background: rgba(8, 21, 33, 0.92);
+      border-radius: 22px;
+      border: 1px solid rgba(0, 198, 255, 0.15);
+      padding: 2rem;
+      display: grid;
+      gap: 1.25rem;
+    }
+    .checklist-item {
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+  </style>
+</head>
+<body>
+  <aside>
+    <div class="brand">
+      <div class="brand-icon">🔒</div>
+      <div>
+        <h1>AppSec Checklist &amp; Guide</h1>
+        <p>OWASP • PTES • Cloud • DevSecOps</p>
+      </div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-card">
+        <strong>OWASP Web</strong>
+        <p>Top 10 + lógica de negócio</p>
+      </div>
+      <div class="nav-card">
+        <strong>OWASP API</strong>
+        <p>Autenticação, rate limit, BOLA/BFLA</p>
+      </div>
+      <div class="nav-card">
+        <strong>PTES</strong>
+        <p>Recon, exploração, pós-exploração</p>
+      </div>
+    </div>
+    <ol class="workflow">
+      <li><strong>📡 Recon</strong><br/><small>ASN, certificados, ativos cloud</small></li>
+      <li><strong>🧪 Testes</strong><br/><small>SAST/DAST &amp; PoCs</small></li>
+      <li><strong>🛂 Controles</strong><br/><small>Autorização, rate limit, lógica</small></li>
+      <li><strong>📝 Reportar</strong><br/><small>Evidências e narrativa</small></li>
+      <li><strong>🛡️ Mitigar</strong><br/><small>Reteste e métricas</small></li>
+    </ol>
+  </aside>
+  <main>
+    <section class="header">
+      <div>
+        <p>Auditoria AppSec</p>
+        <h2>OWASP Web – Sprint 24</h2>
+        <p>Validando controles críticos de autenticação e autorização.</p>
+      </div>
+      <div class="header-meta">
+        <div class="nav-card">
+          <strong>Projeto</strong>
+          <p>API Pagamentos</p>
+        </div>
+        <div class="nav-card">
+          <strong>Tester líder</strong>
+          <p>Maria Souza</p>
+        </div>
+        <div class="nav-card">
+          <strong>Janela</strong>
+          <p>Março 2025</p>
+        </div>
+      </div>
+    </section>
+    <section class="metric-grid">
+      <article class="metric-card">
+        <span>Itens avaliados</span>
+        <strong>164</strong>
+        <p>Checklist completo da sprint.</p>
+      </article>
+      <article class="metric-card">
+        <span>Concluídos</span>
+        <strong>128</strong>
+        <p>78% concluídos</p>
+      </article>
+      <article class="metric-card">
+        <span>Falhas</span>
+        <strong>9</strong>
+        <p>4 críticas / 5 altas</p>
+      </article>
+      <article class="metric-card">
+        <span>Evidências</span>
+        <strong>36</strong>
+        <p>Screenshots, logs e PoCs</p>
+      </article>
+    </section>
+    <section class="progress-panel">
+      <div class="progress-chart">78%</div>
+      <div>
+        <h3>Status da auditoria</h3>
+        <p>Foco em cadeia de exploração entre rate limit e BOLA.</p>
+        <ul>
+          <li>128 concluídos</li>
+          <li>9 falhas</li>
+          <li>6 N/A</li>
+          <li>21 pendentes</li>
+        </ul>
+      </div>
+    </section>
+    <section class="checklist-card">
+      <header>
+        <h3>A01 – Controle de Acesso Quebrado</h3>
+        <p>Validação de autorização, bypass e abuso de lógica.</p>
+      </header>
+      <div class="checklist-item">
+        <strong>Validar controles horizontais/verticais</strong>
+        <p>Testar IDOR, RBAC, ABAC e contextos.</p>
+      </div>
+      <div class="checklist-item">
+        <strong>Token renewal &amp; session fixation</strong>
+        <p>Verificar rotação, expiração e logout global.</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
