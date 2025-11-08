@@ -4,12 +4,95 @@ import { cloudSecurityChecklist } from "./cloudSecurity.mjs";
 import { secureCodeChecklist } from "./secureCodeChecklist.mjs";
 import { owaspCheatSheetChecklist } from "./owaspCheatSheetChecklist.mjs";
 import { renderStatusBadge } from "./logic.js";
-import { getReferenceUrl, hasDocumentationLink } from "./documentationLinks.mjs";
+import { getReferenceUrl } from "./documentationLinks.mjs";
+import { generateFullReport, generatePartialReport } from "./reportTemplate.mjs";
+
+const WORKFLOW_STEPS = [
+  { id: "recon", label: "Recon & Asset Discovery" },
+  { id: "testing", label: "Testar & Fuzzing" },
+  { id: "access", label: "Verificar Controles" },
+  { id: "report", label: "Reportar & Evidenciar" },
+  { id: "mitigate", label: "Mitigar & Validar" }
+];
+
+const INTERNAL_DOCS = {
+  usage: {
+    title: "Como usar este guia",
+    description:
+      "Estruture sua auditoria iniciando pelo recon, vinculando itens às fases do workflow e utilizando os templates de evidência para cada finding.",
+    body: [
+      "1. Selecione uma seção do checklist no menu lateral para visualizar controles associados.",
+      "2. Utilize os filtros por status, tester e fase para organizar a rodada de testes.",
+      "3. Documente cada teste com notas, narrativa de evidência e anexos. Marque a checklist de evidências para garantir consistência.",
+      "4. Gere o relatório completo ao final ou exporte uma seleção parcial para revisões intermediárias." 
+    ]
+  },
+  "new-section": {
+    title: "Adicionar nova seção",
+    description:
+      "Estruture novas seções com título, sumário, itens (id, title, description) e campo guide com conteúdo técnico completo.",
+    body: [
+      "1. Atualize o arquivo data.mjs (ou o checklist específico) adicionando um novo objeto em sections.",
+      "2. Cada item deve conter o campo guide com chaves: overview, impact, detection, tools, commands, steps, mitigation, evidence, references.",
+      "3. Recompile o projeto com `npm run build` para atualizar o bundle.",
+      "4. Garanta que IDs sejam únicos para evitar conflitos de estado." 
+    ]
+  },
+  customization: {
+    title: "Customizar para Mobile & Cloud Native",
+    description:
+      "Expanda o checklist adicionando controles específicos para mobile (secure storage, jailbreak detection) e Cloud Native (IAM, CSPM, supply-chain).",
+    body: [
+      "1. Utilize as seções existentes de Cloud Security e adicione controles específicos para Kubernetes, serverless e CI/CD.",
+      "2. Para Mobile, crie seções abordando armazenamento seguro, transporte, jailbreak e engenharia reversa.",
+      "3. Atualize o workflow incluindo fases de publicação em lojas/app stores quando aplicável.",
+      "4. Ajuste as métricas adicionando tags de plataforma para facilitar filtros futuros." 
+    ]
+  }
+};
+
+const DEFAULT_EVIDENCE_FLAGS = {
+  screenshot: false,
+  logs: false,
+  payload: false,
+  impact: false
+};
+
+function normalizeEvidenceFlags(flags = {}) {
+  return {
+    screenshot: Boolean(flags.screenshot),
+    logs: Boolean(flags.logs),
+    payload: Boolean(flags.payload),
+    impact: Boolean(flags.impact)
+  };
+}
+
+function normalizeItemState(state = {}) {
+  return {
+    checked: Boolean(state.checked),
+    status: state.status ?? "",
+    notes: state.notes ?? "",
+    attachments: Array.isArray(state.attachments) ? [...state.attachments] : [],
+    severity: state.severity ?? "medium",
+    stage: state.stage ?? "recon",
+    assignee: state.assignee ?? "",
+    priority: state.priority ?? "p2",
+    evidenceNarrative: state.evidenceNarrative ?? "",
+    evidenceChecklist: normalizeEvidenceFlags(state.evidenceChecklist)
+  };
+}
+
+document.addEventListener("DOMContentLoaded", main);
 
 async function main() {
-  const response = await fetch('/api/data');
-  const originalChecklistData = await response.json();
-  const checklistData = [...originalChecklistData, cloudSecurityChecklist, secureCodeChecklist, owaspCheatSheetChecklist];
+  const response = await fetch("/api/data");
+  const baseChecklistData = await response.json();
+  const checklistData = [
+    ...baseChecklistData,
+    cloudSecurityChecklist,
+    secureCodeChecklist,
+    owaspCheatSheetChecklist
+  ];
 
   const TABS = checklistData.map((category) => ({
     id: category.id,
@@ -21,7 +104,7 @@ async function main() {
 
   TABS.push({
     id: "server-config",
-    name: "Server Config",
+    name: "Hardening & Infra",
     description: serverHardening.overview,
     type: "server",
     payload: serverHardening
@@ -29,328 +112,553 @@ async function main() {
 
   TABS.push({
     id: "tools",
-    name: "Tools",
-    description: "Uma lista de ferramentas de segurança e testes.",
+    name: "Playbook de Ferramentas",
+    description: "Coleção curada de ferramentas para bug hunting, SAST/DAST e automações de resposta.",
     type: "tools",
     payload: securityTools
   });
 
-  const sidebarNavEl = document.getElementById("tab-list");
+  const tabListEl = document.getElementById("tab-list");
   const categoryContentEl = document.getElementById("category-content");
   const currentTabTitleEl = document.getElementById("current-tab-title");
   const currentTabDescriptionEl = document.getElementById("current-tab-description");
   const exportPdfBtn = document.getElementById("export-pdf");
+  const exportPartialBtn = document.getElementById("export-partial");
   const resetBtn = document.getElementById("reset-state");
   const projectInput = document.getElementById("project-name");
   const testerInput = document.getElementById("tester-name");
+  const auditWindowInput = document.getElementById("audit-window");
   const searchInput = document.getElementById("search-input");
   const statusFilterEl = document.getElementById("status-filter");
+  const assigneeFilterEl = document.getElementById("assignee-filter");
+  const stageFilterEl = document.getElementById("stage-filter");
+  const clearFiltersBtn = document.getElementById("clear-filters");
   const modalEl = document.getElementById("guide-modal");
   const modalTitleEl = document.getElementById("modal-title");
   const modalDescriptionEl = document.getElementById("modal-description");
   const modalBodyContentEl = document.getElementById("modal-body-content");
   const modalCloseBtn = document.getElementById("close-modal");
   const notificationContainerEl = document.getElementById("notification-container");
-
   const itemTemplate = document.getElementById("checklist-item-template");
 
+  const metricsEls = {
+    total: document.querySelector('[data-metric="total-items"] .metric-value'),
+    completed: document.querySelector('[data-metric="completed-items"] .metric-value'),
+    failed: document.querySelector('[data-metric="failed-items"] .metric-value'),
+    evidence: document.querySelector('[data-metric="evidence-count"] .metric-value')
+  };
+
+  const radialBarEl = document.querySelector(".radial-bar");
+  const radialPercentEl = document.getElementById("radial-percent");
+  const metricCompletedEl = document.getElementById("metric-completed");
+  const metricFailedEl = document.getElementById("metric-failed");
+  const metricNaEl = document.getElementById("metric-na");
+  const metricPendingEl = document.getElementById("metric-pending");
+  const categoryProgressEl = document.getElementById("category-progress");
+  const workflowCounts = new Map(
+    WORKFLOW_STEPS.map((step) => [step.id, document.querySelector(`[data-step-count="${step.id}"]`)] )
+  );
+  const insightRisksEl = document.getElementById("insight-top-risks");
+  const insightGapsEl = document.getElementById("insight-gaps");
+  const insightChainsEl = document.getElementById("insight-chains");
+
+  const helpLinks = document.querySelectorAll(".help-links a[data-doc]");
+
   let state = await loadState();
-  let activeItemId = null;
+  let activeSectionId = null;
 
   async function loadState() {
     try {
-      const response = await fetch('/api/state');
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      return await response.json();
+      const res = await fetch("/api/state");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const stored = await res.json();
+      stored.items = stored.items || {};
+      Object.keys(stored.items).forEach((key) => {
+        stored.items[key] = normalizeItemState(stored.items[key]);
+      });
+      stored.meta = stored.meta || {};
+      return stored;
     } catch (error) {
-      console.error("Falha ao carregar estado.", error);
+      console.warn("Falha ao carregar estado, iniciando com padrão.", error);
       return { items: {}, meta: {} };
     }
   }
 
-  async function saveState() {
+  async function saveState(showToast = true) {
     try {
-      const response = await fetch('/api/state', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(state),
+      const response = await fetch("/api/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(state)
       });
-      if (response.ok) {
-        showNotification("Progresso salvo com sucesso!");
-      } else {
-        throw new Error("Falha ao salvar o estado.");
+      if (!response.ok) throw new Error("Falha ao persistir estado");
+      if (showToast) {
+        showNotification("Progresso salvo.");
       }
     } catch (error) {
-      console.error("Não foi possível salvar o estado no servidor.", error);
+      console.error("Erro ao salvar estado", error);
       showNotification("Erro ao salvar o estado.", "error");
     }
   }
 
-  function showNotification(message, type = 'success') {
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    notificationContainerEl.appendChild(notification);
-    setTimeout(() => notification.classList.add('show'), 10);
-    setTimeout(() => {
-      notification.classList.remove('show');
-      notification.addEventListener('transitionend', () => notification.remove());
-    }, 4000);
-  }
-
   function resetState() {
+    if (!confirm("Deseja realmente apagar todos os dados salvos?")) return;
     state = { items: {}, meta: {} };
     projectInput.value = "";
     testerInput.value = "";
-    renderContent();
-    saveState();
-    showNotification("Os dados foram resetados.", "success");
+    auditWindowInput.value = "";
+    renderUI();
+    saveState(false);
+    showNotification("Os dados foram resetados.");
+  }
+
+  function showNotification(message, type = "success") {
+    const toast = document.createElement("div");
+    toast.className = `notification ${type}`;
+    toast.textContent = message;
+    notificationContainerEl.appendChild(toast);
+    requestAnimationFrame(() => {
+      toast.classList.add("show");
+    });
+    setTimeout(() => {
+      toast.classList.remove("show");
+      toast.addEventListener("transitionend", () => toast.remove(), { once: true });
+    }, 4000);
   }
 
   function getItemState(itemId) {
     if (!state.items[itemId]) {
-      state.items[itemId] = { checked: false, status: "", notes: "", attachments: [] };
-    }
-    if (!Array.isArray(state.items[itemId].attachments)) {
-      state.items[itemId].attachments = [];
+      state.items[itemId] = normalizeItemState();
     }
     return state.items[itemId];
   }
 
   function updateItemState(itemId, updates) {
-    state.items[itemId] = { ...getItemState(itemId), ...updates };
-    saveState();
+    const current = getItemState(itemId);
+    const next = {
+      ...current,
+      ...updates,
+      evidenceChecklist: updates.evidenceChecklist
+        ? { ...current.evidenceChecklist, ...updates.evidenceChecklist }
+        : current.evidenceChecklist
+    };
+    state.items[itemId] = next;
+    scheduleDashboardRefresh();
+    saveState(false);
+  }
+
+  function updateMeta() {
+    state.meta = {
+      project: projectInput.value,
+      tester: testerInput.value,
+      auditWindow: auditWindowInput.value
+    };
+    saveState(false);
+  }
+
+  function makeSectionId(categoryId, sectionId) {
+    return `${categoryId}::${sectionId}`;
+  }
+
+  function makeItemId(categoryId, sectionId, itemId) {
+    return `${categoryId}::${sectionId}::${itemId}`;
+  }
+
+  function getAllChecklistEntries() {
+    const entries = [];
+    TABS.forEach((tab) => {
+      if (tab.type === "checklist") {
+        tab.payload.sections.forEach((section) => {
+          section.items.forEach((item) => {
+            entries.push({
+              categoryId: tab.id,
+              categoryName: tab.name,
+              sectionId: section.id,
+              sectionTitle: section.title,
+              item
+            });
+          });
+        });
+      } else if (tab.type === "server") {
+        tab.payload.stacks.forEach((stack) => {
+          stack.items.forEach((item) => {
+            entries.push({
+              categoryId: tab.id,
+              categoryName: tab.name,
+              sectionId: stack.id,
+              sectionTitle: stack.name,
+              item
+            });
+          });
+        });
+      }
+    });
+    return entries;
   }
 
   function renderNavigation() {
-    sidebarNavEl.innerHTML = "";
-    const navUl = document.createElement("ul");
+    tabListEl.innerHTML = "";
+    const rootList = document.createElement("ul");
 
-    TABS.forEach((category) => {
-      const categoryLi = document.createElement("li");
-      const categoryButton = document.createElement("button");
-      categoryButton.className = "nav-category";
-      categoryButton.textContent = category.name;
-      categoryLi.appendChild(categoryButton);
+    TABS.forEach((tab) => {
+      const tabLi = document.createElement("li");
+      const tabBtn = document.createElement("button");
+      tabBtn.className = "nav-category";
+      tabBtn.textContent = tab.name;
+      tabBtn.addEventListener("click", () => {
+        const firstSectionId = getFirstSectionId(tab);
+        if (firstSectionId) {
+          activeSectionId = makeSectionId(tab.id, firstSectionId);
+          renderUI();
+        }
+      });
+      tabLi.appendChild(tabBtn);
 
-      let sections = [];
-      if (category.type === "checklist") sections = category.payload.sections || [];
-      else if (category.type === "server") sections = category.payload.stacks || [];
-      else if (category.type === "tools") sections = [{ id: "all", title: "Todas as Ferramentas" }];
-
+      const sections = getSections(tab);
       if (sections.length > 0) {
         const subList = document.createElement("ul");
         subList.className = "nav-submenu";
         sections.forEach((section) => {
           const sectionLi = document.createElement("li");
-          const sectionButton = document.createElement("button");
-          sectionButton.className = "nav-link";
-          sectionButton.textContent = section.title || section.name;
-          sectionButton.dataset.id = makeSectionId(category.id, section.id);
-
-          if (sectionButton.dataset.id === activeItemId) {
-            sectionButton.setAttribute("aria-current", "true");
+          const sectionBtn = document.createElement("button");
+          sectionBtn.className = "nav-link";
+          sectionBtn.textContent = section.title || section.name;
+          sectionBtn.dataset.id = makeSectionId(tab.id, section.id);
+          if (sectionBtn.dataset.id === activeSectionId) {
+            sectionBtn.setAttribute("aria-current", "true");
           }
-
-          sectionButton.addEventListener("click", (e) => {
-            e.preventDefault();
-            activeItemId = e.currentTarget.dataset.id;
+          sectionBtn.addEventListener("click", () => {
+            activeSectionId = sectionBtn.dataset.id;
             renderUI();
           });
-
-          sectionLi.appendChild(sectionButton);
+          sectionLi.appendChild(sectionBtn);
           subList.appendChild(sectionLi);
         });
-        categoryLi.appendChild(subList);
+        tabLi.appendChild(subList);
       }
-      navUl.appendChild(categoryLi);
+
+      rootList.appendChild(tabLi);
     });
-    sidebarNavEl.appendChild(navUl);
+
+    tabListEl.appendChild(rootList);
+  }
+
+  function getSections(tab) {
+    if (tab.type === "checklist") {
+      return tab.payload.sections || [];
+    }
+    if (tab.type === "server") {
+      return tab.payload.stacks || [];
+    }
+    if (tab.type === "tools") {
+      return [{ id: "all", title: "Ferramentas" }];
+    }
+    return [];
+  }
+
+  function getFirstSectionId(tab) {
+    const sections = getSections(tab);
+    return sections[0]?.id;
   }
 
   function renderContent() {
-    if (!activeItemId) {
-      currentTabTitleEl.textContent = "Selecione uma categoria";
-      currentTabDescriptionEl.textContent = "Escolha um tópico na barra de navegação para começar.";
-      categoryContentEl.innerHTML = '<p class="empty-state">Bem-vindo ao AppSec Dashboard!</p>';
+    if (!activeSectionId) {
+      const firstTab = TABS[0];
+      if (firstTab) {
+        activeSectionId = makeSectionId(firstTab.id, getFirstSectionId(firstTab));
+      }
+    }
+
+    if (!activeSectionId) {
+      currentTabTitleEl.textContent = "Selecione um domínio";
+      currentTabDescriptionEl.textContent = "Escolha uma categoria para iniciar sua rodada de testes.";
+      categoryContentEl.innerHTML = '<p class="empty-state">Nenhum checklist carregado.</p>';
       return;
     }
 
-    const [categoryId, sectionId] = activeItemId.split("::");
-    const category = TABS.find((tab) => tab.id === categoryId);
-    if (!category) return;
+    const [categoryId, sectionId] = activeSectionId.split("::");
+    const tab = TABS.find((entry) => entry.id === categoryId);
+    if (!tab) {
+      categoryContentEl.innerHTML = '<p class="empty-state">Seção não encontrada.</p>';
+      return;
+    }
 
-    if (category.type === "checklist") {
-      const section = category.payload.sections.find((s) => s.id === sectionId);
-      if (section) renderChecklistContent(section, category.payload.id);
-    } else if (category.type === "server") {
-      const stack = category.payload.stacks.find((s) => s.id === sectionId);
-      if (stack) renderServerContent(stack, category.payload.id);
-    } else if (category.type === "tools") {
-      renderToolsContent(category.payload);
+    if (tab.type === "checklist") {
+      const section = tab.payload.sections.find((entry) => entry.id === sectionId);
+      if (section) {
+        currentTabTitleEl.textContent = section.title;
+        currentTabDescriptionEl.textContent = section.summary;
+        renderChecklistSection(tab, section);
+      }
+    } else if (tab.type === "server") {
+      const stack = tab.payload.stacks.find((entry) => entry.id === sectionId);
+      if (stack) {
+        currentTabTitleEl.textContent = stack.name;
+        currentTabDescriptionEl.textContent = stack.summary;
+        renderServerSection(tab, stack);
+      }
+    } else if (tab.type === "tools") {
+      currentTabTitleEl.textContent = tab.name;
+      currentTabDescriptionEl.textContent = tab.description;
+      renderToolsContent(tab.payload);
     }
   }
 
-    function renderChecklistContent(section, categoryId) {
-        const searchTerm = searchInput.value.toLowerCase();
-        const statusFilter = statusFilterEl.value;
-        currentTabTitleEl.textContent = section.title;
-        currentTabDescriptionEl.textContent = section.summary;
+  function matchesFilters(itemState, item) {
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    const statusValue = statusFilterEl.value;
+    const assigneeValue = assigneeFilterEl.value;
+    const stageValue = stageFilterEl.value;
 
-        const filteredItems = section.items.filter(item => {
-            const itemState = getItemState(makeItemId(categoryId, section.id, item.id));
-            const matchesSearch = item.title.toLowerCase().includes(searchTerm) || item.description.toLowerCase().includes(searchTerm);
-            const matchesStatus = statusFilter === "all" || itemState.status === statusFilter;
-            return matchesSearch && matchesStatus;
-        });
+    const matchesSearch =
+      !searchTerm ||
+      item.title.toLowerCase().includes(searchTerm) ||
+      item.description.toLowerCase().includes(searchTerm);
+    const matchesStatus = statusValue === "all" || itemState.status === statusValue;
+    const matchesAssignee =
+      assigneeValue === "all" ||
+      (itemState.assignee || "").toLowerCase() === assigneeValue.toLowerCase();
+    const matchesStage = stageValue === "all" || itemState.stage === stageValue;
 
-        if (filteredItems.length === 0) {
-            categoryContentEl.innerHTML = '<p class="empty-state">Nenhum item corresponde aos filtros.</p>';
-            return;
-        }
+    return matchesSearch && matchesStatus && matchesAssignee && matchesStage;
+  }
 
-        const itemsContainer = document.createElement('div');
-        itemsContainer.className = 'items-container';
-        filteredItems.forEach(item => {
-            itemsContainer.appendChild(buildItem(item, { categoryId, sectionId: section.id }));
-        });
-        categoryContentEl.innerHTML = '';
-        categoryContentEl.appendChild(itemsContainer);
+  function renderChecklistSection(tab, section) {
+    categoryContentEl.innerHTML = "";
+    const itemsWrapper = document.createElement("div");
+    itemsWrapper.className = "items-wrapper";
+
+    const filteredItems = section.items.filter((item) => {
+      const itemId = makeItemId(tab.id, section.id, item.id);
+      const itemState = getItemState(itemId);
+      return matchesFilters(itemState, item);
+    });
+
+    if (filteredItems.length === 0) {
+      categoryContentEl.innerHTML = '<p class="empty-state">Nenhum item corresponde aos filtros aplicados.</p>';
+      return;
     }
 
-    function renderServerContent(stack, categoryId) {
-        const searchTerm = searchInput.value.toLowerCase();
-        const statusFilter = statusFilterEl.value;
-        currentTabTitleEl.textContent = stack.name;
-        currentTabDescriptionEl.textContent = stack.summary;
+    filteredItems.forEach((item) => {
+      const element = buildChecklistItem(tab.id, section, item);
+      itemsWrapper.appendChild(element);
+    });
 
-        const filteredItems = stack.items.filter(item => {
-            const itemState = getItemState(makeItemId(categoryId, stack.id, item.id));
-            const matchesSearch = item.title.toLowerCase().includes(searchTerm) || item.description.toLowerCase().includes(searchTerm);
-            const matchesStatus = statusFilter === "all" || itemState.status === statusFilter;
-            return matchesSearch && matchesStatus;
-        });
+    categoryContentEl.appendChild(itemsWrapper);
+  }
 
-        if (filteredItems.length === 0) {
-            categoryContentEl.innerHTML = '<p class="empty-state">Nenhum item corresponde aos filtros.</p>';
-            return;
-        }
+  function renderServerSection(tab, stack) {
+    categoryContentEl.innerHTML = "";
+    const filteredItems = stack.items.filter((item) => {
+      const itemId = makeItemId(tab.id, stack.id, item.id);
+      const itemState = getItemState(itemId);
+      return matchesFilters(itemState, item);
+    });
 
-        const itemsContainer = document.createElement('div');
-        itemsContainer.className = 'items-container';
-        filteredItems.forEach(item => {
-            itemsContainer.appendChild(buildItem(item, { categoryId, sectionId: stack.id, stackName: stack.name }));
-        });
-        categoryContentEl.innerHTML = '';
-        categoryContentEl.appendChild(itemsContainer);
+    if (filteredItems.length === 0) {
+      categoryContentEl.innerHTML = '<p class="empty-state">Nenhum item corresponde aos filtros aplicados.</p>';
+      return;
     }
 
-    function renderToolsContent(tools) {
-        currentTabTitleEl.textContent = "Ferramentas de Pentest";
-        currentTabDescriptionEl.textContent = "Uma lista de ferramentas úteis para testes de segurança.";
-        const searchTerm = searchInput.value.toLowerCase();
+    const wrapper = document.createElement("div");
+    wrapper.className = "items-wrapper";
 
-        const filteredTools = tools.filter(tool =>
-            tool.name.toLowerCase().includes(searchTerm) ||
-            tool.description.toLowerCase().includes(searchTerm) ||
-            tool.category.toLowerCase().includes(searchTerm)
-        );
+    filteredItems.forEach((item) => {
+      const element = buildChecklistItem(tab.id, stack, item);
+      wrapper.appendChild(element);
+    });
 
-        if (filteredTools.length === 0) {
-            categoryContentEl.innerHTML = '<p class="empty-state">Nenhuma ferramenta encontrada.</p>';
-            return;
-        }
+    categoryContentEl.appendChild(wrapper);
+  }
 
-        const toolsList = document.createElement("ul");
-        toolsList.className = "tools-list";
-        filteredTools.forEach((tool) => {
-            const li = document.createElement("li");
-            li.className = "tool-item";
-            li.innerHTML = `
-                <div class="tool-header">
-                    <h3 class="tool-name">${tool.name}</h3>
-                    <span class="tool-category">${tool.category}</span>
-                </div>
-                <p class="tool-description">${tool.description}</p>
-                ${tool.command ? `<pre class="tool-command">${tool.command}</pre>` : ""}
-            `;
-            toolsList.appendChild(li);
-        });
+  function renderToolsContent(tools) {
+    categoryContentEl.innerHTML = "";
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    const list = document.createElement("ul");
+    list.className = "tools-list";
 
-        categoryContentEl.innerHTML = '';
-        categoryContentEl.appendChild(toolsList);
+    const filtered = tools.filter((tool) => {
+      const haystack = `${tool.name} ${tool.description} ${tool.category}`.toLowerCase();
+      return haystack.includes(searchTerm);
+    });
+
+    if (filtered.length === 0) {
+      categoryContentEl.innerHTML = '<p class="empty-state">Nenhuma ferramenta encontrada.</p>';
+      return;
     }
 
+    filtered.forEach((tool) => {
+      const li = document.createElement("li");
+      li.className = "tool-item";
+      li.innerHTML = `
+        <div class="tool-header">
+          <h3>${tool.name}</h3>
+          <span>${tool.category}</span>
+        </div>
+        <p>${tool.description}</p>
+        ${tool.command ? `<pre>${tool.command}</pre>` : ""}
+      `;
+      list.appendChild(li);
+    });
 
-  function buildItem(item, { categoryId, sectionId, stackName }) {
+    categoryContentEl.appendChild(list);
+  }
+
+  function buildChecklistItem(categoryId, section, item) {
     const element = itemTemplate.content.firstElementChild.cloneNode(true);
     const checkbox = element.querySelector(".item-checkbox");
     const titleEl = element.querySelector(".item-title");
     const descriptionEl = element.querySelector(".item-description");
     const statusSelect = element.querySelector(".item-status");
-    const itemTitleCheckbox = element.querySelector(".checkbox");
+    const severitySelect = element.querySelector(".item-severity");
+    const stageSelect = element.querySelector(".item-stage");
+    const assigneeInput = element.querySelector(".item-assignee");
+    const prioritySelect = element.querySelector(".item-priority");
     const notesEl = element.querySelector(".item-notes");
+    const evidenceNarrativeEl = element.querySelector(".item-evidence");
+    const evidenceCheckboxes = element.querySelectorAll(".item-evidence-checkbox");
+    const evidenceInput = element.querySelector(".item-evidence-input");
+    const uploadBtn = element.querySelector(".item-upload-btn");
+    const attachmentsList = element.querySelector(".item-attachments-list");
     const guideBtn = element.querySelector(".item-guide");
-    const evidenceInput = element.querySelector('.item-evidence-input');
-    const uploadBtn = element.querySelector('.item-upload-btn');
-    const attachmentsList = element.querySelector('.item-attachments-list');
+    const severityTag = element.querySelector(".tag.severity");
+    const stageTag = element.querySelector(".tag.workflow");
 
-    const itemId = makeItemId(categoryId, sectionId, item.id);
+    const itemId = makeItemId(categoryId, section.id, item.id);
     const itemState = getItemState(itemId);
 
     titleEl.textContent = item.title;
     descriptionEl.textContent = item.description;
     checkbox.checked = itemState.checked;
-    statusSelect.value = itemState.status || "";
-    notesEl.value = itemState.notes || "";
-
+    statusSelect.value = itemState.status;
+    severitySelect.value = itemState.severity;
+    stageSelect.value = itemState.stage;
+    assigneeInput.value = itemState.assignee;
+    prioritySelect.value = itemState.priority;
+    notesEl.value = itemState.notes;
+    evidenceNarrativeEl.value = itemState.evidenceNarrative;
+    updateSeverityTag();
+    updateStageTag();
     renderAttachments();
+    renderEvidenceChecklist();
+    element.dataset.status = itemState.status || "";
 
-    itemTitleCheckbox.addEventListener("click", (e) => {
-        if (e.target.type !== 'checkbox') {
-            element.classList.toggle("expanded");
-        }
+    checkbox.addEventListener("change", () => {
+      updateItemState(itemId, { checked: checkbox.checked });
+      element.dataset.status = statusSelect.value;
+      updateDashboardImmediate();
     });
 
-    checkbox.addEventListener("change", () => updateItemState(itemId, { checked: checkbox.checked }));
-    statusSelect.addEventListener("change", () => updateItemState(itemId, { status: statusSelect.value }));
-    notesEl.addEventListener("input", (event) => updateItemState(itemId, { notes: event.target.value }));
+    statusSelect.addEventListener("change", () => {
+      updateItemState(itemId, { status: statusSelect.value });
+      element.dataset.status = statusSelect.value;
+      updateDashboardImmediate();
+    });
 
-    uploadBtn.addEventListener('click', async () => {
+    severitySelect.addEventListener("change", () => {
+      updateItemState(itemId, { severity: severitySelect.value });
+      updateSeverityTag();
+      updateDashboardImmediate();
+    });
+
+    stageSelect.addEventListener("change", () => {
+      updateItemState(itemId, { stage: stageSelect.value });
+      updateStageTag();
+      updateDashboardImmediate();
+    });
+
+    assigneeInput.addEventListener("input", () => {
+      updateItemState(itemId, { assignee: assigneeInput.value });
+      updateAssigneeFilterOptions();
+      updateDashboardImmediate();
+    });
+
+    prioritySelect.addEventListener("change", () => {
+      updateItemState(itemId, { priority: prioritySelect.value });
+      updateDashboardImmediate();
+    });
+
+    notesEl.addEventListener("input", () => {
+      updateItemState(itemId, { notes: notesEl.value });
+    });
+
+    evidenceNarrativeEl.addEventListener("input", () => {
+      updateItemState(itemId, { evidenceNarrative: evidenceNarrativeEl.value });
+    });
+
+    evidenceCheckboxes.forEach((checkboxEl) => {
+      checkboxEl.checked = Boolean(itemState.evidenceChecklist?.[checkboxEl.dataset.evidence]);
+      checkboxEl.addEventListener("change", () => {
+        updateItemState(itemId, {
+          evidenceChecklist: {
+            [checkboxEl.dataset.evidence]: checkboxEl.checked
+          }
+        });
+      });
+    });
+
+    uploadBtn.addEventListener("click", async () => {
       const file = evidenceInput.files[0];
       if (!file) return;
       const formData = new FormData();
-      formData.append('evidence', file);
+      formData.append("evidence", file);
       try {
-        const response = await fetch('/api/upload', { method: 'POST', body: formData });
-        if (!response.ok) throw new Error('Falha no upload.');
+        const response = await fetch("/api/upload", { method: "POST", body: formData });
+        if (!response.ok) throw new Error("Upload falhou");
         const result = await response.json();
-        const updatedAttachments = [...itemState.attachments, result.filePath];
-        updateItemState(itemId, { attachments: updatedAttachments });
-        evidenceInput.value = '';
+        const attachments = [...itemState.attachments, result.filePath];
+        updateItemState(itemId, { attachments });
+        evidenceInput.value = "";
         renderAttachments();
-        showNotification("Arquivo enviado com sucesso!");
+        showNotification("Arquivo anexado!");
       } catch (error) {
-        showNotification("Falha no upload do arquivo.", "error");
+        console.error(error);
+        showNotification("Falha no upload da evidência.", "error");
       }
     });
 
-    function renderAttachments() {
-      attachmentsList.innerHTML = '';
-      if (itemState.attachments && itemState.attachments.length > 0) {
-        itemState.attachments.forEach(filePath => {
-          const li = document.createElement('li');
-          const a = document.createElement('a');
-          a.href = filePath;
-          a.textContent = filePath.split('/').pop();
-          a.target = '_blank';
-          li.appendChild(a);
-          attachmentsList.appendChild(li);
-        });
-      }
+    guideBtn.addEventListener("click", () => {
+      openGuideModal(item.title, item.description, item.guide || {});
+    });
+
+    function updateSeverityTag() {
+      const severity = severitySelect.value;
+      severityTag.dataset.severity = severity;
+      const labels = {
+        critical: "Gravidade crítica",
+        high: "Gravidade alta",
+        medium: "Gravidade média",
+        low: "Gravidade baixa",
+        info: "Informativa"
+      };
+      severityTag.textContent = labels[severity] || "Gravidade definida";
     }
 
-    guideBtn.addEventListener("click", () => openGuideModal(item.title, item.description, item.guide));
+    function updateStageTag() {
+      stageTag.dataset.stage = stageSelect.value;
+      stageTag.textContent = `Fase: ${WORKFLOW_STEPS.find((step) => step.id === stageSelect.value)?.label || stageSelect.value}`;
+    }
+
+    function renderAttachments() {
+      attachmentsList.innerHTML = "";
+      const currentState = getItemState(itemId);
+      currentState.attachments.forEach((filePath) => {
+        const li = document.createElement("li");
+        const link = document.createElement("a");
+        link.href = filePath;
+        link.textContent = filePath.split("/").pop();
+        link.target = "_blank";
+        li.appendChild(link);
+        attachmentsList.appendChild(li);
+      });
+    }
+
+    function renderEvidenceChecklist() {
+      const currentState = getItemState(itemId);
+      evidenceCheckboxes.forEach((checkboxEl) => {
+        checkboxEl.checked = Boolean(currentState.evidenceChecklist?.[checkboxEl.dataset.evidence]);
+      });
+    }
 
     return element;
   }
@@ -362,10 +670,10 @@ async function main() {
 
     const sections = [
       { key: "overview", label: "Resumo técnico" },
-      { key: "impact", label: "Impacto e riscos" },
+      { key: "impact", label: "Impacto & riscos" },
       { key: "detection", label: "Como identificar" },
       { key: "tools", label: "Ferramentas" },
-      { key: "commands", label: "Comandos" },
+      { key: "commands", label: "Ferramentas/Comandos" },
       { key: "steps", label: "Passo a passo" },
       { key: "mitigation", label: "Mitigações recomendadas" },
       { key: "evidence", label: "Evidências sugeridas" },
@@ -374,13 +682,10 @@ async function main() {
 
     sections.forEach((section) => {
       const value = guide?.[section.key];
-      if (!value || (Array.isArray(value) && value.length === 0)) {
-        return;
-      }
+      if (!value || (Array.isArray(value) && value.length === 0)) return;
 
       const wrapper = document.createElement("div");
       wrapper.className = "modal-section";
-
       const heading = document.createElement("h4");
       heading.textContent = section.label;
       wrapper.appendChild(heading);
@@ -395,15 +700,15 @@ async function main() {
         } else if (section.key === "references") {
           const list = document.createElement("ul");
           value.forEach((entry) => {
-            const li = document.createElement("li");
             const url = getReferenceUrl(entry);
+            const li = document.createElement("li");
             if (url) {
               const link = document.createElement("a");
               link.href = url;
               link.target = "_blank";
               link.rel = "noopener noreferrer";
               link.className = "reference-link";
-              link.innerHTML = `${escapeHtml(entry)} <span class="external-icon">↗</span>`;
+              link.innerHTML = `${entry} <span class="external-icon">↗</span>`;
               li.appendChild(link);
             } else {
               li.textContent = entry;
@@ -432,164 +737,319 @@ async function main() {
     modalEl.classList.remove("hidden");
   }
 
+  function openInternalDoc(docKey) {
+    const doc = INTERNAL_DOCS[docKey];
+    if (!doc) return;
+    modalTitleEl.textContent = doc.title;
+    modalDescriptionEl.textContent = doc.description;
+    modalBodyContentEl.innerHTML = "";
+    const bodySection = document.createElement("div");
+    bodySection.className = "modal-section";
+    const list = document.createElement("ul");
+    doc.body.forEach((line) => {
+      const li = document.createElement("li");
+      li.textContent = line;
+      list.appendChild(li);
+    });
+    bodySection.appendChild(list);
+    modalBodyContentEl.appendChild(bodySection);
+    modalEl.classList.remove("hidden");
+  }
+
   function closeModal() {
     modalEl.classList.add("hidden");
   }
 
-  function makeSectionId(categoryId, sectionId) {
-    return `${categoryId}::${sectionId}`;
+  let dashboardUpdateQueued = false;
+  function scheduleDashboardRefresh() {
+    if (dashboardUpdateQueued) return;
+    dashboardUpdateQueued = true;
+    requestAnimationFrame(() => {
+      dashboardUpdateQueued = false;
+      updateDashboardImmediate();
+    });
   }
 
-  function makeItemId(categoryId, sectionId, itemId) {
-    return `${categoryId}::${sectionId}::${itemId}`;
+  function updateDashboardImmediate() {
+    renderMetrics();
+    renderWorkflowCounters();
+    updateAssigneeFilterOptions();
+    renderInsights();
   }
 
-  function exportToPdf() {
-    const projectName = projectInput.value || "Projeto sem nome";
-    const testerName = testerInput.value || "Tester";
+  function renderMetrics() {
+    const entries = getAllChecklistEntries();
+    const totals = {
+      total: 0,
+      completed: 0,
+      failed: 0,
+      na: 0,
+      pending: 0,
+      evidence: 0
+    };
+    const progressByCategory = new Map();
+
+    entries.forEach((entry) => {
+      const itemId = makeItemId(entry.categoryId, entry.sectionId, entry.item.id);
+      const itemState = getItemState(itemId);
+      totals.total += 1;
+      if (itemState.checked) totals.completed += 1;
+      if (itemState.status === "failed") totals.failed += 1;
+      if (itemState.status === "na") totals.na += 1;
+      if (!itemState.status) totals.pending += 1;
+      totals.evidence += itemState.attachments.length;
+
+      const key = entry.categoryName;
+      if (!progressByCategory.has(key)) {
+        progressByCategory.set(key, { total: 0, completed: 0 });
+      }
+      const bucket = progressByCategory.get(key);
+      bucket.total += 1;
+      if (itemState.checked) bucket.completed += 1;
+    });
+
+    metricsEls.total.textContent = totals.total;
+    metricsEls.completed.textContent = totals.completed;
+    metricsEls.failed.textContent = totals.failed;
+    metricsEls.evidence.textContent = totals.evidence;
+
+    const percent = totals.total === 0 ? 0 : Math.round((totals.completed / totals.total) * 100);
+    const dashArray = `${percent} ${100 - percent}`;
+    radialBarEl.setAttribute("stroke-dasharray", dashArray);
+    radialPercentEl.textContent = `${percent}%`;
+    metricCompletedEl.textContent = totals.completed;
+    metricFailedEl.textContent = totals.failed;
+    metricNaEl.textContent = totals.na;
+    metricPendingEl.textContent = totals.pending;
+
+    categoryProgressEl.innerHTML = "";
+    Array.from(progressByCategory.entries()).forEach(([categoryName, stats]) => {
+      const row = document.createElement("div");
+      row.className = "progress-row";
+      row.innerHTML = `
+        <header>
+          <span>${categoryName}</span>
+          <span>${stats.completed}/${stats.total}</span>
+        </header>
+        <div class="progress-bar"><span style="width: ${
+          stats.total === 0 ? 0 : Math.round((stats.completed / stats.total) * 100)
+        }%"></span></div>
+      `;
+      categoryProgressEl.appendChild(row);
+    });
+  }
+
+  function renderWorkflowCounters() {
+    const counters = new Map(WORKFLOW_STEPS.map((step) => [step.id, 0]));
+    getAllChecklistEntries().forEach((entry) => {
+      const state = getItemState(makeItemId(entry.categoryId, entry.sectionId, entry.item.id));
+      counters.set(state.stage, (counters.get(state.stage) || 0) + 1);
+    });
+    counters.forEach((value, stepId) => {
+      const el = workflowCounts.get(stepId);
+      if (el) {
+        el.textContent = `${value} itens`;
+      }
+    });
+  }
+
+  function updateAssigneeFilterOptions() {
+    const existing = new Set(["all"]);
+    getAllChecklistEntries().forEach((entry) => {
+      const state = getItemState(makeItemId(entry.categoryId, entry.sectionId, entry.item.id));
+      if (state.assignee) {
+        existing.add(state.assignee.trim());
+      }
+    });
+
+    const currentOptions = new Set(Array.from(assigneeFilterEl.options).map((opt) => opt.value));
+    if (existing.size === currentOptions.size && [...existing].every((value) => currentOptions.has(value))) {
+      return;
+    }
+
+    const currentValue = assigneeFilterEl.value;
+    assigneeFilterEl.innerHTML = "";
+    existing.forEach((assignee) => {
+      const option = document.createElement("option");
+      option.value = assignee;
+      option.textContent = assignee === "all" ? "Todos" : assignee;
+      assigneeFilterEl.appendChild(option);
+    });
+    if (existing.has(currentValue)) {
+      assigneeFilterEl.value = currentValue;
+    }
+  }
+
+  function renderInsights() {
+    const entries = getAllChecklistEntries();
+    const severityWeight = { critical: 5, high: 4, medium: 3, low: 2, info: 1 };
+    const failedFindings = entries
+      .map((entry) => {
+        const state = getItemState(makeItemId(entry.categoryId, entry.sectionId, entry.item.id));
+        return { entry, state };
+      })
+      .filter(({ state }) => state.status === "failed");
+
+    if (failedFindings.length === 0) {
+      insightRisksEl.textContent = "Nenhuma falha registrada até o momento.";
+    } else {
+      const sorted = failedFindings
+        .sort((a, b) => (severityWeight[b.state.severity] || 0) - (severityWeight[a.state.severity] || 0))
+        .slice(0, 3)
+        .map(({ entry, state }) => `${entry.sectionTitle}: ${entry.item.title} (${state.severity.toUpperCase()})`);
+      insightRisksEl.innerHTML = sorted.join("<br/>");
+    }
+
+    const sectionsWithPending = new Map();
+    entries.forEach((entry) => {
+      const state = getItemState(makeItemId(entry.categoryId, entry.sectionId, entry.item.id));
+      if (!state.checked) {
+        const key = `${entry.categoryName} / ${entry.sectionTitle}`;
+        sectionsWithPending.set(key, (sectionsWithPending.get(key) || 0) + 1);
+      }
+    });
+    if (sectionsWithPending.size === 0) {
+      insightGapsEl.textContent = "Todas as seções estão com cobertura satisfatória.";
+    } else {
+      const topGaps = Array.from(sectionsWithPending.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([section, qty]) => `${section} – ${qty} itens pendentes`);
+      insightGapsEl.innerHTML = topGaps.join("<br/>");
+    }
+
+    const chainCandidates = failedFindings
+      .filter(({ state }) => ["critical", "high"].includes(state.severity))
+      .map(({ entry, state }) => `Combine ${entry.item.title} (${state.severity}) com vetores adjacentes em ${entry.sectionTitle}`);
+    if (chainCandidates.length === 0) {
+      insightChainsEl.textContent = "Sem chains críticas. Continue correlacionando achados entre camadas.";
+    } else {
+      insightChainsEl.innerHTML = chainCandidates.slice(0, 2).join("<br/>");
+    }
+  }
+
+  function buildReportContext(filteredEntries = null) {
+    const entries = filteredEntries || getAllChecklistEntries();
+    const grouped = new Map();
+    entries.forEach((entry) => {
+      const key = `${entry.categoryName}||${entry.sectionTitle}`;
+      if (!grouped.has(key)) {
+        grouped.set(key, []);
+      }
+      grouped.get(key).push(entry);
+    });
+
+    const sections = Array.from(grouped.entries()).map(([key, items]) => {
+      const [categoryName, sectionTitle] = key.split("||");
+      const records = items.map((entry) => {
+        const itemId = makeItemId(entry.categoryId, entry.sectionId, entry.item.id);
+        const state = getItemState(itemId);
+        return {
+          title: entry.item.title,
+          description: entry.item.description,
+          status: state.status,
+          checked: state.checked,
+          notes: state.notes,
+          severity: state.severity,
+          stage: state.stage,
+          priority: state.priority,
+          assignee: state.assignee,
+          evidenceNarrative: state.evidenceNarrative,
+          attachments: state.attachments,
+          evidenceChecklist: state.evidenceChecklist
+        };
+      });
+      return { categoryName, sectionTitle, records };
+    });
+
+    const metadata = {
+      project: projectInput.value || "Projeto sem nome",
+      tester: testerInput.value || "Tester",
+      auditWindow: auditWindowInput.value || "",
+      generatedAt: new Date()
+    };
+
+    return { metadata, sections };
+  }
+
+  function exportFullReport() {
+    const context = buildReportContext();
+    const html = generateFullReport(context, WORKFLOW_STEPS);
+    openReportWindow(html);
+  }
+
+  function exportPartialReport() {
+    const [categoryId, sectionId] = (activeSectionId || "::").split("::");
+    const tab = TABS.find((entry) => entry.id === categoryId);
+    if (!tab) {
+      showNotification("Selecione uma seção para exportar.", "error");
+      return;
+    }
+
+    const filteredEntries = getAllChecklistEntries().filter((entry) => {
+      if (entry.categoryId !== categoryId || entry.sectionId !== sectionId) return false;
+      const itemId = makeItemId(entry.categoryId, entry.sectionId, entry.item.id);
+      const state = getItemState(itemId);
+      return matchesFilters(state, entry.item);
+    });
+
+    if (filteredEntries.length === 0) {
+      showNotification("Nenhum item corresponde aos filtros atuais.", "error");
+      return;
+    }
+
+    const context = buildReportContext(filteredEntries);
+    const html = generatePartialReport(context, WORKFLOW_STEPS, {
+      category: tab.name,
+      section: filteredEntries[0]?.sectionTitle || "Seção"
+    });
+    openReportWindow(html);
+  }
+
+  function openReportWindow(html) {
     const reportWindow = window.open("", "_blank");
-
     if (!reportWindow) {
       alert("Permita pop-ups para gerar o relatório.");
       return;
     }
-
-    const sectionsHtml = buildReportSections();
-
-    reportWindow.document.write(`
-      <html>
-        <head>
-          <meta charset="utf-8" />
-          <title>Relatório AppSec – ${escapeHtml(projectName)}</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 2rem; color: #111; }
-            h1 { font-size: 1.8rem; margin-bottom: 0.25rem; }
-            h2 { margin-top: 2rem; border-bottom: 2px solid #111; padding-bottom: 0.25rem; }
-            h3 { margin-top: 1.5rem; color: #333; }
-            table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-            th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
-            th { background: #f2f2f2; }
-            .badge { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.75rem; }
-            .badge-passed { background: #dcfce7; color: #166534; }
-            .badge-failed { background: #fee2e2; color: #991b1b; }
-            .badge-na { background: #e0f2fe; color: #0369a1; }
-            .badge-empty { background: #e5e7eb; color: #374151; }
-            .notes { white-space: pre-wrap; }
-            footer { margin-top: 3rem; font-size: 0.85rem; color: #555; }
-          </style>
-        </head>
-        <body>
-          <h1>Relatório AppSec</h1>
-          <p><strong>Projeto:</strong> ${escapeHtml(projectName)}<br/>
-          <strong>Tester:</strong> ${escapeHtml(testerName)}<br/>
-          <strong>Data:</strong> ${new Date().toLocaleString()}</p>
-          ${sectionsHtml}
-          <footer>Gerado automaticamente pelo OWASP AppSec Checklist Dashboard.</footer>
-        </body>
-      </html>
-    `);
+    reportWindow.document.write(html);
     reportWindow.document.close();
     reportWindow.focus();
-    setTimeout(() => reportWindow.print(), 500);
+    setTimeout(() => reportWindow.print(), 800);
   }
 
-  function buildReportSections() {
-    const sections = [];
-    TABS.forEach((category) => {
-        if (category.type === 'tools') return; // Skip tools category in PDF report for now
-
-        sections.push(`<h2>${escapeHtml(category.name)}</h2>`);
-        let categorySections = [];
-        if (category.type === 'checklist') {
-            categorySections = category.payload.sections || [];
-        } else if (category.type === 'server') {
-            categorySections = category.payload.stacks || [];
-        }
-
-        categorySections.forEach((section) => {
-            sections.push(`<h3>${escapeHtml(section.title || section.name)}</h3>`);
-            sections.push(buildItemsTable(category.id, section.id, section.items));
-        });
-    });
-
-    return sections.join("\n");
+  function renderUI() {
+    renderNavigation();
+    renderContent();
+    updateDashboardImmediate();
   }
 
-  function buildItemsTable(categoryId, sectionId, items) {
-    const rows = items
-      .map((item) => {
-        const itemId = makeItemId(categoryId, sectionId, item.id);
-        const itemState = getItemState(itemId);
-        const statusBadge = renderStatusBadge(itemState.status);
-        const attachmentsHtml = (itemState.attachments || [])
-          .map(path => `<li><a href="${path}" target="_blank">${escapeHtml(path.split('/').pop())}</a></li>`)
-          .join('');
-
-        return `
-          <tr>
-            <td>${escapeHtml(item.title)}</td>
-            <td>${statusBadge}</td>
-            <td>${itemState.checked ? "✔️" : ""}</td>
-            <td class="notes">
-              ${escapeHtml(itemState.notes || "")}
-              ${attachmentsHtml ? `<h4>Anexos:</h4><ul>${attachmentsHtml}</ul>` : ''}
-            </td>
-          </tr>
-        `;
-      })
-      .join("\n");
-
-    return `
-      <table>
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th>Status</th>
-            <th>Concluído</th>
-            <th>Notas / Evidências</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows}
-        </tbody>
-      </table>
-    `;
-  }
-
-  function escapeHtml(value) {
-    return String(value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-  function restoreMeta() {
-    if (state.meta) {
-      projectInput.value = state.meta.project || "";
-      testerInput.value = state.meta.tester || "";
-    }
-  }
-
-  function persistMeta() {
-    state.meta = { project: projectInput.value, tester: testerInput.value };
-    saveState();
-  }
-
-    function renderUI() {
-        renderNavigation();
-        renderContent();
-    }
-
-  projectInput.addEventListener("input", persistMeta);
-  testerInput.addEventListener("input", persistMeta);
-  searchInput.addEventListener("input", renderContent);
-  statusFilterEl.addEventListener("change", renderContent);
-  exportPdfBtn.addEventListener("click", exportToPdf);
-  resetBtn.addEventListener("click", () => {
-    if (confirm("Deseja realmente apagar todos os dados salvos?")) resetState();
+  projectInput.addEventListener("input", updateMeta);
+  testerInput.addEventListener("input", updateMeta);
+  auditWindowInput.addEventListener("input", updateMeta);
+  searchInput.addEventListener("input", () => {
+    renderContent();
   });
+  statusFilterEl.addEventListener("change", () => {
+    renderContent();
+  });
+  assigneeFilterEl.addEventListener("change", () => {
+    renderContent();
+  });
+  stageFilterEl.addEventListener("change", () => {
+    renderContent();
+  });
+  clearFiltersBtn.addEventListener("click", () => {
+    searchInput.value = "";
+    statusFilterEl.value = "all";
+    assigneeFilterEl.value = "all";
+    stageFilterEl.value = "all";
+    renderContent();
+  });
+
+  exportPdfBtn.addEventListener("click", exportFullReport);
+  exportPartialBtn.addEventListener("click", exportPartialReport);
+  resetBtn.addEventListener("click", resetState);
   modalCloseBtn.addEventListener("click", closeModal);
   modalEl.addEventListener("click", (event) => {
     if (event.target === modalEl) closeModal();
@@ -598,20 +1058,23 @@ async function main() {
     if (event.key === "Escape" && !modalEl.classList.contains("hidden")) closeModal();
   });
 
-  // Initialize the first section as active by default
-  const firstCategory = TABS[0];
-  if (firstCategory) {
-    let firstSectionId;
-    if (firstCategory.type === "checklist") firstSectionId = firstCategory.payload?.sections?.[0]?.id;
-    else if (firstCategory.type === "server") firstSectionId = firstCategory.payload?.stacks?.[0]?.id;
-    else if (firstCategory.type === "tools") firstSectionId = "all";
-    if (firstSectionId) {
-      activeItemId = makeSectionId(firstCategory.id, firstSectionId);
-    }
+  helpLinks.forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      const doc = event.currentTarget.getAttribute("data-doc");
+      openInternalDoc(doc);
+    });
+  });
+
+  projectInput.value = state.meta?.project || "";
+  testerInput.value = state.meta?.tester || "";
+  auditWindowInput.value = state.meta?.auditWindow || "";
+
+  const firstTab = TABS[0];
+  if (firstTab) {
+    activeSectionId = makeSectionId(firstTab.id, getFirstSectionId(firstTab));
   }
 
-  restoreMeta();
   renderUI();
+  updateAssigneeFilterOptions();
 }
-
-document.addEventListener("DOMContentLoaded", main);

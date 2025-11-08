@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Mockup • Guia Técnico Modal</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(120deg, #0e1f2f, #132a3f);
+      font-family: 'Inter', sans-serif;
+      color: #f8f9fa;
+    }
+    .backdrop {
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(8px);
+    }
+    .modal {
+      width: min(960px, 90vw);
+      max-height: 85vh;
+      overflow-y: auto;
+      background: rgba(6, 20, 33, 0.95);
+      border-radius: 26px;
+      border: 1px solid rgba(0, 198, 255, 0.25);
+      padding: 2.75rem;
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
+      display: grid;
+      gap: 1.75rem;
+    }
+    h2 {
+      margin: 0;
+      font-size: 2rem;
+    }
+    p.description {
+      margin: 0;
+      color: rgba(248, 249, 250, 0.75);
+    }
+    .sections {
+      display: grid;
+      gap: 1.25rem;
+    }
+    .section {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(0, 198, 255, 0.12);
+      border-radius: 18px;
+      padding: 1.5rem;
+      display: grid;
+      gap: 0.75rem;
+    }
+    .section h3 {
+      margin: 0;
+      font-size: 1.15rem;
+      color: #00c6ff;
+    }
+    .section ul {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: rgba(248, 249, 250, 0.8);
+      line-height: 1.6;
+    }
+    pre {
+      background: rgba(0, 0, 0, 0.45);
+      padding: 1rem;
+      border-radius: 12px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      color: #3ddc97;
+      overflow-x: auto;
+    }
+    footer {
+      display: flex;
+      justify-content: flex-end;
+    }
+    button {
+      background: linear-gradient(135deg, #00c6ff, #3ddc97);
+      border: none;
+      border-radius: 14px;
+      color: #041625;
+      font-weight: 700;
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="backdrop">
+    <div class="modal">
+      <h2>A01 - Broken Access Control</h2>
+      <p class="description">Referência prática para validar autorização server-side, abuso de lógica, multi-tenant e bypass de políticas.</p>
+      <div class="sections">
+        <section class="section">
+          <h3>Resumo técnico</h3>
+          <p>Identifique endpoints sensíveis, force parâmetros previsíveis e combine análises de logs e SAST para validar authorization.</p>
+        </section>
+        <section class="section">
+          <h3>Impacto &amp; riscos</h3>
+          <ul>
+            <li>Exposição de dados de clientes cruzados (multi-tenant).</li>
+            <li>Escalada de privilégios para role administrativa.</li>
+            <li>Quebra de compliance (LGPD, PCI-DSS).</li>
+          </ul>
+        </section>
+        <section class="section">
+          <h3>Como identificar</h3>
+          <ul>
+            <li>Burp Intruder com listas IDOR.</li>
+            <li>Validação de políticas no gateway/API.</li>
+            <li>Logs de autorização negada vs permitida.</li>
+          </ul>
+        </section>
+        <section class="section">
+          <h3>Ferramentas / Comandos</h3>
+          <pre>sqlmap -u https://app/api/v1/users/123 --batch --level=3
+curl -H "Authorization: Bearer &lt;token&gt;" https://app/api/v1/admin/users
+python recon.py --providers crtsh --domain empresa.com</pre>
+        </section>
+        <section class="section">
+          <h3>Mitigações recomendadas</h3>
+          <ul>
+            <li>Policy enforcement centralizado em middleware.</li>
+            <li>Negative testing automatizado (CI) para RBAC.</li>
+            <li>Monitoramento de tentativas de escalonamento.</li>
+          </ul>
+        </section>
+      </div>
+      <footer>
+        <button>Fechar guia</button>
+      </footer>
+    </div>
+  </div>
+</body>
+</html>

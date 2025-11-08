@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Mockup • Checklist Item</title>
+  <style>
+    body {
+      margin: 0;
+      background: #081521;
+      font-family: 'Inter', sans-serif;
+      color: #f8f9fa;
+      padding: 3rem;
+      display: grid;
+      place-items: center;
+    }
+    article {
+      width: min(1080px, 100%);
+      background: rgba(8, 21, 33, 0.95);
+      border-radius: 28px;
+      border: 1px solid rgba(0, 198, 255, 0.18);
+      padding: 2.5rem;
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
+      display: grid;
+      gap: 1.75rem;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .checkbox {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .tags {
+      display: inline-flex;
+      gap: 0.65rem;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: 1px solid rgba(0, 198, 255, 0.32);
+      background: rgba(0, 198, 255, 0.12);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    p.description {
+      margin: 0;
+      color: rgba(248, 249, 250, 0.75);
+      line-height: 1.6;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(220px, 1fr));
+      gap: 2rem;
+    }
+    .panel {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 18px;
+      border: 1px solid rgba(0, 198, 255, 0.12);
+      padding: 1.5rem;
+      display: grid;
+      gap: 1rem;
+    }
+    label span {
+      display: block;
+      color: rgba(209, 213, 219, 0.7);
+      font-size: 0.85rem;
+      margin-bottom: 0.35rem;
+    }
+    select, textarea, input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(0, 198, 255, 0.18);
+      border-radius: 14px;
+      padding: 0.75rem;
+      color: #f8f9fa;
+      font-family: inherit;
+    }
+    textarea {
+      min-height: 120px;
+    }
+    button {
+      background: linear-gradient(135deg, #00c6ff, #3ddc97);
+      border: none;
+      border-radius: 14px;
+      color: #041625;
+      font-weight: 700;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+    }
+    ul.checklist {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 0.55rem;
+      font-size: 0.9rem;
+    }
+    .attachments {
+      display: grid;
+      gap: 0.5rem;
+    }
+    .attachments a {
+      color: #00c6ff;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <article>
+    <header>
+      <label class="checkbox">
+        <input type="checkbox" />
+        <span>Validar controles de acesso horizontais e verticais</span>
+      </label>
+      <div class="tags">
+        <span class="tag">GRAVIDADE ALTA</span>
+        <span class="tag">FASE: CONTROLES</span>
+      </div>
+    </header>
+    <p class="description">
+      Combine testes manuais com automação para explorar BOLA, BFLA e lógica de negócio. Confirme autenticação contextual e políticas de privilégio mínimo.
+    </p>
+    <section class="grid">
+      <div class="panel">
+        <label>
+          <span>Status</span>
+          <select>
+            <option>Passou</option>
+            <option selected>Falhou</option>
+            <option>N/A</option>
+          </select>
+        </label>
+        <label>
+          <span>Gravidade</span>
+          <select>
+            <option>Crítica</option>
+            <option selected>Alta</option>
+            <option>Média</option>
+            <option>Baixa</option>
+          </select>
+        </label>
+        <label>
+          <span>Fase do workflow</span>
+          <select>
+            <option>Recon</option>
+            <option selected>Controles</option>
+            <option>Reportar</option>
+            <option>Mitigar</option>
+          </select>
+        </label>
+        <label>
+          <span>Tester responsável</span>
+          <input value="Carlos Pentester" />
+        </label>
+        <label>
+          <span>Prioridade</span>
+          <select>
+            <option>P0 - Imediato</option>
+            <option selected>P1 - Alta</option>
+            <option>P2 - Normal</option>
+          </select>
+        </label>
+      </div>
+      <div class="panel">
+        <label>
+          <span>Notas técnicas</span>
+          <textarea>Endpoint /api/admin/users exposto para usuários padrões via alteração de ID.</textarea>
+        </label>
+        <label>
+          <span>Narrativa de evidência</span>
+          <textarea>1. Autenticar como user comum.
+2. Alterar ID para outro tenant.
+3. Receber dados de outro cliente.</textarea>
+        </label>
+      </div>
+      <div class="panel">
+        <h3>Checklist de evidências</h3>
+        <ul class="checklist">
+          <li>☑ Screenshot / Vídeo PoC</li>
+          <li>☑ Logs relevantes</li>
+          <li>☑ Payload &amp; resposta</li>
+          <li>☐ Impacto e risco</li>
+        </ul>
+        <div class="attachments">
+          <span>Anexos</span>
+          <a href="#">idor-exploit.png</a>
+          <a href="#">response.json</a>
+        </div>
+        <button>📘 Abrir guia técnico</button>
+      </div>
+    </section>
+  </article>
+</body>
+</html>

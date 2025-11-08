@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Template • AppSec Checklist &amp; Guide</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 2cm;
+    }
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      color: #0e1f2f;
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+    }
+    header.report-cover {
+      padding: 3rem 2.5rem;
+      background: linear-gradient(135deg, #0e1f2f, #123a55);
+      color: #f8f9fa;
+      border-bottom: 6px solid #00c6ff;
+    }
+    header.report-cover h1 {
+      margin: 0 0 1rem;
+      font-size: 2.35rem;
+    }
+    header.report-cover p {
+      margin: 0.25rem 0;
+      font-size: 1rem;
+    }
+    .report-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .report-meta div {
+      padding: 0.75rem 1rem;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      border: 1px solid rgba(0, 198, 255, 0.45);
+    }
+    main {
+      padding: 2.5rem;
+      display: grid;
+      gap: 2.5rem;
+    }
+    section {
+      display: grid;
+      gap: 1.5rem;
+    }
+    h2.section-title {
+      margin: 0;
+      font-size: 1.5rem;
+      border-bottom: 2px solid #00c6ff;
+      padding-bottom: 0.35rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+    thead th {
+      background: #0e1f2f;
+      color: #f8f9fa;
+      padding: 0.75rem;
+      text-align: left;
+    }
+    tbody td {
+      border-bottom: 1px solid rgba(14, 31, 47, 0.12);
+      padding: 0.65rem 0.75rem;
+      vertical-align: top;
+    }
+    tbody tr:nth-child(even) {
+      background: rgba(0, 198, 255, 0.08);
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(0, 198, 255, 0.12);
+      color: #0e1f2f;
+      font-size: 0.8rem;
+    }
+    .badge.failed { background: rgba(255, 107, 107, 0.18); }
+    .badge.passed { background: rgba(61, 220, 151, 0.22); }
+    .badge.na { background: rgba(255, 209, 102, 0.22); }
+    footer.report-footer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #4a6274;
+      padding: 1rem 0 2rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="report-cover">
+    <h1>Relatório Técnico – AppSec Checklist &amp; Guide</h1>
+    <p><strong>Projeto:</strong> &lt;NOME DO PROJETO&gt;</p>
+    <p><strong>Tester líder:</strong> &lt;RESPONSÁVEL&gt;</p>
+    <p><strong>Janela de auditoria:</strong> &lt;PERÍODO&gt;</p>
+    <p><strong>Gerado em:</strong> &lt;DATA/HORA&gt;</p>
+    <div class="report-meta">
+      <div><strong>Escopo</strong><br/>OWASP Web, OWASP API, PTES, Hardening, SAST/DAST</div>
+      <div><strong>Total de itens</strong><br/>&lt;TOTAL&gt;</div>
+      <div><strong>Itens concluídos</strong><br/>&lt;CONCLUIDOS&gt;</div>
+      <div><strong>Falhas registradas</strong><br/>&lt;FALHAS&gt;</div>
+    </div>
+  </header>
+  <main>
+    <section>
+      <h2 class="section-title">Resumo executivo</h2>
+      <p>Use este bloco para destacar riscos principais, cadeias de exploração, prioridades e próximas ações.</p>
+    </section>
+    <section>
+      <h2 class="section-title">Tabela por seção</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Status</th>
+            <th>Concluído</th>
+            <th>Notas / Evidências / Prioridade</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Exemplo – Bypass de autorização</strong><br/>Valide IDOR/BOLA entre tenants.</td>
+            <td>❌ <span class="badge failed">Falhou</span></td>
+            <td>✔️</td>
+            <td>Prioridade P0 · Evidências: screenshot, payload · Mitigação pendente.</td>
+          </tr>
+          <tr>
+            <td><strong>Exemplo – TLS 1.2+</strong><br/>Verificar protocolos e cifras.</td>
+            <td>✅ <span class="badge passed">Passou</span></td>
+            <td>✔️</td>
+            <td>Prioridade P2 · Evidência: relatório testssl.sh · Mitigação aplicada.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+  <footer class="report-footer">© 2025 AppSec Checklist &amp; Guide — https://appsec-checklist.guide</footer>
+</body>
+</html>
