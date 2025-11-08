@@ -73,6 +73,76 @@ export const secureCodeChecklist = {
             mitigation: ["Implemente um framework de logging centralizado.", "Defina quais eventos de segurança devem ser registrados e em qual nível de detalhe."],
             references: ["OWASP Cheat Sheet: Logging"]
           }
+        },
+        {
+          id: "cr-error-handling",
+          title: "Tratamento de Erros e Exceções",
+          description: "Valide se erros são tratados adequadamente sem expor informações sensíveis ou deixar a aplicação em estado inconsistente.",
+          guide: {
+            overview: "Erros podem revelar detalhes internos (stack traces, versões, paths) ou deixar o sistema vulnerável (transações incompletas).",
+            impact: "Tratamento inadequado de erros pode resultar em information disclosure, DOS ou estado corrompido de dados.",
+            detection: [
+              "Procure por try/catch vazio ou logging de stack traces em frontend.",
+              "Verifique se erros diferenciados revelam validação (ex: 'usuário não existe' vs 'senha incorreta').",
+              "Teste se erros deixam recursos em lock (arquivos, conexões DB)."
+            ],
+            tools: ["Revisão Manual", "SAST (Semgrep, Bandit)"],
+            commands: ["semgrep --config 'p/error-handling'"],
+            mitigation: [
+              "Implementar handlers específicos para exceções esperadas.",
+              "Registrar detalhes internos em logs, não em respostas.",
+              "Fornecer mensagens genéricas ('operação falhou') ao usuário.",
+              "Implementar finally blocks para limpeza de recursos."
+            ],
+            references: ["OWASP Error Handling Cheat Sheet"]
+          }
+        },
+        {
+          id: "cr-input-validation",
+          title: "Validação de Entrada (Input Validation)",
+          description: "Certifique-se que todas as entradas de usuário são validadas contra uma whitelist de padrões esperados.",
+          guide: {
+            overview: "Validação inadequada permite injeção (SQL, LDAP, OS command), XSS, path traversal e outros ataques.",
+            impact: "Falhas de validação são a raiz de 90% das vulnerabilidades críticas.",
+            detection: [
+              "Identifique todos os pontos de entrada (formulários, APIs, uploads).",
+              "Verifique se validação ocorre no servidor (não apenas frontend).",
+              "Teste limits (tamanho, comprimento, caracteres especiais)."
+            ],
+            tools: ["SAST (Semgrep, ESLint security)", "Validação libraries (Zod, Yup, Pydantic)"],
+            commands: ["semgrep --config 'p/owasp-top-ten' -f input"],
+            mitigation: [
+              "Implementar whitelist validation (aceitar apenas padrões conhecidos).",
+              "Usar bibliotecas de validação de schema (Zod, Pydantic, Jakarta Validation).",
+              "Validar no servidor SEMPRE, não confiando no cliente.",
+              "Rejeitar requests fora do padrão esperado (retornar 400)."
+            ],
+            references: ["OWASP Input Validation Cheat Sheet"]
+          }
+        },
+        {
+          id: "cr-output-encoding",
+          title: "Codificação de Saída (Output Encoding)",
+          description: "Garanta que dados são encoded corretamente para o contexto (HTML, JavaScript, URL) prevenindo XSS.",
+          guide: {
+            overview: "XSS ocorre quando dados não são encodificados antes de serem renderizados. O encoding é diferente por contexto.",
+            impact: "XSS permite roubo de sessões, defacement, redirecionamento e pivot para outros usuários.",
+            detection: [
+              "Procure por template interpolation sem escaping (ex: {{user_input}} em templates).",
+              "Verifique innerHTML, eval, innerText não escapados.",
+              "Teste payload XSS: <script>alert(1)</script>"
+            ],
+            tools: ["SAST (Semgrep, ESLint, Brakeman)", "DAST (OWASP ZAP, Burp)"],
+            commands: ["semgrep --config 'p/xss'"],
+            mitigation: [
+              "Usar template engines que escapam por padrão (Jinja2, EJS, ERB).",
+              "Escapar para HTML: & < > \" '.",
+              "Escapar para JavaScript: \\ \" '.",
+              "Escapar para URL: %XX encoding.",
+              "Implementar Content Security Policy (CSP)."
+            ],
+            references: ["OWASP XSS Prevention Cheat Sheet"]
+          }
         }
       ]
     },
@@ -114,6 +184,106 @@ export const secureCodeChecklist = {
             impact: "Aumenta a conscientização sobre segurança e a autonomia das equipes para resolver problemas de segurança.",
             mitigation: ["Forneça treinamento contínuo para os Security Champions.", "Crie um canal de comunicação para que eles possam colaborar e tirar dúvidas."],
             references: ["OWASP Security Champions Playbook"]
+          }
+        },
+        {
+          id: "sdp-secure-architecture",
+          title: "Design de Arquitetura Segura",
+          description: "Integre princípios de segurança no design arquitetônico desde a conceção, não como afterthought.",
+          guide: {
+            overview: "Arquitetura segura começa com decisões de design corretas: segmentação, least privilege, defense-in-depth.",
+            impact: "Arquitetura fraca requer patches constantes. Design seguro reduz risco global.",
+            detection: [
+              "Revise diagramas de arquitetura com threat modeling.",
+              "Valide separação de responsabilidades (frontend/backend/DB).",
+              "Confirme implementação de least privilege em componentes.",
+              "Verifique se criptografia end-to-end está em design."
+            ],
+            tools: ["OWASP Threat Dragon", "Architecture review checklist", "NIST guidelines"],
+            commands: ["n/a"],
+            mitigation: [
+              "Implementar defense-in-depth (múltiplas camadas).",
+              "Separar dados sensíveis em componentes isolados.",
+              "Usar micro-segmentação de rede.",
+              "Implementar zero-trust architecture.",
+              "Revisar arquitetura antes de implementação grande."
+            ],
+            references: ["NIST Application Security", "OWASP Secure Architecture"]
+          }
+        },
+        {
+          id: "sdp-training-modules",
+          title: "Módulos de Treinamento por Vulnerabilidade",
+          description: "Estrutura de treinamento para equipes aprenderem sobre vulnerabilidades comuns com exemplos práticos.",
+          guide: {
+            overview: "Treinamento efetivo requer exemplos code, demos e hands-on labs, não apenas slides.",
+            impact: "Equipes bem treinadas reduzem vulnerabilidades em 60-70%.",
+            detection: [
+              "Valide se equipe conhece OWASP Top 10.",
+              "Teste conhecimento com labs práticos.",
+              "Revise se cada desenvolvedor passou por treinamento obrigatório."
+            ],
+            tools: [
+              "OWASP WebGoat (hands-on training)",
+              "OWASP Juice Shop (vulnerable app for learning)",
+              "HackTheBox, TryHackMe (CTF platforms)",
+              "Internal labs baseados em vulnerabilidades encontradas"
+            ],
+            commands: ["n/a"],
+            mitigation: [
+              "Criar labs por vulnerabilidade (XSS lab, SQLi lab, etc).",
+              "Usar vulnerable apps (WebGoat, Juice Shop) para treinar.",
+              "Fazer code katas de segurança semanalmente.",
+              "Revisar vulnerabilidades encontradas como teaching moments.",
+              "Documentar padrões seguros por linguagem/framework."
+            ],
+            references: [
+              "OWASP WebGoat",
+              "OWASP Juice Shop",
+              "HackTheBox Academy",
+              "PortSwigger Web Security Academy"
+            ]
+          }
+        },
+        {
+          id: "sdp-presentation-prep",
+          title: "Preparação de Apresentações de Segurança",
+          description: "Guia para preparar apresentações efetivas sobre achados de segurança para diferentes audiências.",
+          guide: {
+            overview: "Apresentações efetivas adaptam mensagem para audience (executivos vs developers vs security team).",
+            impact: "Comunicação clara de risco permite aprovação de investimentos em segurança.",
+            detection: [
+              "Valide se apresentação tem metáforas de negócio (não apenas técnica).",
+              "Confirme que métricas de risco estão claras.",
+              "Verifique se recomendações têm custo/benefício estimado."
+            ],
+            tools: ["PowerPoint/Keynote", "Tableau/Power BI para dashboards", "Dradis para relatórios"],
+            commands: ["n/a"],
+            steps: [
+              "Audience: Executivos → Focar em impacto financeiro, conformidade legal, reputação",
+              "Audience: Developers → Focar em código-exemplo, ferramentas, hands-on fix",
+              "Audience: Security team → Focar em detalhes técnicos, prioritização de remediation",
+              "Estrutura: Executive Summary (2 slides) → Findings (5-10 slides) → Roadmap (2 slides)",
+              "Incluir: Dashboard de trending, comparação com benchmarks, roadmap de 30/90/180 dias"
+            ],
+            mitigation: [
+              "Treinar apresentadores sobre comunicação de risco.",
+              "Usar storytelling (contexto → problema → solução).",
+              "Incluir demos/videos de vulnerabilidades reais.",
+              "Fazer dry-runs antes da apresentação final.",
+              "Preparar Q&A com perguntas antecipadas."
+            ],
+            evidence: [
+              "Deck de apresentação com 15-20 slides bem estruturado.",
+              "Dashboard de métricas de segurança trending.",
+              "Roadmap de remediação com prazos e owners.",
+              "Registro de apresentação (video/transcrição) para referência."
+            ],
+            references: [
+              "NIST Risk Communication",
+              "SANS Communicating Security",
+              "Storytelling in Security"
+            ]
           }
         }
       ]
@@ -160,6 +330,134 @@ export const secureCodeChecklist = {
             commands: ["trivy fs --format cyclonedx . | cyclonedx-cli-linux-x64 validate"],
             mitigation: ["Defina uma política de licenças de software aprovadas.", "Integre a verificação de licenças no pipeline de CI/CD para bloquear dependências não conformes."],
             references: ["OSI (Open Source Initiative)"]
+          }
+        }
+      ]
+    },
+    {
+      id: "vuln-management",
+      title: "Gerenciamento de Vulnerabilidades",
+      summary: "Processos e ciclos de remediação de vulnerabilidades descobertas.",
+      items: [
+        {
+          id: "vm-triage-prioritization",
+          title: "Triagem e Priorização de Vulnerabilidades",
+          description: "Estabeleça critérios claros para priorizar remediação baseado em risco, exploitabilidade e impacto.",
+          guide: {
+            overview: "Nem todas as vulns devem ser corrigidas no mesmo prazo. Priorização permite alocar recursos eficientemente.",
+            impact: "Falta de priorização resulta em desperdício de recursos ou deixa vulnerabilidades críticas sem corrigir.",
+            detection: [
+              "Valide se existe SLA por CVSS score.",
+              "Confirme se vulns exploradas recebem tratamento urgente.",
+              "Verifique se remediação de baixo risco pode ser agregada.",
+              "Teste se descobertas duplicadas são consolidadas."
+            ],
+            tools: ["CVSS Score calculator (cvss-calculator.appspot.com)", "Vulnerability management platforms (Tenable, Qualys, Snyk)", "Jira/Azure DevOps"],
+            commands: ["n/a"],
+            steps: [
+              "Estabelecer matriz de prioridade (CVSS × Exploitabilidade × Impacto Negócio).",
+              "CVSS 9-10 (Critical): 72 horas",
+              "CVSS 7-8.9 (High): 1 semana",
+              "CVSS 5-6.9 (Medium): 2 semanas",
+              "CVSS < 5 (Low): 30 dias ou próximo sprint",
+              "Revisar prioridades semanalmente para novos dados de exploração."
+            ],
+            mitigation: [
+              "Criar SLA formalizados por severidade.",
+              "Implementar dashboard mostrando vulns por SLA.",
+              "Escalar vulns vencidas para management.",
+              "Permitir exceções temporárias com aprovação executiva.",
+              "Revisar e ajustar critérios trimestral."
+            ],
+            evidence: [
+              "Matriz de priorização documentada.",
+              "SLA policy assinada por leadership.",
+              "Dashboard mostrando cumprimento de SLA.",
+              "Relatório trimestral de trends.",
+              "Escalations apropriadamente documentados."
+            ],
+            references: ["CVSS v3.1 Specification", "NIST SP 800-40"]
+          }
+        },
+        {
+          id: "vm-remediation-tracking",
+          title: "Rastreamento de Remediação e Validação",
+          description: "Implemente processo de rastreamento de remediação até fechamento e re-teste.",
+          guide: {
+            overview: "Vulnerabilidades precisam ser rastreadas de descoberta → fix → re-teste → fechamento.",
+            impact: "Sem rastreamento, vulns são perdidas ou fechadas sem verificação real de correção.",
+            detection: [
+              "Valide se cada vulnerabilidade tem ticket (Jira/Azure).",
+              "Confirme se fix foi re-testado antes de marcar como resolved.",
+              "Verifique se there's evidência de correção (commit hash, build number).",
+              "Teste se vulns corrigidas não reaparecem (regression)."
+            ],
+            tools: ["Jira", "Azure DevOps", "GitHub Issues", "Bugzilla", "Vulnerability Management Systems"],
+            commands: ["n/a"],
+            steps: [
+              "Criar ticket com: ID vuln, CVSS, description, proof-of-concept, remediation steps.",
+              "Atribuir owner (developer, team lead).",
+              "Developer corrige em branch feature.",
+              "Security team re-testa em staging antes de approve merge.",
+              "Adicionar testes automatizados para prevenir regression.",
+              "Marcar como resolved com evidência (commit, build).",
+              "Rastrear trending de time-to-fix (TTF) médio."
+            ],
+            mitigation: [
+              "Usar template padronizado para tickets.",
+              "Exigir code review + security review antes de merge.",
+              "Implementar testes automatizados que falham se vuln retorna.",
+              "Fazer re-scanning periódico para detectar regressão.",
+              "Publicamente reconhecer equipes com melhor TTF."
+            ],
+            evidence: [
+              "Template de ticket de vulnerabilidade.",
+              "Screenshots mostrando rastreamento em Jira.",
+              "Histório de re-testes com evidência.",
+              "Dashboard mostrando Time-to-Fix trends.",
+              "Gráfico de regression detection por período."
+            ],
+            references: ["NIST SP 800-40: Patch Management", "OWASP Vulnerability Management"]
+          }
+        },
+        {
+          id: "vm-metrics-reporting",
+          title: "Métricas e Relatórios de Segurança",
+          description: "Implemente dashboard e relatórios para rastrear progress na redução de risco.",
+          guide: {
+            overview: "Métricas permitem demonstrar progress e informar decisões de investimento em segurança.",
+            impact: "Falta de métricas impossibilita demonstrar ROI de segurança e geralmente resulta em desinvestimento.",
+            detection: [
+              "Valide se existe dashboard público de vulnerabilidades.",
+              "Confirme se trending está disponível (mês-a-mês, year-over-year).",
+              "Verifique se métricas são alinhadas com objetivos estratégicos.",
+              "Teste se reports automaticamente acessíveis para stakeholders."
+            ],
+            tools: ["Tableau", "Power BI", "Grafana", "ELK Stack", "Security Metrics tools (ThreadFix, Dradis)"],
+            commands: ["n/a"],
+            steps: [
+              "Definir KPIs principais: Vulns descobertas, remediadas, Age (dias aberto), Time-to-Fix.",
+              "Criar dashboard em Tableau/PowerBI/Grafana.",
+              "Incluir gráficos: Trending, by-severity, by-product, by-team.",
+              "Agregar dados de múltiplas ferramentas (SAST, DAST, pentest, dependency scanning).",
+              "Publicar relatório executivo mensal.",
+              "Incluir benchmarks de industria/histórico interno para comparação."
+            ],
+            mitigation: [
+              "Treinar stakeholders a interpretar métricas.",
+              "Usar storytelling (números + narrativa).",
+              "Compartilhar metrics em town halls/all-hands.",
+              "Vincular métricas a OKRs (Objectives & Key Results).",
+              "Revisar e ajustar métricas quarterly."
+            ],
+            evidence: [
+              "Dashboard executivo mostrando status de vulnerabilidades.",
+              "Relatório mensal com trending e comparação.",
+              "Benchmark report (industria vs próprio).",
+              "Apresentação trimestral para C-suite.",
+              "Archive histórico de métricas (12+ meses)."
+            ],
+            references: ["OWASP Metrics Project", "NIST Cybersecurity Framework Metrics", "SANS Metrics and Reporting"]
           }
         }
       ]

@@ -1078,28 +1078,365 @@ const checklistData = [
                 "Analise correlação entre dados passivos e ativos.",
                 "Revisite listas de hosts antes de avançar para exploração."
               ],
-              tools: ["nmap", "amass", "theHarvester"],
+              tools: ["nmap", "amass", "theHarvester", "shodan", "censys", "masscan"],
               commands: [
                 "nmap -Pn -sV -sC -p- target.corp",
-                "amass enum -passive -d corp.com"
+                "amass enum -passive -d corp.com",
+                "masscan 0.0.0.0/0 -p 80,443 --rate=100000"
               ],
               steps: [
-                "Inicie com coleta passiva para evitar alarmes.",
+                "Inicie com coleta passiva para evitar alarmes (OSINT, DNS, WHOIS).",
                 "Realize varredura completa em horários aprovados.",
-                "Documente versões e potenciais CVEs.",
-                "Compartilhe achados parciais com o time."
+                "Documente versões e potenciais CVEs associados.",
+                "Compile mapa da infraestrutura e relações entre sistemas.",
+                "Compartilhe achados parciais com o time para validação."
               ],
               mitigation: [
                 "Automatizar recon contínuo com pipelines agendados.",
                 "Manter inventário atualizado de resultados.",
-                "Sincronizar com Blue Team para ajustar ruído."
+                "Sincronizar com Blue Team para ajustar ruído e detectar varreduras.",
+                "Implementar IDS/IPS para detectar scanning agressivo."
               ],
               evidence: [
                 "Relatórios de nmap/amass anexados.",
-                "Lista de ativos priorizados.",
-                "Mapa de rede com anotações de risco."
+                "Lista de ativos priorizados com versões confirmadas.",
+                "Mapa de rede com anotações de risco.",
+                "Correlação entre serviços descobertos e CVEs públicas."
               ],
-              references: ["PTES – Intelligence Gathering"]
+              references: ["PTES – Intelligence Gathering", "OWASP Testing Guide v4 - Reconnaissance"]
+            }
+          },
+          {
+            id: "ptes-intel-2",
+            title: "Web Enumeration e mapeamento de aplicação",
+            description: "Identifique endpoints, tecnologias e padrões em aplicações web/APIs.",
+            guide: {
+              overview: "Use crawlers e análise ativa para mapear a superfície de ataque web completamente.",
+              impact: "Endpoints não descobertos podem conter vulnerabilidades críticas sem avaliação.",
+              detection: [
+                "Valide cobertura de endpoints contra documentação (OpenAPI, Swagger).",
+                "Verifique identificação correta de tecnologias (fingerprinting).",
+                "Confirme mapeamento de fluxos de autenticação e áreas restritas."
+              ],
+              tools: ["Burp Suite", "OWASP ZAP", "Wfuzz", "Gobuster", "Katana", "WebScarab"],
+              commands: [
+                "burpsuite (use spider com autenticação)",
+                "zap -cmd -quickurl https://target.com -quickout report.html",
+                "gobuster dir -u https://target.com -w common.txt -x .js,.php,.txt"
+              ],
+              steps: [
+                "Configure proxy/interceptor para capturar tráfego inicial.",
+                "Execute crawling automatizado com credenciais válidas.",
+                "Identifique APIs, versões e frameworks em uso.",
+                "Documente arquivos e diretórios sensíveis descobertos.",
+                "Teste acesso anônimo vs autenticado para mapear restrições."
+              ],
+              mitigation: [
+                "Usar robots.txt adequado e ocultar endpoints desnecessários.",
+                "Remover headers informativos (Server, X-Powered-By).",
+                "Implementar rate limiting em endpoints de enumeração.",
+                "Revisar mapas de rotas contra exposição desnecessária."
+              ],
+              evidence: [
+                "Sitemap XML exportado do Burp.",
+                "Lista de endpoints com métodos HTTP permitidos.",
+                "Análise de tecnologias identificadas.",
+                "Screenshots de áreas administrativas descobertas."
+              ],
+              references: ["OWASP Testing Guide – Web Enumeration"]
+            }
+          }
+        ]
+      },
+      {
+        id: "ptes-threat-modeling",
+        title: "Threat Modeling e Análise de Vulnerabilidades",
+        summary: "Identificação sistemática de ameaças e priorização.",
+        items: [
+          {
+            id: "ptes-threat-1",
+            title: "Modelar ameaças usando STRIDE",
+            description: "Analise componentes para identificar spoofing, tampering, repudiation, information disclosure, denial of service, elevation of privilege.",
+            guide: {
+              overview: "Use frameworks estruturados (STRIDE, PASTA, Attack Trees) para garantir cobertura sistemática de ameaças.",
+              impact: "Análise inadequada de ameaças pode deixar vetores críticos sem avaliação.",
+              detection: [
+                "Valide se todas as categorias STRIDE foram consideradas.",
+                "Revise áreas críticas de processamento de dados/autenticação.",
+                "Confirme priorização baseada em risco (impacto × probabilidade)."
+              ],
+              tools: ["Microsoft Threat Modeling Tool", "OWASP Threat Dragon", "Lucidchart"],
+              commands: ["n/a"],
+              steps: [
+                "Mapeie componentes principais (front-end, API, banco de dados, integrações).",
+                "Identifique fluxos de dados e fronteiras de confiança.",
+                "Aplique STRIDE a cada componente sistematicamente.",
+                "Priorize ameaças por CVSS/criticidade.",
+                "Documente mitigações e controlos existentes."
+              ],
+              mitigation: [
+                "Integrar modelagem de ameaças ao design review.",
+                "Criar matriz de risco com stakeholders.",
+                "Revisar ameaças a cada mudança arquitetônica importante.",
+                "Manter documento de threat model versionado."
+              ],
+              evidence: [
+                "Diagrama de ameaças com STRIDE identificadas.",
+                "Matriz de risco priorizada.",
+                "Mapeamento de mitigações para cada ameaça.",
+                "Aprovação da arquitetura validando cobertura."
+              ],
+              references: ["OWASP Threat Modeling", "Microsoft Threat Modeling Tool Guide"]
+            }
+          },
+          {
+            id: "ptes-threat-2",
+            title: "Mapear CVEs para ativos descobertos",
+            description: "Correlacione versões de serviços com vulnerabilidades conhecidas públicas.",
+            guide: {
+              overview: "Use bancos de dados de CVE para priorizar testes focados nos riscos reais.",
+              impact: "Falta de correlação com CVEs reduz eficiência de testes e pode deixar exploits óbvios sem teste.",
+              detection: [
+                "Valide correspondência entre versões descobertas e CVEs listadas.",
+                "Confirme CVSS score e exploitabilidade de cada CVE.",
+                "Verifique se patches estão disponíveis e por que não foram aplicados."
+              ],
+              tools: ["NVD (nvd.nist.gov)", "cvedetails.com", "vulners.com", "Nuclei"],
+              commands: [
+                "nuclei -u https://target.com -tags cve2023,cve2024",
+                "curl 'https://services.nvd.nist.gov/rest/json/cves/2.0?cpeName=cpe...'"
+              ],
+              steps: [
+                "Compile lista de versões exatas para cada serviço.",
+                "Consulte NVD, CVEdetails ou Vulners para CVEs aplicáveis.",
+                "Filtre por severidade e exploitabilidade ativa.",
+                "Crie casos de teste para CVEs críticas/altas com PoC público.",
+                "Documente versão fixa esperada para remediação."
+              ],
+              mitigation: [
+                "Implementar patch management proativo com ciclo mensal.",
+                "Usar software composition analysis (SCA) para alertas em tempo real.",
+                "Manter inventário de versões com data de EOL.",
+                "Priorizar patches críticos/CVSS 9.0+ para 72h."
+              ],
+              evidence: [
+                "Relatório mapeando serviços → CVEs → CVSS.",
+                "PoC executando vulnerabilidade conhecida.",
+                "Plano de patch com prazos propostos.",
+                "Comparação antes/depois de update."
+              ],
+              references: ["NVD – National Vulnerability Database", "CVSS v3.1 Specification"]
+            }
+          }
+        ]
+      },
+      {
+        id: "ptes-exploitation",
+        title: "Exploitation e Validação de Vulnerabilidades",
+        summary: "Testes ativos explorando vulnerabilidades confirmadas.",
+        items: [
+          {
+            id: "ptes-exploit-1",
+            title: "Executar exploits de vulnerabilidades conhecidas",
+            description: "Use ferramentas automatizadas e manuais para explorar vulnerabilidades mapeadas.",
+            guide: {
+              overview: "Priorize exploits que demonstrem impacto real (acesso a dados, execução de código, DOS).",
+              impact: "Exploração bem-sucedida prova viabilidade de ataque e risco real.",
+              detection: [
+                "Valide se exploit foi executado no alvo específico.",
+                "Documente resultado obtido (acesso, erro, mitigação ativa).",
+                "Confirme se exploit funciona em múltiplos alvos ou é isolado."
+              ],
+              tools: ["Metasploit", "ExploitDB", "GitHub POCs", "Burp Intruder", "Custom scripts"],
+              commands: [
+                "msfconsole -x 'use exploit/...; set RHOSTS target; run'",
+                "python3 exploit.py --target https://target.com --payload reverse_shell"
+              ],
+              steps: [
+                "Inicie com exploits de conhecimento público (POC verificadas).",
+                "Execute em ambiente de teste primeiro para evitar damage.",
+                "Documente cada tentativa (sucesso, bloqueio, mitigação).",
+                "Adaptare payloads para bypass WAF/IDS se necessário.",
+                "Colete evidência de execução (screenshots, logs)."
+              ],
+              mitigation: [
+                "Aplicar patches de segurança conforme CVSS.",
+                "Implementar WAF/rate limiting para exploit patterns conhecidos.",
+                "Configurar monitoring de comportamento anômalo.",
+                "Testar detecção de exploits em SIEM."
+              ],
+              evidence: [
+                "Video/screenshot mostrando execução do exploit.",
+                "Proof-of-concept script utilizado.",
+                "Output de ferramentas (Metasploit logs).",
+                "Evidência de acesso/impacto (arquivo criado, comando executado)."
+              ],
+              references: ["Metasploit Unleashed", "ExploitDB – Best Practices"]
+            }
+          },
+          {
+            id: "ptes-exploit-2",
+            title: "Testar controles de segurança e detecção",
+            description: "Valide se IDS/WAF/SIEM estão detectando ataques e explorando blindspots.",
+            guide: {
+              overview: "Alguns ataques podem passar despercebidos por controles mal configurados.",
+              impact: "Exploração sem detecção permite ataque prolongado antes de resposta.",
+              detection: [
+                "Monitore logs de WAF/IDS durante testes.",
+                "Valide alertas chegando ao SIEM/SOC.",
+                "Teste bypass usando obfuscação, encoding, timing.",
+                "Verifique se alertas geram resposta automática."
+              ],
+              tools: ["tcpdump", "Wireshark", "BurpSuite logs", "SIEM queries"],
+              commands: [
+                "tcpdump -i eth0 -w capture.pcap 'host target'",
+                "curl -H 'User-Agent: SQL\" OR \"1=1' https://target.com"
+              ],
+              steps: [
+                "Inicie captura de tráfego antes de exploração.",
+                "Execute ataques simples e observe detecção.",
+                "Teste variações (diferentes encoding, timing).",
+                "Verifique logs de aplicação vs WAF vs SIEM.",
+                "Documente gaps e padrões não detectados."
+              ],
+              mitigation: [
+                "Calibrar WAF/IDS para detectar payloads obfuscados.",
+                "Implementar alertas de múltiplas camadas.",
+                "Treinar SOC para responder a alertas críticos.",
+                "Realizar testes de detecção mensais."
+              ],
+              evidence: [
+                "Logs de WAF/IDS durante ataque.",
+                "Alertas gerados no SIEM com timestamp.",
+                "Análise de gaps de detecção.",
+                "Recomendações de tuning de detecção."
+              ],
+              references: ["NIST Cybersecurity Framework – Detect"]
+            }
+          }
+        ]
+      },
+      {
+        id: "ptes-post-exploit",
+        title: "Post-Exploitation e Escalação",
+        summary: "Ações após acesso inicial (lateral movement, privilege escalation).",
+        items: [
+          {
+            id: "ptes-post-1",
+            title: "Lateral movement e acesso a dados sensíveis",
+            description: "Explore acesso inicial para ganhar acesso a sistemas/dados adicionais.",
+            guide: {
+              overview: "Demonstre impacto real comprovando acesso a dados sensíveis ou sistemas críticos.",
+              impact: "Lateral movement bem-sucedido demonstra risco de comprometimento total do ambiente.",
+              detection: [
+                "Valide acesso confirmado a sistemas internos.",
+                "Documente dados sensíveis acessados (PII, secrets, source code).",
+                "Confirme se movimento foi detectado por DLP/SIEM."
+              ],
+              tools: ["Mimikatz", "Chisel", "SSHuttle", "Impacket", "Evil-WinRM"],
+              commands: [
+                "mimikatz.exe 'privilege::debug' 'token::elevate' 'vault::cred /patch'",
+                "psexec.py -target-ip 192.168.1.10 Administrator:'password'@target"
+              ],
+              steps: [
+                "Enumerr usuários, grupos e permissões do host atual.",
+                "Identifique credenciais em cache (lsass, DPAPI).",
+                "Teste acesso a shares de rede internas.",
+                "Escalone para domínio admin se possível.",
+                "Acesse bancos de dados, repositórios de código, sistemas críticos."
+              ],
+              mitigation: [
+                "Implementar segmentação de rede com VLAN/micro-segmentação.",
+                "Aplicar princípio do least privilege para contas de serviço.",
+                "Usar MFA para acesso administrativo.",
+                "Implementar monitoring de movimento lateral (EDR, SIEM)."
+              ],
+              evidence: [
+                "Comandos executados em sistemas internos.",
+                "Dados sensíveis acessados (exportação anônima).",
+                "Mapa de movimento lateral entre sistemas.",
+                "Alertas de SIEM durante lateral movement."
+              ],
+              references: ["MITRE ATT&CK – Lateral Movement", "OWASP – Post Exploitation"]
+            }
+          }
+        ]
+      },
+      {
+        id: "ptes-reporting",
+        title: "Reporting e Apresentação de Resultados",
+        summary: "Documentação de achados, métricas e recomendações.",
+        items: [
+          {
+            id: "ptes-report-1",
+            title: "Gerar relatório executivo com métricas",
+            description: "Produza relatório resumido para stakeholders não-técnicos com métricas de risco.",
+            guide: {
+              overview: "Relatórios devem focar em impacto de negócio, não em detalhe técnico.",
+              impact: "Relatórios claros facilitam decisões de remediação e aprovação de investimentos.",
+              detection: [
+                "Valide se métricas de risco (CVSS, exploitabilidade) estão presentes.",
+                "Confirme alinhamento com objetivos de negócio.",
+                "Verifique se recomendações têm custo/benefício estimado."
+              ],
+              tools: ["Microsoft Word", "Confluence", "Dradis", "Nessus Professional Reports"],
+              commands: ["n/a"],
+              steps: [
+                "Compile estatísticas: total de achados por severidade, taxa de exploração.",
+                "Calcule CVSS médio e distribua por categoria (OWASP Top 10).",
+                "Estime tempo/custo de remediação por achado.",
+                "Inclua comparação com testes anteriores (trending).",
+                "Recomende roadmap de remediação em 30/90/180 dias."
+              ],
+              mitigation: [
+                "Implementar scorecard de segurança para rastrear evolução.",
+                "Apresentar métricas em reuniões executivas mensais.",
+                "Vincular remediações a prazos com aprovação de management.",
+                "Manter histórico para demonstrar melhoria contínua."
+              ],
+              evidence: [
+                "Relatório executivo de 2-3 páginas.",
+                "Gráficos de distribuição de severidade.",
+                "Roadmap de remediação com prazos.",
+                "Benchmarks comparativos (industria, histórico)."
+              ],
+              references: ["PTES – Reporting", "NIST SP 800-153 – Assessment Report Guidance"]
+            }
+          },
+          {
+            id: "ptes-report-2",
+            title: "Gerar relatório técnico detalhado",
+            description: "Produza documentação completa com passo-a-passo de cada achado.",
+            guide: {
+              overview: "Relatórios técnicos permitemo desenvolvedor e security team entender e corrigir vulnerabilidades.",
+              impact: "Documentação inadequada pode resultar em remediação incompleta ou ineficiente.",
+              detection: [
+                "Valide se cada achado tem seção de remediação técnica específica.",
+                "Confirme que steps are reproducible por outro analista.",
+                "Verifique se evidências (screenshots, videos) estão presentes."
+              ],
+              tools: ["Dradis", "Nessus", "Burp Report Generator", "Custom scripts"],
+              commands: ["dradis-cli template generate --format html"],
+              steps: [
+                "Para cada vulnerability: overview, impact, CVSS, affected component.",
+                "Incluir steps exatos para reproduzir (que ferramenta, que comando).",
+                "Capturar evidence (screenshot de payload executando, log de erro).",
+                "Detalhar remediação técnica com código-exemplo.",
+                "Incluir referências a CWE, OWASP, standards relevantes."
+              ],
+              mitigation: [
+                "Usar template padronizado para consistência.",
+                "Fazer code review de seções técnicas com engenheiros.",
+                "Incluir summary de remediações verificadas em teste posterior.",
+                "Manter versões e controlar mudanças do relatório."
+              ],
+              evidence: [
+                "Relatório técnico completo (20-50 páginas típico).",
+                "Apêndices com comandos, payloads, configurações.",
+                "Gallery de evidências (screenshots/videos).",
+                "Spreadsheet com matriz de achados × severidade."
+              ],
+              references: ["PTES – Reporting Phase", "OWASP Report Template"]
             }
           }
         ]
@@ -1369,6 +1706,192 @@ const checklistData = [
         ]
       },
       {
+        id: "sast-rust",
+        title: "Rust",
+        summary: "Análise estática para código Rust e projetos de sistemas críticos.",
+        items: [
+          {
+            id: "sast-rust-1",
+            title: "Executar clippy e crate auditing",
+            description: "Detecta padrões inseguros, uso de unsafe{} inadequado e dependências vulneráveis.",
+            guide: {
+              overview: "Rust é memory-safe por padrão, mas blocos unsafe{} requerem auditoria cuidadosa.",
+              impact: "Uso indevido de unsafe pode reintroduzir buffer overflows e memory safety issues.",
+              detection: [
+                "Verifique execução de clippy em CI com regras security.",
+                "Audite todos os blocos unsafe{} manualmente.",
+                "Valide dependências com cargo audit."
+              ],
+              tools: ["clippy", "cargo-audit", "cargo-deny", "Semgrep"],
+              commands: [
+                "cargo clippy --all-targets --all-features -- -D warnings",
+                "cargo audit --deny warnings",
+                "cargo-deny check"
+              ],
+              steps: [
+                "Execute clippy com warnings como erros.",
+                "Revise cada unsafe{} block documentando necessidade.",
+                "Execute cargo audit e cargo-deny para CVEs em dependências.",
+                "Configure CI para falhar em findings críticos.",
+                "Adicione testes fuzzing para código crítico."
+              ],
+              mitigation: [
+                "Minimizar blocos unsafe{} e documentar invariantes.",
+                "Usar bibliotecas bem-auditadas para syscalls.",
+                "Implementar defense-in-depth com validação input.",
+                "Participar de auditorias de segurança de dependências críticas."
+              ],
+              evidence: [
+                "Output do clippy mostrando zero warnings.",
+                "Relatório de cargo audit sem críticas.",
+                "Código comentado explicando unsafe blocks.",
+                "Logs de testes fuzzing executados."
+              ],
+              references: ["Rust Security Guidelines", "OWASP Rust Security"]
+            }
+          }
+        ]
+      },
+      {
+        id: "sast-cpp",
+        title: "C / C++",
+        summary: "Análise estática para linguagens nativas de sistemas.",
+        items: [
+          {
+            id: "sast-cpp-1",
+            title: "Executar Clang Static Analyzer e cppcheck",
+            description: "Detecta buffer overflows, use-after-free, integer overflows e lógica insegura.",
+            guide: {
+              overview: "C/C++ carecem de safety guarantees, requerendo análise automática e manual.",
+              impact: "Vulnerabilidades em C/C++ levam a RCE, DOS e comprometimento total do sistema.",
+              detection: [
+                "Verifique execução automática de análise em CI.",
+                "Revise manualmente código crítico (parsing, crypto, network).",
+                "Teste com sanitizers (ASan, MSan, UBSan) em runtime."
+              ],
+              tools: ["Clang Static Analyzer", "cppcheck", "LLVM SanitizerCoverage", "AFL++"],
+              commands: [
+                "clang --analyze *.c",
+                "cppcheck --enable=all --error-exitcode=1 .",
+                "gcc -fsanitize=address,undefined -g code.c"
+              ],
+              steps: [
+                "Configure Clang/cppcheck em build system (CMake, Make).",
+                "Revise todos os findings críticos manualmente.",
+                "Execute testes com sanitizers habilitados.",
+                "Implemente fuzzing contínuo para entrada parsing.",
+                "Documente exceções e implementar mitigações."
+              ],
+              mitigation: [
+                "Usar bibliotecas seguras (Clib2, Safestd).",
+                "Implementar stack canaries e ASLR.",
+                "Usar compiler hardening flags (-fPIC, -fstack-protector).",
+                "Realizar code review focado em segurança."
+              ],
+              evidence: [
+                "Logs de análise estática com zero críticas.",
+                "Builds com sanitizers não detectando issues.",
+                "Cobertura de fuzzing mostrando edge cases testados.",
+                "Documentação de revisões de segurança."
+              ],
+              references: ["MISRA C Guidelines", "CWE Top 25 for C/C++"]
+            }
+          }
+        ]
+      },
+      {
+        id: "sast-ruby",
+        title: "Ruby / Rails",
+        summary: "Análise estática para aplicações Ruby e frameworks web.",
+        items: [
+          {
+            id: "sast-ruby-1",
+            title: "Executar Brakeman para Rails",
+            description: "Detecta XSS, SQLi, CSRF, weak crypto e falhas de autorização específicas do Rails.",
+            guide: {
+              overview: "Brakeman é especializado em Rails e entende padrões framework.",
+              impact: "Rails sem análise estática pode expor SQL injection, CSRF e autorização quebrada.",
+              detection: [
+                "Valide execução de Brakeman em CI.",
+                "Revise warnings em controllers e views.",
+                "Verifique validações de permissão em gemfile."
+              ],
+              tools: ["Brakeman", "RuboCop + security extensions", "Semgrep"],
+              commands: [
+                "brakeman -q -z --no-summary -o report.json",
+                "bundle exec rubocop -D . --config .rubocop-security.yml"
+              ],
+              steps: [
+                "Instale Brakeman como dependency do projeto.",
+                "Execute com configuração custom (ignore patterns).",
+                "Revise SQL injection warnings em scopes/queries.",
+                "Verifique XSS em views (sanitize, escaping).",
+                "Audite permissions e authorization checks."
+              ],
+              mitigation: [
+                "Usar Rails built-in protection (CSRF tokens, CSP).",
+                "Aplicar strong parameters para mass assignment.",
+                "Usar pundit/cancancan para autorização declarativa.",
+                "Adicionar content security policy headers."
+              ],
+              evidence: [
+                "Relatório Brakeman JSON mostrando findings resolvidos.",
+                "Gems audit report (bundler-audit).",
+                "Screenshots de security checks em PRs.",
+                "Documentação de padrões Rails seguros."
+              ],
+              references: ["OWASP Rails Security", "Brakeman Documentation"]
+            }
+          }
+        ]
+      },
+      {
+        id: "sast-orchestration",
+        title: "Orchestração e Pipeline de SAST",
+        summary: "Integração de múltiplas ferramentas SAST em CI/CD.",
+        items: [
+          {
+            id: "sast-orch-1",
+            title: "Centralizar resultados com SARIF e plataformas de gestão",
+            description: "Consolide findings de múltiplas ferramentas em formato SARIF para rastreamento unificado.",
+            guide: {
+              overview: "SARIF é o padrão aberto para relatórios de análise estática, facilitando integração.",
+              impact: "Falta de centralização cria silos de ferramentas e resultados são perdidos/duplicados.",
+              detection: [
+                "Valide se todas as ferramentas exportam SARIF.",
+                "Confirme importação em plataforma central (GitHub Advanced Security, SonarQube).",
+                "Verifique correlação de duplicatas entre ferramentas."
+              ],
+              tools: ["GitHub Advanced Security", "SonarQube", "Semgrep Registry", "Custom SARIF processors"],
+              commands: [
+                "semgrep --config=p/owasp-top-ten --json --output=results.json .",
+                "gh code-scanning upload-sarif results.sarif"
+              ],
+              steps: [
+                "Configure todas as ferramentas para saída SARIF.",
+                "Implemente script que aggrega múltiplos SARIF files.",
+                "Deduplicar findings (mesma vulnerability reportada por 2+ ferramentas).",
+                "Priorizar por CVSS e exploitabilidade.",
+                "Integrar com sistema de tickets (Jira, GitHub Issues)."
+              ],
+              mitigation: [
+                "Estabelecer SLA para correção por severidade.",
+                "Criar dashboard de trending de findings.",
+                "Automatizar criação de tickets para achados.",
+                "Revisar falsos positivos regularmente."
+              ],
+              evidence: [
+                "Dashboard mostrando findings por linguagem/severidade.",
+                "SARIF files com metatags de ferramenta/versão.",
+                "Histórico de resoluções e trending.",
+                "Alertas automáticos para vulnerabilidades críticas."
+              ],
+              references: ["SARIF Specification", "NIST SSDF – PO3.3"]
+            }
+          }
+        ]
+      },
+      {
         id: "sast-mobile",
         title: "Swift / Kotlin",
         summary: "Checklists para mobile com MobSF.",
@@ -1555,6 +2078,321 @@ const checklistData = [
                 "Teste pós-mitigação mostrando falha de brute force."
               ],
               references: ["OWASP Top 10 – Broken Authentication"]
+            }
+          },
+          {
+            id: "dast-broken-auth-2",
+            title: "Teste de controle de acesso e privilege escalation",
+            description: "Avalie IDOR, horizontal/vertical access control bypasses, e path traversal.",
+            guide: {
+              overview: "Validação de autorização inadequada em cada request permite acesso a recursos de outros usuários.",
+              impact: "Bypass de autorização expõe dados confidenciais, permite operações não autorizadas e escalonamento de privilégio.",
+              detection: [
+                "Altere IDs previsíveis (1, 2, 3) em URLs/parâmetros.",
+                "Teste acesso com usuário diferente (admin vs regular user).",
+                "Verifique se parâmetros são refletidos ou processados no servidor."
+              ],
+              tools: ["Burp Repeater", "Intruder", "OWASP ZAP Fuzzer", "curl"],
+              commands: [
+                "curl -H 'Cookie: session=USER_TOKEN' https://target.com/user/123/profile",
+                "burpsuite -> Repeater -> Alterar ID do recurso"
+              ],
+              steps: [
+                "Mapeie todos os endpoints que usam IDs ou referencias a usuários.",
+                "Teste acesso com IDs de outros usuários (enumerar: 1,2,3..., UUIDs).",
+                "Teste com diferentes roles (admin, user, guest).",
+                "Verifique parameter pollution e path traversal (../../../).",
+                "Teste se backends validam ownership além de autenticação."
+              ],
+              mitigation: [
+                "Implementar autorização no backend para cada request.",
+                "Usar UUIDs/random IDs em vez de sequenciais.",
+                "Adicionar logging de tentativas de acesso negado.",
+                "Implementar revisão de acesso por papel (RBAC/ABAC)."
+              ],
+              evidence: [
+                "Capturas mostrando acesso a recursos de outro usuário.",
+                "Logs de erro mostrando falta de validação.",
+                "Teste pós-mitigação confirmando acesso negado.",
+                "Mapa de endpoints verificados."
+              ],
+              references: ["OWASP Top 10 – A01 Broken Access Control"]
+            }
+          }
+        ]
+      },
+      {
+        id: "dast-sqli",
+        title: "SQL Injection",
+        summary: "Validação de entrada vulnerável a SQL injection e técnicas avançadas.",
+        items: [
+          {
+            id: "dast-sqli-1",
+            title: "Testar SQL injection com payloads customizados",
+            description: "Envie payloads clássicos e baseados em tempo para detectar SQLi blind.",
+            guide: {
+              overview: "SQL injection permanece crítica. Teste error-based, blind e time-based.",
+              impact: "SQL injection permite acesso direto a dados, bypass de autenticação e execução de código no BD.",
+              detection: [
+                "Observe erros de banco de dados na resposta.",
+                "Teste diferenças em tempo de resposta (blind).",
+                "Valide se aspas e apostrofos causam erros.",
+                "Teste comentários de SQL (--,#,/**/)"
+              ],
+              tools: ["Burp Intruder", "SQLmap", "OWASP ZAP", "Custom Python scripts"],
+              commands: [
+                "sqlmap -u 'https://target.com/product.php?id=1' --dbs --batch",
+                "curl 'https://target.com/search?q=test\\' OR \\'1\\'=\\'1' --proxy localhost:8080"
+              ],
+              steps: [
+                "Identifique todos os parâmetros (GET, POST, headers, cookies).",
+                "Teste payloads clássicos: ', \", or 1=1, ; DROP TABLE.",
+                "Execute SQLmap com deferentes técnicas (UNION, Boolean, Time).",
+                "Colete dados (databases, tables, credenciais).",
+                "Documente severity baseado em dados acessíveis."
+              ],
+              mitigation: [
+                "Usar prepared statements/parameterized queries SEMPRE.",
+                "Aplicar whitelist validation para SQL operators.",
+                "Implementar input validation e escaping.",
+                "Usar WAF com regras específicas para SQLi.",
+                "Aplicar princípio de least privilege no BD (contas read-only)."
+              ],
+              evidence: [
+                "Output do SQLmap mostrando dbs/tabelas extraídas.",
+                "Dados sensíveis acessados (anonimizados em relatório).",
+                "Video mostrando execução de comando via SQL injection.",
+                "Plano de correção usando prepared statements."
+              ],
+              references: ["OWASP SQL Injection", "CWE-89"]
+            }
+          }
+        ]
+      },
+      {
+        id: "dast-api",
+        title: "API Security Testing",
+        summary: "Testes específicos para REST/GraphQL/SOAP APIs.",
+        items: [
+          {
+            id: "dast-api-1",
+            title: "Teste de endpoints de API e descoberta de funcionalidades",
+            description: "Mapeie endpoints não documentados e teste métodos HTTP não esperados.",
+            guide: {
+              overview: "APIs frequentemente expõem endpoints não documentados ou com acesso inadequado.",
+              impact: "Endpoints ocultos podem executar ações sensíveis sem autorizacao adequada.",
+              detection: [
+                "Compare documentação (Swagger/OpenAPI) com tráfego real.",
+                "Teste métodos HTTP alternativos (PUT, DELETE, PATCH) em endpoints GET.",
+                "Procure por versões antigas de API (/api/v1/ vs /api/v2/).",
+                "Teste prefixos comuns (/internal/, /admin/, /api/test/)."
+              ],
+              tools: ["Burp Suite", "OWASP ZAP", "Postman", "API Fuzzing (ffuf, wfuzz)", "Nuclei"],
+              commands: [
+                "nuclei -u https://target.com/api -t cves,api",
+                "ffuf -u https://target.com/api/FUZZ -w api-wordlist.txt"
+              ],
+              steps: [
+                "Extraia lista de endpoints de documentação (Swagger JSON).",
+                "Use fuzzing para descobrir endpoints não documentados.",
+                "Teste cada endpoint com métodos não esperados.",
+                "Verifique autenticação/autorização em versões antigas.",
+                "Teste para exposição de informações (error messages, stack traces)."
+              ],
+              mitigation: [
+                "Documentar todas as APIs e deprecar versões antigas.",
+                "Validar método HTTP esperado em cada endpoint.",
+                "Remover erro verbose responses em produção.",
+                "Implementar rate limiting e monitoring de uso.",
+                "Usar API gateway para centralizar segurança."
+              ],
+              evidence: [
+                "Lista de endpoints descobertos com métodos testados.",
+                "Documentação de endpoints não documentados.",
+                "Screenshots de endpoints respondendo a métodos não esperados.",
+                "Erro messages informativas removidas."
+              ],
+              references: ["OWASP API Security Top 10"]
+            }
+          },
+          {
+            id: "dast-api-2",
+            title: "Teste de validação de JSON/XML e injeção em APIs",
+            description: "Teste XXE, JSON injection, GraphQL injection e deserialization attacks.",
+            guide: {
+              overview: "APIs processam dados estruturados vulneráveis a injeção se não validados.",
+              impact: "XXE permite acesso a arquivos internos, RCE. GraphQL injection expõe schema/dados.",
+              detection: [
+                "Teste XXE payloads em XML APIs.",
+                "Envie JSON com tipos inesperados (strings em vez de numbers).",
+                "Teste GraphQL query introspection (schema exposure).",
+                "Teste deserialization com objetos malformados."
+              ],
+              tools: ["Burp Intruder", "Custom Python/JSON fuzzing", "GraphQL playground"],
+              commands: [
+                "curl -X POST https://target.com/api/data -d '{\"age\": \"not-a-number\"}'",
+                "curl https://target.com/graphql -d '{query: {__schema}}'  # schema introspection"
+              ],
+              steps: [
+                "Capture um request JSON/XML normal.",
+                "Teste XXE: injetar <!DOCTYPE foo [<!ENTITY xxe SYSTEM 'file:///etc/passwd'>]>.",
+                "Teste GraphQL introspection para expor schema.",
+                "Envie tipos inválidos e observe tratamento de erro.",
+                "Teste mutation acesso não autorizados em GraphQL."
+              ],
+              mitigation: [
+                "Desabilitar XXE parsing ou usar whitelist de entities.",
+                "Validar tipos de dados esperados (schema validation).",
+                "Desabilitar GraphQL introspection em produção.",
+                "Implementar input validation rigorosa.",
+                "Usar bibliotecas de deserialization seguras."
+              ],
+              evidence: [
+                "Output XXE mostrando arquivo /etc/passwd extraído.",
+                "GraphQL schema completamente exposto.",
+                "Documentação de tipos inválidos aceitos.",
+                "Plano de correção aplicando validação."
+              ],
+              references: ["OWASP XXE Prevention Cheat Sheet", "GraphQL Security Best Practices"]
+            }
+          }
+        ]
+      },
+      {
+        id: "dast-business-logic",
+        title: "Business Logic Testing",
+        summary: "Testes de fluxos de negócio, validações e restrições.",
+        items: [
+          {
+            id: "dast-logic-1",
+            title: "Teste de validação de regras de negócio",
+            description: "Bypass de quantidade, preço, validade e outras restrições lógicas.",
+            guide: {
+              overview: "Validações incompletas no frontend permitem bypass de regras críticas.",
+              impact: "Podem resultar em fraude financeira, duplicação de dados, ou negação de serviço.",
+              detection: [
+                "Intercepte requests e modifique valores numéricos.",
+                "Teste valores negativos, zero e muito altos.",
+                "Tente repetir operações (idempotency).",
+                "Teste fluxos fora de ordem (skip steps)."
+              ],
+              tools: ["Burp Repeater", "BurpSuite Macros", "Custom scripts"],
+              commands: [
+                "curl -X POST https://target.com/order -d '{\"quantity\": -100, \"price\": 0}'"
+              ],
+              steps: [
+                "Mapeie fluxos principais (checkout, transferência, inscrição).",
+                "Identifique validações (quantidade mínima, saldo, idade).",
+                "Teste modificação de valores em cada step.",
+                "Tente skip steps ou executar fora de ordem.",
+                "Teste race conditions em operações críticas."
+              ],
+              mitigation: [
+                "Implementar validações RIGOROSAS no backend.",
+                "Usar transações ACID para operações críticas.",
+                "Adicionar logging detalhado de todas as operações sensíveis.",
+                "Implementar idempotency keys para prevenir duplicação.",
+                "Realizar auditoria periódica de fluxos críticos."
+              ],
+              evidence: [
+                "Compra realizada com preço negativo.",
+                "Transferência duplicada em race condition.",
+                "Relatório de operações fraudulentas.",
+                "Implementação de validações backend."
+              ],
+              references: ["OWASP Testing Guide – Business Logic"]
+            }
+          }
+        ]
+      },
+      {
+        id: "dast-upload",
+        title: "File Upload e Storage Testing",
+        summary: "Testes de upload de arquivos, armazenamento e acesso.",
+        items: [
+          {
+            id: "dast-upload-1",
+            title: "Teste de file upload vulnerability",
+            description: "Bypass de validações de tipo, tamanho e execução de código via upload.",
+            guide: {
+              overview: "Uploads vulneráveis permitem execução de código, DOS ou acesso a arquivos.",
+              impact: "Uploads maliciosos podem resultar em RCE, LFI ou defacement.",
+              detection: [
+                "Teste upload de tipos diferentes (exe, sh, php).",
+                "Teste double extensions (.php.jpg, .jpg.php).",
+                "Teste polyglot files (imagem com código embarcado).",
+                "Verifique se arquivos são executáveis depois de upload."
+              ],
+              tools: ["Burp Repeater", "Custom polyglot generators", "ExifTool"],
+              commands: [
+                "echo '<?php system($_GET[\"cmd\"]); ?>' > shell.php.jpg",
+                "file shell.php.jpg  # verify type"
+              ],
+              steps: [
+                "Identifique funcionalidade de upload.",
+                "Teste upload com diferentes tipos de arquivo.",
+                "Verifique validação no servidor (magic bytes, size).",
+                "Tente acessar arquivo uploaded via URL direta.",
+                "Teste execução (acesse .php uploaded como imagem)."
+              ],
+              mitigation: [
+                "Validar magic bytes (não apenas extensão).",
+                "Armazenar uploads FORA de web root.",
+                "Desabilitar execução de scripts em diretório de upload.",
+                "Renomear arquivos para aleatório ou hash.",
+                "Implementar virus scanning com ClamAV.",
+                "Limitar tipos de arquivo explicitamente (whitelist)."
+              ],
+              evidence: [
+                "Web shell uploaded e acessível.",
+                "Código PHP executando após upload como imagem.",
+                "Plano de correção implementando proteções.",
+                "Teste pós-mitigação mostrando bloqueio."
+              ],
+              references: ["OWASP File Upload Cheat Sheet"]
+            }
+          }
+        ]
+      },
+      {
+        id: "dast-correlation",
+        title: "Correlação e Priorização de Vulnerabilidades",
+        summary: "Análise de impacto cruzado e priorização para remediação.",
+        items: [
+          {
+            id: "dast-corr-1",
+            title: "Correlacionar vulnerabilidades para impacto amplificado",
+            description: "Identifique chains de vulnerabilidades que amplificam risco.",
+            guide: {
+              overview: "Múltiplas vulnerabilidades combinadas podem ter impacto muito maior que somadas.",
+              impact: "Exploração em cadeia leva a acesso total do sistema mesmo sem RCE direta.",
+              detection: [
+                "Procure por: IDOR + SQL injection, XSS + CSRF, SSRF + SSSI.",
+                "Verifique se bypassar auth permite acesso a dados sensíveis.",
+                "Teste se informação disclosure permite exploração de outras vulns."
+              ],
+              tools: ["Threat modeling", "Manual analysis", "Correlation matrices"],
+              commands: ["n/a"],
+              steps: [
+                "Liste todas as vulnerabilidades descobertas.",
+                "Para cada par, analise se uma amplifica a outra.",
+                "Crie matriz: Vuln A × Vuln B = Impacto combinado.",
+                "Priorize remediação por chains críticas.",
+                "Documente cenários de ataque completos."
+              ],
+              mitigation: [
+                "Não apenas fixar vulns isoladamente.",
+                "Implementar defense-in-depth (múltiplas camadas).",
+                "Corrigir vulns prioritárias primeiro.",
+                "Testar remediação de chains críticas."
+              ],
+              evidence: [
+                "Matriz de correlação vulnerabilidades × impacto.",
+                "Cenários de ataque completos documentados.",
+                "Demonstração de chain-based exploitation.",
+                "Roadmap de remediação ordenado por impacto."
+              ],
+              references: ["MITRE ATT&CK - Techniques", "CWE View: Weaknesses Correlated"]
             }
           }
         ]
