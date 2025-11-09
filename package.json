@@ -1,12 +1,18 @@
 {
-  "name": "app",
-  "version": "1.0.0",
-  "description": "Painel interativo para conduzir avaliações de segurança com base em OWASP Top 10, OWASP API Security, PTES, SAST, DAST e hardening de servidores. O projeto foi desenhado para funcionar **100% offline**: basta abrir `index.html` no navegador e começar a checklist.",
+  "name": "@ghostn3xus/owasp-checklist-testing",
+  "version": "1.1.0",
+  "description": "Complete AppSec portal with encrypted project management, ASVS/MASVS/API/WSTG standards, evidence tracking, CVSS calculation, and PDF/CSV/JSON export. 100% offline, Docker-ready.",
   "main": "index.js",
   "scripts": {
+    "dev": "node server.mjs",
     "start": "npm run build && node server.mjs",
     "build": "node build.mjs",
-    "test": "vitest"
+    "test": "vitest",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "lint": "eslint . --ext .js,.mjs",
+    "format": "prettier --write \"**/*.{js,mjs,json,md}\"",
+    "migrate:encrypt": "node scripts/migrate-plaintext-to-encrypted.mjs"
   },
   "repository": {
     "type": "git",
@@ -21,6 +27,9 @@
   },
   "homepage": "https://github.com/GhostN3xus/Owasp_Checklist_testing#readme",
   "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "eslint": "^8.54.0",
+    "prettier": "^3.1.0",
     "esbuild": "^0.25.12",
     "vitest": "^4.0.7"
   },
