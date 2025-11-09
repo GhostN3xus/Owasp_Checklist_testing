@@ -1,0 +1,160 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: appsec-postgres
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: appsec_dashboard
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - appsec-network
+
+  # Redis Cache & Queue
+  redis:
+    image: redis:7-alpine
+    container_name: appsec-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - appsec-network
+
+  # MinIO (S3-compatible storage)
+  minio:
+    image: minio/minio:latest
+    container_name: appsec-minio
+    restart: unless-stopped
+    ports:
+      - '9000:9000'  # API
+      - '9001:9001'  # Console
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - appsec-network
+
+  # Backend API (NestJS)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: appsec-backend
+    restart: unless-stopped
+    ports:
+      - '4000:4000'
+    environment:
+      # App
+      NODE_ENV: development
+      PORT: 4000
+      APP_URL: http://localhost:3000
+
+      # Database
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: appsec_dashboard
+
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+      # MinIO
+      STORAGE_TYPE: minio
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_USE_SSL: false
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: appsec-dashboard
+
+      # JWT
+      JWT_SECRET: dev-secret-jwt-key-change-in-production-min-32-chars-long
+      JWT_EXPIRES_IN: 15m
+      JWT_REFRESH_SECRET: dev-secret-refresh-key-change-in-production-long
+      JWT_REFRESH_EXPIRES_IN: 7d
+
+      # Security
+      BCRYPT_ROUNDS: 12
+
+      # Rate Limiting
+      THROTTLE_TTL: 60
+      THROTTLE_LIMIT: 100
+
+      # Logging
+      LOG_LEVEL: debug
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    volumes:
+      - ./backend/src:/app/src
+      - /app/node_modules
+    command: npm run start:dev
+    networks:
+      - appsec-network
+
+  # Frontend (React + Vite)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: appsec-frontend
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      VITE_API_URL: http://localhost:4000
+      VITE_WS_URL: ws://localhost:4000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - /app/node_modules
+    command: npm run dev -- --host
+    networks:
+      - appsec-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  minio_data:
+    driver: local
+
+networks:
+  appsec-network:
+    driver: bridge
