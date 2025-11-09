@@ -3,6 +3,12 @@ import { serverHardening } from "./serverConfig.mjs";
 import { cloudSecurityChecklist } from "./cloudSecurity.mjs";
 import { secureCodeChecklist } from "./secureCodeChecklist.mjs";
 import { owaspCheatSheetChecklist } from "./owaspCheatSheetChecklist.mjs";
+import { apiSecurityChecklist } from "./apiSecurity.mjs";
+import { mobileSecurityChecklist } from "./mobileSecurity.mjs";
+import { threatModelingChecklist } from "./threatModeling.mjs";
+import { businessLogicChecklist } from "./businessLogic.mjs";
+import { supplyChainSecurityChecklist } from "./supplyChainSecurity.mjs";
+import { loggingMonitoringChecklist } from "./loggingMonitoring.mjs";
 import { renderStatusBadge } from "./logic.js";
 import { getReferenceUrl } from "./documentationLinks.mjs";
 import { generateFullReport, generatePartialReport } from "./reportTemplate.mjs";
@@ -89,9 +95,15 @@ async function main() {
   const baseChecklistData = await response.json();
   const checklistData = [
     ...baseChecklistData,
+    apiSecurityChecklist,
+    mobileSecurityChecklist,
     cloudSecurityChecklist,
     secureCodeChecklist,
-    owaspCheatSheetChecklist
+    owaspCheatSheetChecklist,
+    threatModelingChecklist,
+    businessLogicChecklist,
+    supplyChainSecurityChecklist,
+    loggingMonitoringChecklist
   ];
 
   const TABS = checklistData.map((category) => ({
