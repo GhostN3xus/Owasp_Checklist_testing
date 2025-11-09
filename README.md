@@ -1,261 +1,368 @@
-# 🧠 OWASP AppSec Checklist Dashboard
+# 🛡️ OWASP AppSec Checklist - Portal Educacional Completo
 
-Painel interativo completo para conduzir avaliações de segurança com base em **OWASP Top 10**, **OWASP API Security**, **PTES**, **SAST**, **DAST** e hardening de servidores. O projeto foi desenhado para ser **100% offline** e funcionar como base de conhecimento consolidada em segurança de aplicações.
+> **Plataforma interativa completa para Application Security, Bug Bounty e DevSecOps**
+> Transforme-se em um especialista de AppSec com checklists completos, guias práticos e conteúdo didático atualizado.
 
-## 🚀 Recursos principais
+---
 
-- ✅ Interface moderna em tema dark com navegação por abas
-- ✅ Checklists completos com progresso, status (Passou/Falhou/N/A) e campo para notas/evidências
-- ✅ Guias técnicos detalhados: impacto, detecção, ferramentas, comandos reais, passo a passo, mitigações, evidências
-- ✅ Cobertura integral dos Top 10 OWASP Web 2021 e OWASP API Security 2023
-- ✅ Seção dedicada a hardening de servidores (IIS, Apache, Nginx, Windows, Linux)
-- ✅ **NOVO:** Guias de validação de dados em todas as linguagens web mais usadas (JavaScript/TypeScript, Python, PHP, Java, C#/.NET)
-- ✅ **NOVO:** Guia completo de SAST - Static Application Security Testing com ferramentas e integração CI/CD
-- ✅ **NOVO:** Testes de segurança automatizados para validação de dados
-- ✅ Exportação rápida para PDF (utilize a função do navegador após abrir o relatório)
-- ✅ Salvamento automático no servidor para não perder o progresso
+## 🎯 O que é este projeto?
 
-## 📦 Estrutura dos arquivos
+Um **portal educacional e prático de Application Security** que combina:
 
-### Aplicação
-| Arquivo | Descrição |
-| --- | --- |
-| `index.html` | Layout principal e containers da aplicação. |
-| `styles.css` | Tema dark responsivo e estilos dos componentes. |
-| `data.mjs` | Base de dados das checklists OWASP, PTES, SAST e DAST. |
-| `securityTools.mjs` | Lista curada de ferramentas úteis e contexto rápido. |
-| `serverConfig.mjs` | Itens de hardening para servidores e sistemas operacionais. |
-| `app.mjs` | Lógica da interface, persistência e integração com servidor. |
-| `server.mjs` | Servidor Node.js para gerenciar dados e progresso. |
+✅ **Checklists interativos completos** (OWASP Web, API, Mobile, Cloud, DevSecOps)
+✅ **Guias técnicos detalhados** com exemplos práticos, comandos reais e ferramentas
+✅ **Conteúdo didático** para formação de analistas de segurança
+✅ **Ferramentas profissionais** (relatórios, exportação, automação)
+✅ **100% offline** - nenhum dado sai da sua máquina
 
-### Documentação de Segurança
-| Arquivo | Descrição |
-| --- | --- |
-| `CHECKLIST-COMPLETO.md` | Referência completa de checklists de segurança. |
-| `DATA-VALIDATION-JAVASCRIPT.md` | 🆕 Guia completo de validação de dados em JavaScript/TypeScript com padrões SAST |
-| `DATA-VALIDATION-PYTHON.md` | 🆕 Guia completo de validação de dados em Python com Pydantic e Bandit |
-| `DATA-VALIDATION-PHP.md` | 🆕 Guia completo de validação de dados em PHP com filter_var e Symfony Validator |
-| `DATA-VALIDATION-JAVA.md` | 🆕 Guia completo de validação de dados em Java com Jakarta Validation e SpotBugs |
-| `DATA-VALIDATION-DOTNET.md` | 🆕 Guia completo de validação de dados em C#/.NET com Data Annotations e FluentValidation |
-| `SAST-TOOLS-GUIDE.md` | 🆕 Guia completo de SAST com ferramentas, integração CI/CD e checklist |
-| `API-SECURITY-GUIDE.md` | Proteção de APIs REST e GraphQL com contexto real. |
-| `OWASP-LLM-TOP-10-COMPLETO.md` | Guia especializado para proteção de LLMs e chatbots. |
-| `CSPM-PRACTICAL-GUIDE.md` | Gerenciamento de postura de segurança em nuvem. |
-| `DEVSECOPS-AUTOMATION-GUIDE.md` | Automação de segurança em pipelines DevOps. |
-| `DAST-PRACTICAL-GUIDE.md` | Testes dinâmicos de segurança com ferramentas práticas. |
-| `NOTAS-TECNICAS.md` | Observações sobre arquitetura, dados locais e privacidade. |
-| `TEST_GUIDE.md` | Tutorial prático para executar a aplicação e conduzir testes. |
-| `SAMPLE-SECURITY-REPORT.md` | Exemplo de relatório de segurança formatado. |
+---
 
-### Testes
-| Arquivo | Descrição |
-| --- | --- |
-| `src/logic.test.js` | Testes unitários de lógica de progresso e renderização. |
-| `src/security-validation.test.js` | 🆕 Testes de segurança para validação de entrada e XSS prevention |
+## 🚀 Funcionalidades Principais
 
-## 🛠️ Como usar
+### 📋 **13 Módulos Especializados de Segurança**
 
-1. **Instale as dependências:**
-   ```bash
-   npm install
-   ```
-2. **Inicie o servidor de desenvolvimento:**
-   ```bash
-   npm start
-   ```
-3. **Acesse a aplicação:**
-   Abra [http://localhost:3000](http://localhost:3000) no seu navegador.
+| Módulo | Descrição | Items |
+|--------|-----------|-------|
+| **🌐 OWASP Web Top 10** | Vulnerabilidades web críticas (2021) | 30+ |
+| **🔌 OWASP API Security** | API Top 10 2023 + GraphQL | 25+ |
+| **📱 Mobile Security (MASVS)** | Android & iOS (MASVS/MASTG) | 20+ |
+| **☁️ Cloud Security** | AWS, Azure, GCP + Kubernetes, Docker, IaC | 30+ |
+| **🧠 Threat Modeling** | STRIDE, PASTA, LINDDUN | 15+ |
+| **💼 Business Logic** | Falhas de lógica de negócio | 12+ |
+| **🔗 Supply Chain/SCA** | Dependências, SBOM, vulnerabilidades | 18+ |
+| **📊 Logging & Monitoring** | SIEM, detecção de ameaças, incident response | 15+ |
+| **🔐 Secure Code Review** | Code review e secure coding | 15+ |
+| **📜 OWASP Cheat Sheets** | Input validation, XSS, Auth | 20+ |
+| **🧪 SAST/DAST** | Testes estáticos e dinâmicos | 10+ |
+| **⚙️ Server Hardening** | IIS, Apache, Nginx, Windows, Linux | 40+ |
+| **🎯 PTES** | Penetration Testing Execution Standard | 40+ |
 
-4. Informe o nome do projeto e do tester na parte superior.
-5. Navegue pelas abas (OWASP Web, OWASP API, PTES, SAST, DAST, Server Config).
-6. Para cada item:
-   - Marque a checkbox quando concluir o teste.
-   - Escolha o status (Passou, Falhou, N/A).
-   - Registre notas e evidências coletadas (logs, prints, comandos executados).
-   - Clique em **📘 Guia real** para abrir instruções aprofundadas com impacto, técnicas de detecção, mitigações e checklist de evidências.
-7. Clique em **📄 Exportar PDF** para gerar o relatório consolidado (use “Imprimir em PDF”).
-8. Utilize **🧹 Resetar Dados** para limpar o estado local e iniciar um novo ciclo.
+**Total: 300+ itens de checklist com guias completos!**
 
-## 📥 Exportação do relatório
+---
 
-- O botão **📄 Exportar PDF** abre uma nova aba com relatório formatado.
-- Utilize o atalho do navegador (`Ctrl + P` / `Cmd + P`) e escolha “Salvar como PDF”.
-- O relatório contém: projeto, tester, data/hora, status por item e notas registradas.
+## 🆕 Novidades Desta Versão
 
-## 🎯 Guias de Validação de Dados
+### ✨ **6 Novos Módulos Completos**
 
-Este projeto agora inclui **5 guias abrangentes sobre validação de dados** em linguagens web mais usadas:
+1. **🔌 OWASP API Security Top 10 2023**
+   - BOLA/IDOR, Broken Authentication, Mass Assignment
+   - GraphQL Security (introspection, depth attacks)
+   - Exemplos práticos com Burp, Postman, curl
 
-### 📚 Guias por Linguagem
+2. **📱 Mobile Security (MASVS/MASTG)**
+   - Android & iOS security testing
+   - Armazenamento seguro, criptografia, biometria
+   - Root/Jailbreak detection, anti-debugging
+   - WebView, Deep Links, Certificate Pinning
 
-1. **JavaScript/TypeScript** (`DATA-VALIDATION-JAVASCRIPT.md`)
-   - Validação com Zod, Joi, Yup
-   - Escape de HTML com DOMPurify
-   - Preparação de queries SQL
-   - Testes com Jest/Vitest
+3. **🧠 Threat Modeling**
+   - STRIDE (Spoofing, Tampering, Repudiation, etc)
+   - PASTA (7 estágios de análise de risco)
+   - LINDDUN (privacy threat modeling)
+   - Attack Trees e Kill Chain Analysis
 
-2. **Python** (`DATA-VALIDATION-PYTHON.md`)
-   - Validação com Pydantic, Marshmallow
-   - HTML escape com markupsafe
-   - Detecção de SSRF e injection
-   - Testes com Bandit e pytest
+4. **💼 Business Logic Vulnerabilities**
+   - Bypass de workflow, race conditions
+   - Manipulação de preços e quantidades
+   - Abuse de funcionalidades legítimas
+   - Timing attacks e replay
 
-3. **PHP** (`DATA-VALIDATION-PHP.md`)
-   - Validação com filter_var, Symfony Validator
-   - HTML Purifier para sanitização
-   - PDO para prepared statements
-   - Testes com PHPUnit
+5. **🔗 Supply Chain Security & SCA**
+   - Scan de dependências (npm audit, Snyk, OWASP Dependency-Check)
+   - SBOM (Software Bill of Materials)
+   - Dependency confusion, typosquatting
+   - License compliance
 
-4. **Java** (`DATA-VALIDATION-JAVA.md`)
-   - Jakarta Bean Validation
-   - OWASP ESAPI para escaping
-   - Apache Commons Validator
-   - Testes com JUnit 5
+6. **📊 Logging, Monitoring & Incident Response**
+   - Logging seguro (o que logar, como proteger)
+   - SIEM (Splunk, ELK Stack, Datadog)
+   - Detection rules e alertas
+   - Incident Response Plan (NIST 800-61)
+   - Forensics readiness
 
-5. **C#/.NET** (`DATA-VALIDATION-DOTNET.md`)
-   - Data Annotations, FluentValidation
-   - Entity Framework para queries
-   - WebUtility para HTML encode
-   - Testes com xUnit
+### 🎨 **Interface Profissional Aprimorada**
 
-### 📊 Pontos de Validação Críticos Cobertos
+- Dashboard com métricas em tempo real
+- Workflow de 5 fases (Recon → Testing → Access → Report → Mitigate)
+- Filtros avançados por status, tester, fase
+- Campos ricos: notas, evidências, anexos, narrativas
+- Sistema de tags (severity, priority, stage)
 
-Cada guia detalha:
-- ✅ Email validation (RFC 5322 compliant)
-- ✅ URL validation com whitelist e SSRF prevention
-- ✅ Número/montante com precisão decimal
-- ✅ String validation contra XSS
-- ✅ Enum validation para valores permitidos
-- ✅ File upload validation (MIME, magic bytes, path traversal)
-- ✅ JWT/Token validation e expiração
-- ✅ SQL injection prevention
-- ✅ HTML escaping por contexto
-- ✅ Testes de segurança automatizados
+### 📄 **Exportação Profissional**
 
-## 🔍 Guia SAST - Static Application Security Testing
+- Relatórios PDF completos com métricas
+- Exportação parcial por seção
+- Templates profissionais formatados
+- Evidências anexadas (screenshots, logs, PoCs)
 
-Consulte `SAST-TOOLS-GUIDE.md` para:
+---
 
-- **Ferramentas por linguagem:** Semgrep, Bandit, PHPStan, SpotBugs, SonarQube
-- **Integração CI/CD:** GitHub Actions, GitLab CI, Jenkins
-- **Análise de resultados:** Severidade, falsos positivos, priorização
-- **Checklist de implementação:** Setup, remediation, governança
-- **Exemplo prático:** Projeto Node.js + Python com SAST
+## 🛠️ Instalação e Uso
 
-## 🔎 Fluxo recomendado de validação
+### **Requisitos**
+- Node.js 16+
+- npm ou yarn
 
-1. **Planeje** o escopo utilizando a aba PTES e confira se obrigações legais estão cobertas.
-2. **Execute** os testes por categoria (OWASP, API, SAST, DAST, Hardening) consultando os guias para compreender impacto, técnicas de detecção e comandos.
-3. **Colete evidências** descritas nos guias (logs, capturas, relatórios de ferramentas) e anexe o resumo no campo de notas.
-4. **Classifique o status** de cada item com base no resultado observado (Passou/Falhou/N/A) e marque a checkbox quando finalizar.
-5. **Revise mitigações sugeridas** e inclua recomendações específicas do ambiente analisado.
-6. **Gere o relatório PDF** para anexar à documentação do projeto ou sistema de acompanhamento de vulnerabilidades.
-
-### Validação de Código
-
-- Utilize **SAST tools** automaticamente em CI/CD
-- Execute **testes de segurança** antes de merge: `npm test`
-- Revise **falsos positivos** e documente exceções
-- Mantenha **histórico de vulnerabilidades** por commit
-
-## 🔒 Privacidade e funcionamento
-
-- O projeto agora utiliza um servidor Node.js para fornecer os dados e salvar o progresso.
-- O estado (checkboxes, status, notas, nome do projeto/tester) é salvo no servidor.
-- Para limpar dados basta usar o botão de reset.
-
-## ✅ Testes de Segurança
-
-Execute os testes de validação de dados automaticamente:
+### **Instalação**
 
 ```bash
-# Rodar todos os testes
-npm test
+# Clone o repositório
+git clone https://github.com/GhostN3xus/Owasp_Checklist_testing.git
+cd Owasp_Checklist_testing
 
-# Executar apenas testes de segurança
-npm test security-validation
+# Instale dependências
+npm install
 
-# Modo watch (para desenvolvimento)
-npm test -- --watch
+# Inicie o servidor
+npm start
 ```
 
-**Cobertura de testes:**
-- Email validation (entrada/saída válida e inválida)
-- XSS prevention (múltiplos payloads)
-- SQL injection prevention
-- SSRF prevention
-- Enum/valor permitido
-- HTML escaping
-- Testes de segurança integrados
+### **Acesso**
+Abra [http://localhost:3000](http://localhost:3000) no navegador
 
 ---
 
-## 🛠️ Ferramentas Recomendadas
+## 📖 Como Usar
 
-### SAST Tools (por linguagem)
-| Linguagem | Ferramenta | Comando |
-|-----------|-----------|---------|
-| JavaScript | Semgrep | `semgrep --config=p/owasp-top-ten` |
-| Python | Bandit | `bandit -r src/` |
-| PHP | PHPStan | `./vendor/bin/phpstan analyse src/` |
-| Java | SpotBugs | `mvn spotbugs:check` |
-| C#/.NET | Roslyn | `dotnet build` |
+### **1. Configurar Auditoria**
+- Informe nome do projeto, tester, janela de auditoria
+- Escolha o módulo de segurança (API, Mobile, Web, etc)
 
-### Integração CI/CD
-- GitHub Actions: Semgrep, Bandit, SonarCloud
-- GitLab CI: GitLab SAST
-- Jenkins: Pipeline com ferramentas customizadas
+### **2. Conduzir Testes**
+Para cada item:
+- ✅ Marque checkbox ao concluir
+- 🎯 Defina status: **Passou** | **Falhou** | **N/A** | **Não testado**
+- 🔍 Defina severidade: **Critical** | **High** | **Medium** | **Low**
+- 📝 Adicione notas técnicas
+- 📎 Anexe evidências (screenshots, logs, payloads)
+- 📋 Use checklist de evidências (Screenshot, Logs, Payload, Impacto)
 
-Veja `SAST-TOOLS-GUIDE.md` para setup completo.
+### **3. Acessar Guias Técnicos**
+Clique em **"📘 Guia completo"** para ver:
+- **Overview**: Contexto da vulnerabilidade
+- **Impact**: Riscos e consequências
+- **Detection**: Como identificar (técnicas, padrões)
+- **Tools**: Ferramentas recomendadas
+- **Commands**: Comandos práticos (Burp, curl, scripts)
+- **Steps**: Passo a passo detalhado
+- **Mitigation**: Como corrigir/prevenir
+- **Evidence**: O que documentar
+- **References**: Links OWASP, CVE, artigos
 
----
+### **4. Exportar Relatório**
+- Clique em **📄 Exportar PDF**
+- Use Ctrl+P (ou Cmd+P) e "Salvar como PDF"
+- Relatório inclui: métricas, status, notas, evidências
 
-## 📖 Documentação Completa
-
-### Guias de Segurança por Tópico
-
-**Data Validation (5 linguagens):**
-- 🟦 JavaScript/TypeScript: `DATA-VALIDATION-JAVASCRIPT.md`
-- 🐍 Python: `DATA-VALIDATION-PYTHON.md`
-- 🐘 PHP: `DATA-VALIDATION-PHP.md`
-- ☕ Java: `DATA-VALIDATION-JAVA.md`
-- 🟦 C#/.NET: `DATA-VALIDATION-DOTNET.md`
-
-**SAST & DevSecOps:**
-- 🔍 SAST Tools Guide: `SAST-TOOLS-GUIDE.md`
-- 🔐 API Security: `API-SECURITY-GUIDE.md`
-- 🤖 DAST Practical: `DAST-PRACTICAL-GUIDE.md`
-- ⚙️ DevSecOps: `DEVSECOPS-AUTOMATION-GUIDE.md`
-- ☁️ Cloud Security: `CSPM-PRACTICAL-GUIDE.md`
-
-**Especializado:**
-- 🧠 LLM Security: `OWASP-LLM-TOP-10-COMPLETO.md`
-- 📋 Completo: `CHECKLIST-COMPLETO.md`
+### **5. Filtros e Organização**
+- Filtre por: **Status**, **Tester**, **Fase do Workflow**
+- Pesquise por palavra-chave
+- Visualize progresso em tempo real
 
 ---
 
-## 🤝 Contribuições
+## 📚 Documentação Técnica Incluída
 
-- Adicione novos itens de checklist em `data.mjs` (para OWASP, PTES, SAST, DAST) ou em `serverConfig.mjs` (hardening)
-- Mantenha a estrutura de dados consistente para que o modal de guias funcione corretamente
-- Adicione testes em `src/security-validation.test.js` para cobrir novos validadores
-- Ajustes visuais podem ser aplicados em `styles.css`
-- Atualize README ao adicionar novos guias ou funcionalidades
+### **Guias de Validação de Dados por Linguagem**
+
+| Linguagem | Arquivo | Conteúdo |
+|-----------|---------|----------|
+| **JavaScript/TypeScript** | `DATA-VALIDATION-JAVASCRIPT.md` | Zod, Joi, DOMPurify, SQL prepared statements |
+| **Python** | `DATA-VALIDATION-PYTHON.md` | Pydantic, Marshmallow, bleach, SQLAlchemy |
+| **PHP** | `DATA-VALIDATION-PHP.md` | filter_var, HTMLPurifier, PDO, Symfony Validator |
+| **Java** | `DATA-VALIDATION-JAVA.md` | Jakarta Validation, OWASP Java HTML Sanitizer, PreparedStatement |
+| **C#/.NET** | `DATA-VALIDATION-DOTNET.md` | Data Annotations, FluentValidation, AntiXSS, Entity Framework |
+
+### **Guias de Ferramentas e Práticas**
+
+| Guia | Arquivo | Conteúdo |
+|------|---------|----------|
+| **SAST** | `SAST-TOOLS-GUIDE.md` | Ferramentas SAST, integração CI/CD, checklist |
+| **DAST** | `DAST-PRACTICAL-GUIDE.md` | Burp, ZAP, Nuclei, testes dinâmicos |
+| **API Security** | `API-SECURITY-GUIDE.md` | REST, GraphQL, autenticação, rate limiting |
+| **LLM Security** | `OWASP-LLM-TOP-10-COMPLETO.md` | Prompt injection, data poisoning, model DoS |
+| **CSPM** | `CSPM-PRACTICAL-GUIDE.md` | Cloud Security Posture Management |
+| **DevSecOps** | `DEVSECOPS-AUTOMATION-GUIDE.md` | Automação de segurança em pipelines |
 
 ---
 
-## 📚 Referências externas
+## 🎓 Para Quem é Este Projeto?
 
-- [OWASP Top 10 Web (2021)](https://owasp.org/Top10/)
-- [OWASP API Security Top 10 (2023)](https://owasp.org/API-Security/)
-- [Penetration Testing Execution Standard](http://www.pentest-standard.org/)
-- [OWASP LLM Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
-- [OWASP Mobile Application Security](https://owasp.org/www-project-mobile-security-testing-guide/)
-- [Semgrep Rules](https://semgrep.dev/explore)
-- [NIST 800-53 - Security and Privacy Controls](https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final)
+### **👨‍💻 Desenvolvedores**
+- Aprender secure coding practices
+- Validar segurança de aplicações
+- Preparar-se para code reviews de segurança
+
+### **🔒 Analistas de Segurança**
+- Conduzir pentests estruturados
+- Documentar findings com evidências
+- Gerar relatórios profissionais
+
+### **🎯 Bug Bounty Hunters**
+- Checklist de vulnerabilidades para testar
+- Comandos e payloads prontos
+- Metodologia OWASP atualizada
+
+### **📚 Estudantes**
+- Aprender Application Security do zero
+- Guias didáticos com exemplos
+- Referências para aprofundamento
+
+### **🏢 Empresas**
+- Padronizar auditorias de segurança
+- Treinar equipes em AppSec
+- Compliance (ISO 27001, PCI-DSS, LGPD)
 
 ---
 
-> Este painel busca centralizar **conhecimento consolidado** em um único lugar para agilizar avaliações AppSec, validação de dados, pentests ofensivos e implementação de SAST em pipelines CI/CD.
->
-> **Último Update:** Novembro 2024 - Adicionados guias de validação em 5 linguagens + SAST tools + testes automatizados
+## 🏗️ Arquitetura do Projeto
+
+```
+Owasp_Checklist_testing/
+├── 📱 FRONTEND
+│   ├── index.html           # Layout principal
+│   ├── styles.css           # Dark theme profissional
+│   └── app.mjs              # Lógica de interface
+│
+├── 🗄️ BACKEND
+│   ├── server.mjs           # Express + LowDB
+│   └── state.json           # Persistência local
+│
+├── 📊 MÓDULOS DE CHECKLIST
+│   ├── data.mjs             # OWASP Web, PTES, SAST/DAST
+│   ├── apiSecurity.mjs      # 🆕 OWASP API Top 10 2023
+│   ├── mobileSecurity.mjs   # 🆕 MASVS/MASTG
+│   ├── threatModeling.mjs   # 🆕 STRIDE, PASTA, LINDDUN
+│   ├── businessLogic.mjs    # 🆕 Business Logic Flaws
+│   ├── supplyChainSecurity.mjs # 🆕 SCA, SBOM
+│   ├── loggingMonitoring.mjs   # 🆕 Logging, SIEM, IR
+│   ├── cloudSecurity.mjs    # Cloud (AWS, Azure, GCP)
+│   ├── secureCodeChecklist.mjs
+│   ├── serverConfig.mjs
+│   └── owaspCheatSheetChecklist.mjs
+│
+├── 📖 DOCUMENTAÇÃO
+│   ├── README.md            # Este arquivo
+│   ├── CHECKLIST-COMPLETO.md
+│   ├── API-SECURITY-GUIDE.md
+│   ├── SAST-TOOLS-GUIDE.md
+│   ├── DAST-PRACTICAL-GUIDE.md
+│   ├── DEVSECOPS-AUTOMATION-GUIDE.md
+│   ├── OWASP-LLM-TOP-10-COMPLETO.md
+│   ├── CSPM-PRACTICAL-GUIDE.md
+│   ├── DATA-VALIDATION-*.md (5 linguagens)
+│   └── NOTAS-TECNICAS.md
+│
+├── 🧪 TESTES
+│   ├── src/logic.test.js
+│   └── src/security-validation.test.js
+│
+└── ⚙️ BUILD & CONFIG
+    ├── package.json
+    ├── build.mjs            # esbuild
+    └── dist/                # Build output
+```
+
+---
+
+## 🔧 Stack Tecnológico
+
+### **Frontend**
+- **HTML5** + **CSS3** (Grid, Flexbox, CSS Variables)
+- **Vanilla JavaScript** (ES Modules, async/await)
+- **Responsivo** (Desktop → Mobile)
+
+### **Backend**
+- **Node.js** + **Express.js**
+- **LowDB** (banco de dados JSON leve)
+- **Multer** (upload de arquivos)
+
+### **Build & Testes**
+- **esbuild** (bundler rápido)
+- **Vitest** (testes unitários)
+
+### **Design**
+- **Dark theme** profissional
+- **Glassmorphism** e gradientes
+- **Inter font** (Google Fonts)
+
+---
+
+## 📊 Estatísticas do Projeto
+
+| Métrica | Valor |
+|---------|-------|
+| **Módulos de segurança** | 13 |
+| **Items de checklist** | 300+ |
+| **Guias técnicos** | 300+ |
+| **Documentos markdown** | 20+ |
+| **Linhas de código** | 10,000+ |
+| **Testes automatizados** | 25+ |
+| **Comandos práticos** | 500+ |
+
+---
+
+## 🤝 Contribuindo
+
+Contribuições são bem-vindas! Para contribuir:
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/NovaFuncionalidade`)
+3. Commit suas mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
+4. Push para a branch (`git push origin feature/NovaFuncionalidade`)
+5. Abra um Pull Request
+
+### **Áreas para Contribuição**
+
+- 🌍 Tradução para outros idiomas
+- 📱 Novos módulos (IoT Security, Blockchain, etc)
+- 🎨 Modo claro (light theme)
+- 📊 Mais visualizações de métricas
+- 🧪 Labs práticos interativos
+- 🤖 Integração com ferramentas (SAST/DAST)
+
+---
+
+## 📜 Licença
+
+Este projeto é licenciado sob a licença ISC.
+
+---
+
+## 🙏 Agradecimentos
+
+- **OWASP Foundation** - pelos frameworks e checklists
+- **Comunidade de AppSec** - por compartilhar conhecimento
+- **Contribuidores** - por melhorias e feedback
+
+---
+
+## 📞 Suporte
+
+- 🐛 **Issues**: [GitHub Issues](https://github.com/GhostN3xus/Owasp_Checklist_testing/issues)
+- 📧 **Email**: (adicione seu email aqui)
+- 💬 **Discussões**: [GitHub Discussions](https://github.com/GhostN3xus/Owasp_Checklist_testing/discussions)
+
+---
+
+## 🔗 Links Úteis
+
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
+- [OWASP API Security](https://owasp.org/www-project-api-security/)
+- [OWASP MASVS](https://mas.owasp.org/MASVS/)
+- [MITRE ATT&CK](https://attack.mitre.org/)
+- [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework)
+
+---
+
+<div align="center">
+
+**⭐ Se este projeto foi útil, considere dar uma estrela!**
+
+**Feito com ❤️ para a comunidade de Application Security**
+
+[![GitHub stars](https://img.shields.io/github/stars/GhostN3xus/Owasp_Checklist_testing?style=social)](https://github.com/GhostN3xus/Owasp_Checklist_testing)
+[![GitHub forks](https://img.shields.io/github/forks/GhostN3xus/Owasp_Checklist_testing?style=social)](https://github.com/GhostN3xus/Owasp_Checklist_testing)
+
+</div>
