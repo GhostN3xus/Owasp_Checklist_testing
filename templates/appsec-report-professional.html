@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relatório AppSec • ${PROJECT_NAME}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ====================================================================
+     * PDF Print Styles - Professional AppSec Report Template
+     * ==================================================================== */
+
+    @page {
+      size: A4;
+      margin: 2cm 1.5cm;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif;
+      color: #0e1f2f;
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+      line-height: 1.6;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ====================================================================
+     * Cover Page
+     * ==================================================================== */
+    .cover-page {
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      background: linear-gradient(135deg, #0e1f2f 0%, #1a3a55 100%);
+      color: #f8f9fa;
+      page-break-after: always;
+      padding: 3rem;
+    }
+
+    .cover-logo {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 2rem;
+      border-radius: 24px;
+      background: radial-gradient(circle at 30% 20%, rgba(0, 198, 255, 0.9), rgba(0, 198, 255, 0.2));
+      display: grid;
+      place-items: center;
+      font-size: 4rem;
+    }
+
+    .cover-title {
+      font-size: 3rem;
+      font-weight: 800;
+      margin: 0 0 1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .cover-subtitle {
+      font-size: 1.5rem;
+      font-weight: 400;
+      margin: 0 0 3rem;
+      color: rgba(248, 249, 250, 0.8);
+    }
+
+    .cover-meta {
+      display: grid;
+      gap: 0.75rem;
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: left;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2rem;
+      border-radius: 16px;
+      border: 1px solid rgba(0, 198, 255, 0.3);
+    }
+
+    .cover-meta-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 2rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .cover-meta-item:last-child {
+      border-bottom: none;
+    }
+
+    .cover-meta-label {
+      font-weight: 600;
+      color: rgba(248, 249, 250, 0.7);
+      min-width: 150px;
+    }
+
+    .cover-meta-value {
+      font-weight: 500;
+    }
+
+    .cover-footer {
+      margin-top: 3rem;
+      font-size: 0.875rem;
+      color: rgba(248, 249, 250, 0.6);
+    }
+
+    /* ====================================================================
+     * Table of Contents
+     * ==================================================================== */
+    .toc-page {
+      page-break-after: always;
+      padding: 2rem 0;
+    }
+
+    .toc-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0 0 2rem;
+      color: #0e1f2f;
+      border-bottom: 3px solid #00c6ff;
+      padding-bottom: 0.75rem;
+    }
+
+    .toc-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .toc-item {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(14, 31, 47, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .toc-item-title {
+      font-weight: 600;
+      color: #0e1f2f;
+    }
+
+    .toc-item-page {
+      font-weight: 500;
+      color: #00c6ff;
+      min-width: 50px;
+      text-align: right;
+    }
+
+    /* ====================================================================
+     * Executive Summary
+     * ==================================================================== */
+    .summary-page {
+      page-break-after: always;
+      padding: 2rem 0;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0 0 1.5rem;
+      color: #0e1f2f;
+      border-bottom: 3px solid #00c6ff;
+      padding-bottom: 0.75rem;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .summary-card {
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      border-radius: 12px;
+      border-left: 4px solid #00c6ff;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .summary-card--critical {
+      border-left-color: #ff6b6b;
+      background: linear-gradient(135deg, #fff5f5, #ffe0e0);
+    }
+
+    .summary-card--high {
+      border-left-color: #ffa64d;
+      background: linear-gradient(135deg, #fff8f0, #ffe4cc);
+    }
+
+    .summary-card--medium {
+      border-left-color: #ffd166;
+      background: linear-gradient(135deg, #fffbf0, #fff4d1);
+    }
+
+    .summary-card-label {
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(14, 31, 47, 0.6);
+      margin: 0 0 0.5rem;
+      font-weight: 600;
+    }
+
+    .summary-card-value {
+      font-size: 2.5rem;
+      font-weight: 800;
+      line-height: 1;
+      margin: 0.5rem 0;
+      color: #0e1f2f;
+    }
+
+    .summary-card-description {
+      font-size: 0.875rem;
+      color: rgba(14, 31, 47, 0.7);
+      margin: 0;
+    }
+
+    /* Charts */
+    .chart-container {
+      margin: 2rem 0;
+      page-break-inside: avoid;
+    }
+
+    .chart-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0 0 1rem;
+      color: #0e1f2f;
+    }
+
+    .chart-bar-group {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .chart-bar {
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    .chart-bar-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .chart-bar-track {
+      width: 100%;
+      height: 20px;
+      background: #e9ecef;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .chart-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00c6ff, #5be3ff);
+      border-radius: 10px;
+      transition: width 0.3s ease;
+    }
+
+    .chart-bar-fill--critical {
+      background: linear-gradient(90deg, #ff6b6b, #ff9494);
+    }
+
+    .chart-bar-fill--high {
+      background: linear-gradient(90deg, #ffa64d, #ffc080);
+    }
+
+    .chart-bar-fill--success {
+      background: linear-gradient(90deg, #3ddc97, #6be9b1);
+    }
+
+    /* Pie Chart (CSS only) */
+    .pie-chart-container {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .pie-chart {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: conic-gradient(
+        #ff6b6b 0deg 36deg,
+        #ffa64d 36deg 90deg,
+        #ffd166 90deg 162deg,
+        #3ddc97 162deg 288deg,
+        #e9ecef 288deg 360deg
+      );
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .pie-legend {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .pie-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .pie-legend-color {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .pie-legend-label {
+      flex: 1;
+      font-weight: 500;
+    }
+
+    .pie-legend-value {
+      font-weight: 700;
+      color: #0e1f2f;
+    }
+
+    /* ====================================================================
+     * Findings Table
+     * ==================================================================== */
+    .findings-section {
+      page-break-before: always;
+      margin-bottom: 3rem;
+    }
+
+    .section-header {
+      background: linear-gradient(135deg, #0e1f2f, #1a3a55);
+      color: #f8f9fa;
+      padding: 1.5rem;
+      border-radius: 12px 12px 0 0;
+      margin-bottom: 0;
+    }
+
+    .section-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem;
+    }
+
+    .section-subtitle {
+      font-size: 1rem;
+      margin: 0;
+      color: rgba(248, 249, 250, 0.8);
+    }
+
+    .findings-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      page-break-inside: avoid;
+    }
+
+    .findings-table thead {
+      background: #f8f9fa;
+    }
+
+    .findings-table th {
+      padding: 1rem 0.75rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #0e1f2f;
+      border-bottom: 2px solid #00c6ff;
+    }
+
+    .findings-table td {
+      padding: 0.875rem 0.75rem;
+      vertical-align: top;
+      border-bottom: 1px solid rgba(14, 31, 47, 0.08);
+    }
+
+    .findings-table tbody tr:nth-child(even) {
+      background: rgba(0, 198, 255, 0.03);
+    }
+
+    .findings-table tbody tr:hover {
+      background: rgba(0, 198, 255, 0.08);
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status-badge--passed {
+      background: rgba(61, 220, 151, 0.2);
+      color: #0d7a4a;
+      border: 1px solid rgba(61, 220, 151, 0.5);
+    }
+
+    .status-badge--failed {
+      background: rgba(255, 107, 107, 0.2);
+      color: #c92a2a;
+      border: 1px solid rgba(255, 107, 107, 0.5);
+    }
+
+    .status-badge--na {
+      background: rgba(209, 213, 219, 0.2);
+      color: #495057;
+      border: 1px solid rgba(209, 213, 219, 0.5);
+    }
+
+    .severity-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .severity-badge--critical {
+      background: rgba(255, 107, 107, 0.2);
+      color: #c92a2a;
+      border: 1px solid rgba(255, 107, 107, 0.5);
+    }
+
+    .severity-badge--high {
+      background: rgba(255, 166, 77, 0.2);
+      color: #d9480f;
+      border: 1px solid rgba(255, 166, 77, 0.5);
+    }
+
+    .severity-badge--medium {
+      background: rgba(255, 209, 102, 0.2);
+      color: #e67700;
+      border: 1px solid rgba(255, 209, 102, 0.5);
+    }
+
+    .severity-badge--low {
+      background: rgba(61, 220, 151, 0.2);
+      color: #0d7a4a;
+      border: 1px solid rgba(61, 220, 151, 0.5);
+    }
+
+    .priority-badge {
+      font-weight: 600;
+      font-size: 0.8125rem;
+      color: #495057;
+    }
+
+    /* ====================================================================
+     * Footer
+     * ==================================================================== */
+    .report-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 1rem 1.5cm;
+      background: #f8f9fa;
+      border-top: 2px solid #00c6ff;
+      font-size: 0.75rem;
+      color: #495057;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .report-footer a {
+      color: #00c6ff;
+      text-decoration: none;
+    }
+
+    .page-number::after {
+      content: counter(page);
+    }
+
+    /* ====================================================================
+     * Utilities
+     * ==================================================================== */
+    .text-muted {
+      color: rgba(14, 31, 47, 0.6);
+    }
+
+    .text-small {
+      font-size: 0.875rem;
+    }
+
+    .mt-2 {
+      margin-top: 2rem;
+    }
+
+    .mb-2 {
+      margin-bottom: 2rem;
+    }
+
+    .page-break {
+      page-break-after: always;
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+      .report-footer {
+        position: fixed;
+        bottom: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ====================================================================
+   Cover Page
+  ==================================================================== -->
+  <section class="cover-page">
+    <div>
+      <div class="cover-logo">🔒</div>
+      <h1 class="cover-title">Relatório de Auditoria AppSec</h1>
+      <p class="cover-subtitle">Application Security Checklist & Bug Hunting Guide</p>
+
+      <div class="cover-meta">
+        <div class="cover-meta-item">
+          <span class="cover-meta-label">Projeto</span>
+          <span class="cover-meta-value">${PROJECT_NAME}</span>
+        </div>
+        <div class="cover-meta-item">
+          <span class="cover-meta-label">Tester Líder</span>
+          <span class="cover-meta-value">${TESTER_NAME}</span>
+        </div>
+        <div class="cover-meta-item">
+          <span class="cover-meta-label">Janela de Auditoria</span>
+          <span class="cover-meta-value">${AUDIT_WINDOW}</span>
+        </div>
+        <div class="cover-meta-item">
+          <span class="cover-meta-label">Data de Geração</span>
+          <span class="cover-meta-value">${GENERATED_DATE}</span>
+        </div>
+        <div class="cover-meta-item">
+          <span class="cover-meta-label">Escopo</span>
+          <span class="cover-meta-value">${SCOPE}</span>
+        </div>
+      </div>
+
+      <p class="cover-footer">
+        © 2025 AppSec Checklist & Guide<br/>
+        https://appsec-checklist.guide
+      </p>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+   Table of Contents
+  ==================================================================== -->
+  <section class="toc-page">
+    <h2 class="toc-title">Índice</h2>
+    <ul class="toc-list">
+      <li class="toc-item">
+        <span class="toc-item-title">1. Sumário Executivo</span>
+        <span class="toc-item-page">3</span>
+      </li>
+      <li class="toc-item">
+        <span class="toc-item-title">2. Visão Geral de Métricas</span>
+        <span class="toc-item-page">4</span>
+      </li>
+      <li class="toc-item">
+        <span class="toc-item-title">3. Distribuição de Vulnerabilidades</span>
+        <span class="toc-item-page">5</span>
+      </li>
+      <li class="toc-item">
+        <span class="toc-item-title">4. Findings Detalhados</span>
+        <span class="toc-item-page">6</span>
+      </li>
+      <li class="toc-item">
+        <span class="toc-item-title">4.1. A01 – Controle de Acesso Quebrado</span>
+        <span class="toc-item-page">7</span>
+      </li>
+      <li class="toc-item">
+        <span class="toc-item-title">4.2. A02 – Falhas Criptográficas</span>
+        <span class="toc-item-page">9</span>
+      </li>
+      <li class="toc-item">
+        <span class="toc-item-title">4.3. A03 – Injeção</span>
+        <span class="toc-item-page">11</span>
+      </li>
+      <li class="toc-item">
+        <span class="toc-item-title">5. Recomendações e Próximos Passos</span>
+        <span class="toc-item-page">15</span>
+      </li>
+      <li class="toc-item">
+        <span class="toc-item-title">6. Anexos e Referências</span>
+        <span class="toc-item-page">16</span>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ====================================================================
+   Executive Summary
+  ==================================================================== -->
+  <section class="summary-page">
+    <h2 class="page-title">1. Sumário Executivo</h2>
+
+    <p>
+      Durante a auditoria de segurança realizada em <strong>${AUDIT_WINDOW}</strong> no projeto
+      <strong>${PROJECT_NAME}</strong>, foram avaliados <strong>${TOTAL_ITEMS} itens</strong>
+      de acordo com os frameworks OWASP Top 10, OWASP API Security, PTES e práticas avançadas de bug hunting.
+    </p>
+
+    <p>
+      <strong>Principais Descobertas:</strong>
+    </p>
+
+    <div class="summary-grid">
+      <div class="summary-card summary-card--critical">
+        <p class="summary-card-label">Vulnerabilidades Críticas</p>
+        <div class="summary-card-value">${CRITICAL_COUNT}</div>
+        <p class="summary-card-description">Requerem remediação imediata (CVSS 9.0-10.0)</p>
+      </div>
+
+      <div class="summary-card summary-card--high">
+        <p class="summary-card-label">Vulnerabilidades Altas</p>
+        <div class="summary-card-value">${HIGH_COUNT}</div>
+        <p class="summary-card-description">Prioridade alta para remediação (CVSS 7.0-8.9)</p>
+      </div>
+
+      <div class="summary-card summary-card--medium">
+        <p class="summary-card-label">Vulnerabilidades Médias</p>
+        <div class="summary-card-value">${MEDIUM_COUNT}</div>
+        <p class="summary-card-description">Remediar conforme roadmap (CVSS 4.0-6.9)</p>
+      </div>
+
+      <div class="summary-card">
+        <p class="summary-card-label">Taxa de Conclusão</p>
+        <div class="summary-card-value">${COMPLETION_RATE}%</div>
+        <p class="summary-card-description">${COMPLETED_ITEMS} de ${TOTAL_ITEMS} itens concluídos</p>
+      </div>
+    </div>
+
+    <div class="mt-2">
+      <h3>Riscos Principais</h3>
+      <ul>
+        <li><strong>BOLA (Broken Object Level Authorization):</strong> Identificado em endpoints críticos permitindo acesso cross-tenant a transações financeiras.</li>
+        <li><strong>Rate Limit Bypass:</strong> Possibilidade de credential stuffing via header injection, permitindo ataques em escala.</li>
+        <li><strong>Race Conditions:</strong> Vulnerabilidade em lógica de vouchers permitindo resgate múltiplo do mesmo código.</li>
+        <li><strong>Ausência de Logging:</strong> Falta de monitoramento para tentativas de bypass e falhas de autorização.</li>
+      </ul>
+    </div>
+
+    <div class="mt-2">
+      <h3>Cadeias de Exploração Identificadas</h3>
+      <p><strong>Chain 1 (CVSS 9.8):</strong> Rate Limit Bypass → Credential Stuffing → Account Takeover</p>
+      <p><strong>Chain 2 (CVSS 8.6):</strong> IDOR (BOLA) → SSRF via Avatar URL → Internal Metadata Leak</p>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+   Metrics Overview
+  ==================================================================== -->
+  <section class="summary-page">
+    <h2 class="page-title">2. Visão Geral de Métricas</h2>
+
+    <div class="chart-container">
+      <h3 class="chart-title">Progresso da Auditoria por Categoria</h3>
+      <div class="chart-bar-group">
+        <div class="chart-bar">
+          <div class="chart-bar-header">
+            <span>A01 - Controle de Acesso</span>
+            <span><strong>85%</strong> (17/20)</span>
+          </div>
+          <div class="chart-bar-track">
+            <div class="chart-bar-fill" style="width: 85%;"></div>
+          </div>
+        </div>
+
+        <div class="chart-bar">
+          <div class="chart-bar-header">
+            <span>A02 - Falhas Criptográficas</span>
+            <span><strong>92%</strong> (23/25)</span>
+          </div>
+          <div class="chart-bar-track">
+            <div class="chart-bar-fill chart-bar-fill--success" style="width: 92%;"></div>
+          </div>
+        </div>
+
+        <div class="chart-bar">
+          <div class="chart-bar-header">
+            <span>A03 - Injeção</span>
+            <span><strong>76%</strong> (19/25)</span>
+          </div>
+          <div class="chart-bar-track">
+            <div class="chart-bar-fill" style="width: 76%;"></div>
+          </div>
+        </div>
+
+        <div class="chart-bar">
+          <div class="chart-bar-header">
+            <span>A04 - Design Inseguro</span>
+            <span><strong>68%</strong> (10/15)</span>
+          </div>
+          <div class="chart-bar-track">
+            <div class="chart-bar-fill" style="width: 68%;"></div>
+          </div>
+        </div>
+
+        <div class="chart-bar">
+          <div class="chart-bar-header">
+            <span>A05 - Configuração Incorreta</span>
+            <span><strong>90%</strong> (18/20)</span>
+          </div>
+          <div class="chart-bar-track">
+            <div class="chart-bar-fill chart-bar-fill--success" style="width: 90%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-container mt-2">
+      <h3 class="chart-title">Distribuição de Vulnerabilidades por Severidade</h3>
+      <div class="pie-chart-container">
+        <div class="pie-chart"></div>
+        <div class="pie-legend">
+          <div class="pie-legend-item">
+            <div class="pie-legend-color" style="background: #ff6b6b;"></div>
+            <span class="pie-legend-label">Critical</span>
+            <span class="pie-legend-value">4 (10%)</span>
+          </div>
+          <div class="pie-legend-item">
+            <div class="pie-legend-color" style="background: #ffa64d;"></div>
+            <span class="pie-legend-label">High</span>
+            <span class="pie-legend-value">6 (15%)</span>
+          </div>
+          <div class="pie-legend-item">
+            <div class="pie-legend-color" style="background: #ffd166;"></div>
+            <span class="pie-legend-label">Medium</span>
+            <span class="pie-legend-value">12 (30%)</span>
+          </div>
+          <div class="pie-legend-item">
+            <div class="pie-legend-color" style="background: #3ddc97;"></div>
+            <span class="pie-legend-label">Low</span>
+            <span class="pie-legend-value">21 (35%)</span>
+          </div>
+          <div class="pie-legend-item">
+            <div class="pie-legend-color" style="background: #e9ecef;"></div>
+            <span class="pie-legend-label">Info</span>
+            <span class="pie-legend-value">7 (10%)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+   Findings Details
+  ==================================================================== -->
+  <section class="findings-section">
+    <header class="section-header">
+      <h2 class="section-title">A01 – Controle de Acesso Quebrado</h2>
+      <p class="section-subtitle">Validação de autorização, política de privilégios mínimos e proteções contra bypass</p>
+    </header>
+
+    <table class="findings-table">
+      <thead>
+        <tr>
+          <th style="width: 35%;">Item</th>
+          <th style="width: 12%;">Status</th>
+          <th style="width: 12%;">Severidade</th>
+          <th style="width: 8%;">Prioridade</th>
+          <th style="width: 33%;">Notas / Evidências</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <strong>Revisar controles de acesso horizontais e verticais</strong>
+            <p class="text-muted text-small">
+              Valide se usuários conseguem acessar recursos de outros perfis ou funções sem autorização explícita.
+            </p>
+          </td>
+          <td>
+            <span class="status-badge status-badge--failed">❌ Falhou</span>
+          </td>
+          <td>
+            <span class="severity-badge severity-badge--critical">CRITICAL</span>
+          </td>
+          <td>
+            <strong class="priority-badge">P0</strong>
+          </td>
+          <td>
+            <p class="text-small" style="margin: 0;">
+              <strong>Evidência:</strong> IDOR identificado em /api/users/:id/transactions permitindo acesso cross-tenant.
+            </p>
+            <p class="text-small text-muted" style="margin: 0.5rem 0 0;">
+              <strong>PoC:</strong> curl GET /api/users/victim_id/transactions -H "Auth: attacker_token"
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <strong>Proteção contra forja de tokens e session fixation</strong>
+            <p class="text-muted text-small">
+              Garante renovação de tokens após login, expiração adequada e invalidação no logout.
+            </p>
+          </td>
+          <td>
+            <span class="status-badge status-badge--passed">✅ Passou</span>
+          </td>
+          <td>
+            <span class="severity-badge severity-badge--low">LOW</span>
+          </td>
+          <td>
+            <strong class="priority-badge">P2</strong>
+          </td>
+          <td>
+            <p class="text-small" style="margin: 0;">
+              Tokens são rotacionados corretamente após login. Flags HttpOnly, Secure e SameSite=Strict presentes.
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <strong>Validar rate limiting em endpoints críticos</strong>
+            <p class="text-muted text-small">
+              Confirme implementação de rate limit em autenticação, pagamentos e APIs sensíveis.
+            </p>
+          </td>
+          <td>
+            <span class="status-badge status-badge--failed">❌ Falhou</span>
+          </td>
+          <td>
+            <span class="severity-badge severity-badge--high">HIGH</span>
+          </td>
+          <td>
+            <strong class="priority-badge">P0</strong>
+          </td>
+          <td>
+            <p class="text-small" style="margin: 0;">
+              <strong>Evidência:</strong> Bypass de rate limit via header X-Forwarded-For permite credential stuffing.
+            </p>
+            <p class="text-small text-muted" style="margin: 0.5rem 0 0;">
+              <strong>Mitigação:</strong> Implementar rate limit baseado em múltiplos fatores (IP, user agent, device fingerprint).
+            </p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ====================================================================
+   Footer (appears on every page)
+  ==================================================================== -->
+  <footer class="report-footer no-print">
+    <div>
+      <strong>AppSec Checklist & Guide</strong> – Professional Security Audit Report
+    </div>
+    <div>
+      <a href="https://appsec-checklist.guide">appsec-checklist.guide</a> • Página <span class="page-number"></span>
+    </div>
+  </footer>
+
+</body>
+</html>

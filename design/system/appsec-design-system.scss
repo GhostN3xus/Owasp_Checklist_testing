@@ -1,122 +1,593 @@
-// AppSec Checklist & Guide – Design System Tokens
-// Paleta: fundo #0E1F2F, acento #00C6FF, sucesso #3DDC97, texto claro #F8F9FA
-// Escala de espaçamento baseada em múltiplos de 4px
+// ============================================================================
+// AppSec Checklist & Guide – Design System Tokens v2.0
+// ============================================================================
+// Paleta profissional dark theme para bug hunting e AppSec
+// Criado por: AppSec Checklist Team
+// Última atualização: 2025
+//
+// Filosofia de design:
+// - Contraste acessível (WCAG AAA quando possível)
+// - Hierarquia visual clara para priorização de riscos
+// - Paleta inspirada em terminal e ferramentas de hacking (credibilidade técnica)
+// - Escala de espaçamento 4px para consistência
+// ============================================================================
 
-// Color tokens
-$color-bg-primary: #0e1f2f;
-$color-bg-elevated: #132a3f;
-$color-bg-surface: #17344b;
-$color-surface-alt: #1d3d58;
-$color-overlay: rgba(14, 31, 47, 0.85);
-$color-accent: #00c6ff;
-$color-accent-soft: rgba(0, 198, 255, 0.12);
-$color-success: #3ddc97;
-$color-danger: #ff6b6b;
-$color-warning: #ffd166;
-$color-text-primary: #f8f9fa;
-$color-text-secondary: #d1d5db;
-$color-text-muted: rgba(209, 213, 219, 0.7);
-$color-border: rgba(0, 198, 255, 0.25);
-$color-border-subtle: rgba(209, 213, 219, 0.15);
+// ----------------------------------------------------------------------------
+// 1. COLOR SYSTEM
+// ----------------------------------------------------------------------------
 
-// Typography
-$font-family-base: 'Inter', 'Poppins', 'Segoe UI', sans-serif;
-$font-size-xs: 0.75rem;
-$font-size-sm: 0.875rem;
-$font-size-md: 1rem;
-$font-size-lg: 1.25rem;
-$font-size-xl: 1.5rem;
-$font-size-2xl: 2rem;
+// Background layers (do mais profundo ao mais elevado)
+$color-bg-primary: #0e1f2f;        // Background principal
+$color-bg-elevated: #132a3f;       // Cards, painéis elevados
+$color-bg-surface: #17344b;        // Surface de componentes
+$color-surface-alt: #1d3d58;       // Alternativas de surface
+$color-bg-modal: #061421;          // Backdrop de modais (mais escuro)
+$color-overlay: rgba(14, 31, 47, 0.85);  // Overlay escuro
 
-// Radius & shadows
+// Gradientes de fundo
+$gradient-bg-primary: radial-gradient(circle at top left, rgba(0, 198, 255, 0.16), transparent 50%),
+                      radial-gradient(circle at bottom right, rgba(61, 220, 151, 0.18), transparent 55%),
+                      linear-gradient(160deg, rgba(14, 31, 47, 0.92), rgba(14, 31, 47, 0.86));
+
+$gradient-sidebar: linear-gradient(180deg, rgba(19, 58, 84, 0.95), rgba(12, 27, 40, 0.95));
+
+// Accent & semantic colors
+$color-accent: #00c6ff;            // Accent principal (links, CTAs)
+$color-accent-light: #5be3ff;      // Accent claro (hover, highlights)
+$color-accent-soft: rgba(0, 198, 255, 0.12);  // Accent com alpha baixo
+$color-accent-dark: #0095cc;       // Accent escuro
+
+$color-success: #3ddc97;           // Success (passou, completo)
+$color-success-soft: rgba(61, 220, 151, 0.14);
+$color-danger: #ff6b6b;            // Danger (falhou, crítico)
+$color-danger-soft: rgba(255, 107, 107, 0.18);
+$color-warning: #ffd166;           // Warning (atenção, médio)
+$color-warning-soft: rgba(255, 209, 102, 0.16);
+$color-info: #6c8eef;              // Info (informativo)
+$color-info-soft: rgba(108, 142, 239, 0.12);
+
+// Severity colors (para findings)
+$color-severity-critical: #ff6b6b;
+$color-severity-high: #ffa64d;
+$color-severity-medium: #ffd166;
+$color-severity-low: #3ddc97;
+$color-severity-info: #00c6ff;
+
+// Text colors
+$color-text-primary: #f8f9fa;      // Texto principal (alto contraste)
+$color-text-secondary: #d1d5db;    // Texto secundário
+$color-text-muted: rgba(209, 213, 219, 0.7);  // Texto de suporte
+$color-text-dark: #041625;         // Texto em backgrounds claros
+
+// Border & dividers
+$color-border: rgba(0, 198, 255, 0.25);       // Borda com accent
+$color-border-subtle: rgba(209, 213, 219, 0.15);  // Borda sutil
+$color-border-strong: rgba(0, 198, 255, 0.45);    // Borda forte
+
+// Interactive states
+$color-hover: rgba(0, 198, 255, 0.08);
+$color-active: rgba(0, 198, 255, 0.16);
+$color-focus-ring: rgba(0, 198, 255, 0.25);
+$color-disabled: rgba(209, 213, 219, 0.3);
+
+// ----------------------------------------------------------------------------
+// 2. TYPOGRAPHY SYSTEM
+// ----------------------------------------------------------------------------
+
+// Font families
+$font-family-base: 'Inter', 'Poppins', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+$font-family-mono: 'Fira Code', 'Source Code Pro', 'Consolas', 'Monaco', monospace;
+$font-family-heading: 'Inter', 'Poppins', sans-serif;
+
+// Font sizes (escala tipográfica 1.25)
+$font-size-xs: 0.75rem;       // 12px
+$font-size-sm: 0.875rem;      // 14px
+$font-size-md: 1rem;          // 16px (base)
+$font-size-lg: 1.25rem;       // 20px
+$font-size-xl: 1.5rem;        // 24px
+$font-size-2xl: 2rem;         // 32px
+$font-size-3xl: 2.5rem;       // 40px
+$font-size-4xl: 3rem;         // 48px
+
+// Font weights
+$font-weight-light: 300;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+$font-weight-extrabold: 800;
+
+// Line heights
+$line-height-tight: 1.25;
+$line-height-snug: 1.4;
+$line-height-normal: 1.6;
+$line-height-relaxed: 1.75;
+$line-height-loose: 2;
+
+// Letter spacing
+$letter-spacing-tight: -0.01em;
+$letter-spacing-normal: 0;
+$letter-spacing-wide: 0.01em;
+$letter-spacing-wider: 0.05em;
+$letter-spacing-widest: 0.12em;
+
+// ----------------------------------------------------------------------------
+// 3. LAYOUT & SPACING
+// ----------------------------------------------------------------------------
+
+// Spacing scale (4px base – sistema de 8pt grid)
+$spacing-0: 0;
+$spacing-1: 0.25rem;   // 4px
+$spacing-2: 0.5rem;    // 8px
+$spacing-3: 0.75rem;   // 12px
+$spacing-4: 1rem;      // 16px
+$spacing-5: 1.25rem;   // 20px
+$spacing-6: 1.5rem;    // 24px
+$spacing-7: 1.75rem;   // 28px
+$spacing-8: 2rem;      // 32px
+$spacing-9: 2.5rem;    // 40px
+$spacing-10: 3rem;     // 48px
+$spacing-12: 3.5rem;   // 56px
+$spacing-16: 4rem;     // 64px
+$spacing-20: 5rem;     // 80px
+$spacing-24: 6rem;     // 96px
+
+// Container & breakpoints
+$container-max-width: 1440px;
+$container-padding: $spacing-6;
+
+$breakpoint-xs: 480px;
+$breakpoint-sm: 640px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
+$breakpoint-2xl: 1536px;
+
+// Grid system
+$grid-columns: 12;
+$grid-gutter: $spacing-6;
+
+// ----------------------------------------------------------------------------
+// 4. ELEVATION & EFFECTS
+// ----------------------------------------------------------------------------
+
+// Border radius
+$radius-none: 0;
 $radius-sm: 8px;
-$radius-md: 16px;
-$radius-lg: 24px;
-$shadow-soft: 0 16px 38px rgba(3, 16, 32, 0.45);
-$shadow-hard: 0 22px 60px rgba(0, 0, 0, 0.45);
+$radius-md: 12px;
+$radius-lg: 16px;
+$radius-xl: 24px;
+$radius-2xl: 32px;
+$radius-full: 9999px;
 
-// Spacing scale (4px base)
-$spacing-1: 0.25rem;
-$spacing-2: 0.5rem;
-$spacing-3: 0.75rem;
-$spacing-4: 1rem;
-$spacing-5: 1.25rem;
-$spacing-6: 1.5rem;
-$spacing-7: 1.75rem;
-$spacing-8: 2rem;
-$spacing-9: 2.5rem;
-$spacing-10: 3rem;
+// Shadows (elevation system)
+$shadow-none: none;
+$shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+$shadow-md: 0 4px 8px rgba(0, 0, 0, 0.2);
+$shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.3);
+$shadow-xl: 0 16px 38px rgba(3, 16, 32, 0.45);
+$shadow-2xl: 0 22px 60px rgba(0, 0, 0, 0.45);
+$shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 
-// Mixins
+// Glow effects (para accent)
+$glow-accent: 0 0 20px rgba(0, 198, 255, 0.3);
+$glow-success: 0 0 20px rgba(61, 220, 151, 0.3);
+$glow-danger: 0 0 20px rgba(255, 107, 107, 0.3);
+
+// ----------------------------------------------------------------------------
+// 5. ANIMATIONS & TRANSITIONS
+// ----------------------------------------------------------------------------
+
+// Durations
+$duration-instant: 50ms;
+$duration-fast: 150ms;
+$duration-base: 200ms;
+$duration-slow: 300ms;
+$duration-slower: 500ms;
+
+// Easing functions
+$ease-linear: linear;
+$ease-in: cubic-bezier(0.4, 0, 1, 1);
+$ease-out: cubic-bezier(0, 0, 0.2, 1);
+$ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+$ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+// Common transitions
+$transition-base: all $duration-base $ease-in-out;
+$transition-fast: all $duration-fast $ease-out;
+$transition-slow: all $duration-slow $ease-in-out;
+$transition-colors: color $duration-base $ease-in-out,
+                    background-color $duration-base $ease-in-out,
+                    border-color $duration-base $ease-in-out;
+$transition-transform: transform $duration-base $ease-out;
+
+// ----------------------------------------------------------------------------
+// 6. Z-INDEX SYSTEM
+// ----------------------------------------------------------------------------
+
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 1040;
+$z-index-modal: 1050;
+$z-index-popover: 1060;
+$z-index-tooltip: 1070;
+$z-index-notification: 1080;
+
+// ============================================================================
+// 7. MIXINS & UTILITIES
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// 7.1 Responsive Mixins
+// ----------------------------------------------------------------------------
+
+@mixin media-xs {
+  @media (min-width: $breakpoint-xs) { @content; }
+}
+
+@mixin media-sm {
+  @media (min-width: $breakpoint-sm) { @content; }
+}
+
+@mixin media-md {
+  @media (min-width: $breakpoint-md) { @content; }
+}
+
+@mixin media-lg {
+  @media (min-width: $breakpoint-lg) { @content; }
+}
+
+@mixin media-xl {
+  @media (min-width: $breakpoint-xl) { @content; }
+}
+
+@mixin media-2xl {
+  @media (min-width: $breakpoint-2xl) { @content; }
+}
+
+// Mobile-first max-width
+@mixin media-max-sm {
+  @media (max-width: $breakpoint-sm - 1) { @content; }
+}
+
+@mixin media-max-md {
+  @media (max-width: $breakpoint-md - 1) { @content; }
+}
+
+@mixin media-max-lg {
+  @media (max-width: $breakpoint-lg - 1) { @content; }
+}
+
+// ----------------------------------------------------------------------------
+// 7.2 Layout & Effects Mixins
+// ----------------------------------------------------------------------------
+
+// Glass morphism panel
 @mixin glass-panel($bg: rgba(14, 31, 47, 0.45)) {
   background: $bg;
+  backdrop-filter: blur(8px);
   border-radius: $radius-lg;
   border: 1px solid $color-border-subtle;
   box-shadow: inset 0 0 0 1px rgba(0, 198, 255, 0.05);
 }
 
-@mixin focus-ring {
-  outline: none;
-  border-color: rgba(0, 198, 255, 0.65);
-  box-shadow: 0 0 0 3px rgba(0, 198, 255, 0.25);
-}
-
-@mixin tag($border-color, $bg-color) {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: $font-size-xs;
-  border: 1px solid $border-color;
-  background: $bg-color;
-}
-
-// Buttons
-%btn-base {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  border-radius: $radius-md;
-  border: 1px solid transparent;
-  padding: $spacing-3 $spacing-4;
-  cursor: pointer;
-  text-decoration: none;
-  transition: 180ms ease;
-}
-
-.btn-primary {
-  @extend %btn-base;
-  background: linear-gradient(135deg, $color-accent, lighten($color-accent, 18%));
-  color: #041625;
-  box-shadow: $shadow-soft;
+// Elevated card with shadow
+@mixin card-elevated {
+  background: rgba(8, 21, 33, 0.92);
+  border-radius: $radius-lg;
+  border: 1px solid $color-border;
+  box-shadow: $shadow-xl;
+  transition: $transition-base;
 
   &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 18px 40px rgba(1, 12, 24, 0.35);
+    transform: translateY(-2px);
+    box-shadow: $shadow-2xl;
+    border-color: $color-border-strong;
   }
 }
 
-.btn-secondary {
-  @extend %btn-base;
-  background: $color-accent-soft;
-  border-color: rgba(0, 198, 255, 0.35);
-  color: $color-text-primary;
+// Focus ring (acessibilidade)
+@mixin focus-ring {
+  outline: none;
+  border-color: rgba(0, 198, 255, 0.65);
+  box-shadow: 0 0 0 3px $color-focus-ring;
 }
 
-.btn-tertiary {
-  @extend %btn-base;
+// Visually hidden (screen reader only)
+@mixin sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+// Truncate text
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Line clamp
+@mixin line-clamp($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// Flex center
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Grid auto-fill responsive
+@mixin grid-auto-fill($min-width: 250px, $gap: $spacing-6) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax($min-width, 1fr));
+  gap: $gap;
+}
+
+// Smooth scrolling
+@mixin smooth-scroll {
+  scroll-behavior: smooth;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 198, 255, 0.25);
+    border-radius: $radius-full;
+
+    &:hover {
+      background: rgba(0, 198, 255, 0.4);
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 7.3 Component Mixins
+// ----------------------------------------------------------------------------
+
+// Tag/Badge component
+@mixin tag($border-color, $bg-color, $text-color: $color-text-primary) {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-1;
+  padding: 0.25rem 0.75rem;
+  border-radius: $radius-full;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  border: 1px solid $border-color;
+  background: $bg-color;
+  color: $text-color;
+  line-height: 1.2;
+}
+
+// Button base
+@mixin button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-2;
+  font-weight: $font-weight-semibold;
+  font-family: $font-family-base;
+  border-radius: $radius-md;
+  border: 1px solid transparent;
+  padding: $spacing-3 $spacing-5;
+  cursor: pointer;
+  text-decoration: none;
+  transition: $transition-base;
+  white-space: nowrap;
+  user-select: none;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+// Input base
+@mixin input-base {
+  width: 100%;
   background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.12);
-  color: $color-text-secondary;
+  border: 1px solid $color-border-subtle;
+  border-radius: $radius-md;
+  padding: $spacing-3 $spacing-4;
+  color: $color-text-primary;
+  font-family: $font-family-base;
+  font-size: $font-size-md;
+  line-height: $line-height-normal;
+  transition: $transition-colors;
+
+  &::placeholder {
+    color: $color-text-muted;
+  }
+
+  &:hover {
+    border-color: $color-border;
+  }
+
+  &:focus {
+    @include focus-ring;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
-// Cards
+// Modal overlay
+@mixin modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: $z-index-modal-backdrop;
+  display: grid;
+  place-items: center;
+  padding: $spacing-6;
+  animation: fadeIn $duration-base $ease-out;
+}
+
+// Animation keyframes
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// ============================================================================
+// 8. COMPONENT CLASSES
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// 8.1 Buttons
+// ----------------------------------------------------------------------------
+
+.btn {
+  @include button-base;
+  font-size: $font-size-sm;
+
+  // Sizes
+  &--sm {
+    padding: $spacing-2 $spacing-4;
+    font-size: $font-size-xs;
+  }
+
+  &--lg {
+    padding: $spacing-4 $spacing-6;
+    font-size: $font-size-md;
+  }
+
+  // Variants
+  &--primary {
+    background: linear-gradient(135deg, $color-accent, $color-accent-light);
+    color: $color-text-dark;
+    box-shadow: $shadow-xl;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: $shadow-2xl, $glow-accent;
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+  }
+
+  &--secondary {
+    background: $color-accent-soft;
+    border-color: $color-border-strong;
+    color: $color-text-primary;
+
+    &:hover:not(:disabled) {
+      background: $color-active;
+      border-color: $color-accent;
+    }
+  }
+
+  &--tertiary {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: $color-border-subtle;
+    color: $color-text-secondary;
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.08);
+      color: $color-text-primary;
+    }
+  }
+
+  &--ghost {
+    background: transparent;
+    border-color: transparent;
+    color: $color-text-secondary;
+
+    &:hover:not(:disabled) {
+      background: $color-hover;
+    }
+  }
+
+  &--danger {
+    background: $color-danger;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: darken($color-danger, 5%);
+      box-shadow: $shadow-lg, $glow-danger;
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 8.2 Cards & Panels
+// ----------------------------------------------------------------------------
+
 .card {
   @include glass-panel(rgba(8, 21, 33, 0.92));
   padding: $spacing-6;
   display: grid;
   gap: $spacing-4;
+
+  &--elevated {
+    @include card-elevated;
+  }
+
+  &--compact {
+    padding: $spacing-4;
+  }
 }
 
 .metric-card {
@@ -124,41 +595,465 @@ $spacing-10: 3rem;
   background: rgba(12, 28, 45, 0.85);
   border-color: rgba(0, 198, 255, 0.16);
 
-  header {
+  &__header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     color: $color-text-muted;
     font-size: $font-size-sm;
   }
 
-  .metric-value {
-    font-size: $font-size-2xl;
-    line-height: 1;
+  &__value {
+    font-size: $font-size-3xl;
+    font-weight: $font-weight-bold;
+    line-height: $line-height-tight;
+    color: $color-accent;
+    margin: $spacing-2 0;
+  }
+
+  &__subtitle {
+    margin: 0;
+    color: $color-text-muted;
+    font-size: $font-size-sm;
+  }
+
+  &__trend {
+    display: flex;
+    align-items: center;
+    gap: $spacing-1;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+
+    &--up {
+      color: $color-success;
+    }
+
+    &--down {
+      color: $color-danger;
+    }
   }
 }
 
-// Tags helpers
-.tag-critical { @include tag(rgba(255, 107, 107, 0.6), rgba(255, 107, 107, 0.18)); }
-.tag-high { @include tag(rgba(255, 166, 77, 0.6), rgba(255, 166, 77, 0.18)); }
-.tag-medium { @include tag(rgba(255, 209, 102, 0.55), rgba(255, 209, 102, 0.16)); }
-.tag-low { @include tag(rgba(61, 220, 151, 0.55), rgba(61, 220, 151, 0.14)); }
-.tag-info { @include tag(rgba(0, 198, 255, 0.55), rgba(0, 198, 255, 0.12)); }
+// ----------------------------------------------------------------------------
+// 8.3 Tags & Badges
+// ----------------------------------------------------------------------------
 
-// Table styles for PDF
-.report-table {
+.tag {
+  @include tag($color-border, rgba(255, 255, 255, 0.04));
+
+  // Severity variants
+  &--critical {
+    @include tag(
+      rgba($color-severity-critical, 0.6),
+      rgba($color-severity-critical, 0.18),
+      $color-severity-critical
+    );
+  }
+
+  &--high {
+    @include tag(
+      rgba($color-severity-high, 0.6),
+      rgba($color-severity-high, 0.18),
+      $color-severity-high
+    );
+  }
+
+  &--medium {
+    @include tag(
+      rgba($color-severity-medium, 0.55),
+      rgba($color-severity-medium, 0.16),
+      $color-severity-medium
+    );
+  }
+
+  &--low {
+    @include tag(
+      rgba($color-severity-low, 0.55),
+      rgba($color-severity-low, 0.14),
+      $color-severity-low
+    );
+  }
+
+  &--info {
+    @include tag(
+      rgba($color-severity-info, 0.55),
+      rgba($color-severity-info, 0.12),
+      $color-severity-info
+    );
+  }
+
+  // Status variants
+  &--success {
+    @include tag(
+      rgba($color-success, 0.6),
+      $color-success-soft,
+      $color-success
+    );
+  }
+
+  &--danger {
+    @include tag(
+      rgba($color-danger, 0.6),
+      $color-danger-soft,
+      $color-danger
+    );
+  }
+
+  &--warning {
+    @include tag(
+      rgba($color-warning, 0.6),
+      $color-warning-soft,
+      $color-warning
+    );
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 8.4 Forms & Inputs
+// ----------------------------------------------------------------------------
+
+.input {
+  @include input-base;
+
+  &--sm {
+    padding: $spacing-2 $spacing-3;
+    font-size: $font-size-sm;
+  }
+
+  &--lg {
+    padding: $spacing-4 $spacing-5;
+    font-size: $font-size-lg;
+  }
+
+  &--error {
+    border-color: $color-danger;
+
+    &:focus {
+      border-color: $color-danger;
+      box-shadow: 0 0 0 3px rgba($color-danger, 0.25);
+    }
+  }
+
+  &--success {
+    border-color: $color-success;
+  }
+}
+
+.label {
+  display: block;
+  margin-bottom: $spacing-2;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-secondary;
+
+  &--required::after {
+    content: '*';
+    color: $color-danger;
+    margin-left: $spacing-1;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 8.5 Progress & Loading
+// ----------------------------------------------------------------------------
+
+.progress {
+  width: 100%;
+  height: 8px;
+  border-radius: $radius-full;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+
+  &__bar {
+    height: 100%;
+    background: linear-gradient(90deg, $color-accent, $color-accent-light);
+    border-radius: $radius-full;
+    transition: width $duration-slow $ease-out;
+  }
+
+  &--sm {
+    height: 4px;
+  }
+
+  &--lg {
+    height: 12px;
+  }
+
+  // Animated variant
+  &--animated &__bar {
+    animation: pulse 2s ease-in-out infinite;
+  }
+}
+
+// Radial progress (circular)
+.progress-radial {
+  position: relative;
+  width: 160px;
+  height: 160px;
+
+  &__svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  &__bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 3;
+  }
+
+  &__bar {
+    fill: none;
+    stroke: $color-accent;
+    stroke-width: 3;
+    stroke-linecap: round;
+    transition: stroke-dasharray $duration-slow $ease-out;
+  }
+
+  &__label {
+    position: absolute;
+    inset: 0;
+    @include flex-center;
+    flex-direction: column;
+    text-align: center;
+
+    strong {
+      font-size: $font-size-2xl;
+      font-weight: $font-weight-bold;
+    }
+
+    span {
+      font-size: $font-size-sm;
+      color: $color-text-muted;
+    }
+  }
+}
+
+// Spinner
+.spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(0, 198, 255, 0.2);
+  border-top-color: $color-accent;
+  border-radius: $radius-full;
+  animation: spin 0.8s linear infinite;
+
+  &--sm {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+  }
+
+  &--lg {
+    width: 32px;
+    height: 32px;
+    border-width: 4px;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 8.6 Modal & Overlay
+// ----------------------------------------------------------------------------
+
+.modal {
+  @include modal-overlay;
+
+  &__content {
+    background: $color-bg-modal;
+    border-radius: $radius-xl;
+    border: 1px solid $color-border-strong;
+    width: min(960px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    @include smooth-scroll;
+    box-shadow: $shadow-2xl;
+    animation: slideUp $duration-slow $ease-out;
+  }
+
+  &__header {
+    padding: $spacing-7;
+    border-bottom: 1px solid $color-border-subtle;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $color-text-primary;
+  }
+
+  &__description {
+    margin: $spacing-2 0 0;
+    color: $color-text-secondary;
+  }
+
+  &__body {
+    padding: $spacing-7;
+  }
+
+  &__footer {
+    padding: $spacing-6 $spacing-7;
+    border-top: 1px solid $color-border-subtle;
+    display: flex;
+    gap: $spacing-3;
+    justify-content: flex-end;
+  }
+
+  &__close {
+    position: absolute;
+    top: $spacing-4;
+    right: $spacing-4;
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    border-radius: $radius-full;
+    width: 32px;
+    height: 32px;
+    @include flex-center;
+    color: $color-text-primary;
+    cursor: pointer;
+    transition: $transition-base;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.14);
+      transform: rotate(90deg);
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 8.7 Tables
+// ----------------------------------------------------------------------------
+
+.table {
   width: 100%;
   border-collapse: collapse;
+  font-size: $font-size-sm;
 
   th {
-    background: $color-bg-primary;
+    background: $color-bg-elevated;
     color: $color-text-primary;
-    padding: 0.75rem;
+    font-weight: $font-weight-semibold;
+    padding: $spacing-3 $spacing-4;
     text-align: left;
+    border-bottom: 2px solid $color-border;
   }
 
   td {
-    border-bottom: 1px solid rgba(14, 31, 47, 0.12);
-    padding: 0.65rem 0.75rem;
+    border-bottom: 1px solid $color-border-subtle;
+    padding: $spacing-3 $spacing-4;
     vertical-align: top;
+    color: $color-text-secondary;
+  }
+
+  tr:hover td {
+    background: $color-hover;
+  }
+
+  // Striped variant
+  &--striped tbody tr:nth-child(even) td {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  // Bordered variant
+  &--bordered {
+    border: 1px solid $color-border-subtle;
+
+    th,
+    td {
+      border: 1px solid $color-border-subtle;
+    }
+  }
+
+  // Compact variant
+  &--compact {
+    th,
+    td {
+      padding: $spacing-2 $spacing-3;
+    }
   }
 }
+
+// ============================================================================
+// 9. UTILITY CLASSES
+// ============================================================================
+
+// Text utilities
+.text {
+  &--primary { color: $color-text-primary; }
+  &--secondary { color: $color-text-secondary; }
+  &--muted { color: $color-text-muted; }
+  &--accent { color: $color-accent; }
+  &--success { color: $color-success; }
+  &--danger { color: $color-danger; }
+  &--warning { color: $color-warning; }
+
+  &--xs { font-size: $font-size-xs; }
+  &--sm { font-size: $font-size-sm; }
+  &--md { font-size: $font-size-md; }
+  &--lg { font-size: $font-size-lg; }
+  &--xl { font-size: $font-size-xl; }
+  &--2xl { font-size: $font-size-2xl; }
+
+  &--light { font-weight: $font-weight-light; }
+  &--normal { font-weight: $font-weight-normal; }
+  &--medium { font-weight: $font-weight-medium; }
+  &--semibold { font-weight: $font-weight-semibold; }
+  &--bold { font-weight: $font-weight-bold; }
+
+  &--center { text-align: center; }
+  &--left { text-align: left; }
+  &--right { text-align: right; }
+
+  &--uppercase { text-transform: uppercase; }
+  &--lowercase { text-transform: lowercase; }
+  &--capitalize { text-transform: capitalize; }
+
+  &--truncate { @include truncate; }
+  &--mono { font-family: $font-family-mono; }
+}
+
+// Spacing utilities
+@each $size in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10) {
+  .mt-#{$size} { margin-top: var(--spacing-#{$size}); }
+  .mb-#{$size} { margin-bottom: var(--spacing-#{$size}); }
+  .ml-#{$size} { margin-left: var(--spacing-#{$size}); }
+  .mr-#{$size} { margin-right: var(--spacing-#{$size}); }
+  .mx-#{$size} { margin-left: var(--spacing-#{$size}); margin-right: var(--spacing-#{$size}); }
+  .my-#{$size} { margin-top: var(--spacing-#{$size}); margin-bottom: var(--spacing-#{$size}); }
+
+  .pt-#{$size} { padding-top: var(--spacing-#{$size}); }
+  .pb-#{$size} { padding-bottom: var(--spacing-#{$size}); }
+  .pl-#{$size} { padding-left: var(--spacing-#{$size}); }
+  .pr-#{$size} { padding-right: var(--spacing-#{$size}); }
+  .px-#{$size} { padding-left: var(--spacing-#{$size}); padding-right: var(--spacing-#{$size}); }
+  .py-#{$size} { padding-top: var(--spacing-#{$size}); padding-bottom: var(--spacing-#{$size}); }
+}
+
+// Display utilities
+.d-none { display: none !important; }
+.d-block { display: block !important; }
+.d-inline { display: inline !important; }
+.d-inline-block { display: inline-block !important; }
+.d-flex { display: flex !important; }
+.d-grid { display: grid !important; }
+
+// Flex utilities
+.flex-row { flex-direction: row; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.items-end { align-items: flex-end; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.justify-around { justify-content: space-around; }
+.flex-wrap { flex-wrap: wrap; }
+.flex-1 { flex: 1; }
+
+// Visibility
+.sr-only { @include sr-only; }
+
+// ============================================================================
+// END OF DESIGN SYSTEM
+// ============================================================================

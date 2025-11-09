@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard • AppSec Checklist & Guide – High Fidelity Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ====================================================================
+     * Design System Tokens
+     * ==================================================================== */
+    :root {
+      --color-bg-primary: #0e1f2f;
+      --color-bg-elevated: #132a3f;
+      --color-bg-surface: #17344b;
+      --color-surface-alt: #1d3d58;
+      --color-bg-modal: #061421;
+
+      --color-accent: #00c6ff;
+      --color-accent-light: #5be3ff;
+      --color-success: #3ddc97;
+      --color-danger: #ff6b6b;
+      --color-warning: #ffd166;
+      --color-info: #6c8eef;
+
+      --color-text-primary: #f8f9fa;
+      --color-text-secondary: #d1d5db;
+      --color-text-muted: rgba(209, 213, 219, 0.7);
+
+      --color-border: rgba(0, 198, 255, 0.25);
+      --color-border-subtle: rgba(209, 213, 219, 0.15);
+      --color-border-strong: rgba(0, 198, 255, 0.45);
+
+      --font-family-base: 'Inter', -apple-system, sans-serif;
+      --spacing-4: 1rem;
+      --spacing-6: 1.5rem;
+      --spacing-8: 2rem;
+
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+
+      --shadow-xl: 0 16px 38px rgba(3, 16, 32, 0.45);
+      --shadow-2xl: 0 22px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-family-base);
+      background: var(--color-bg-primary);
+      background-image:
+        radial-gradient(circle at top left, rgba(0, 198, 255, 0.16), transparent 50%),
+        radial-gradient(circle at bottom right, rgba(61, 220, 151, 0.18), transparent 55%),
+        linear-gradient(160deg, rgba(14, 31, 47, 0.92), rgba(14, 31, 47, 0.86));
+      color: var(--color-text-primary);
+      min-height: 100vh;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      min-height: 100vh;
+    }
+
+    /* ====================================================================
+     * Sidebar
+     * ==================================================================== */
+    .sidebar {
+      background: linear-gradient(180deg, rgba(19, 58, 84, 0.95), rgba(12, 27, 40, 0.95));
+      padding: var(--spacing-8) var(--spacing-6);
+      border-right: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-6);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .brand-block {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-4);
+    }
+
+    .brand-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: radial-gradient(circle at 30% 20%, rgba(0, 198, 255, 0.9), rgba(0, 198, 255, 0.2));
+      display: grid;
+      place-items: center;
+      font-size: 2rem;
+    }
+
+    .brand-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-subtitle {
+      margin: 0.25rem 0 0;
+      color: var(--color-text-muted);
+      font-size: 0.875rem;
+    }
+
+    .nav-section {
+      background: rgba(14, 31, 47, 0.45);
+      padding: var(--spacing-4);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border-subtle);
+    }
+
+    .section-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--color-text-muted);
+      margin: 0 0 var(--spacing-4);
+    }
+
+    .nav-link {
+      display: block;
+      padding: 0.75rem var(--spacing-4);
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid transparent;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      margin-bottom: 0.5rem;
+      transition: all 180ms ease;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      background: rgba(0, 198, 255, 0.12);
+      border-color: var(--color-border-strong);
+      color: var(--color-text-primary);
+      transform: translateY(-1px);
+    }
+
+    .nav-link strong {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .nav-link small {
+      font-size: 0.8125rem;
+      color: var(--color-text-muted);
+    }
+
+    /* ====================================================================
+     * Main Content
+     * ==================================================================== */
+    .main-content {
+      padding: var(--spacing-8);
+      display: grid;
+      gap: var(--spacing-8);
+    }
+
+    .page-header {
+      display: grid;
+      gap: var(--spacing-6);
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--spacing-6);
+      flex-wrap: wrap;
+    }
+
+    .header-titles {
+      flex: 1;
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--color-text-muted);
+      font-size: 0.75rem;
+      margin: 0 0 0.5rem;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem;
+      letter-spacing: -0.01em;
+    }
+
+    .page-description {
+      color: var(--color-text-secondary);
+      margin: 0;
+    }
+
+    .header-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(160px, 1fr));
+      gap: var(--spacing-4);
+      min-width: 500px;
+    }
+
+    .meta-card {
+      background: rgba(12, 30, 46, 0.6);
+      padding: var(--spacing-4);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border-subtle);
+    }
+
+    .meta-card strong {
+      display: block;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.35rem;
+    }
+
+    .meta-card p {
+      margin: 0;
+      font-size: 0.9375rem;
+      color: var(--color-text-primary);
+    }
+
+    /* ====================================================================
+     * Metrics Grid
+     * ==================================================================== */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--spacing-6);
+    }
+
+    .metric-card {
+      background: rgba(12, 28, 45, 0.85);
+      border-radius: var(--radius-xl);
+      border: 1px solid rgba(0, 198, 255, 0.16);
+      padding: var(--spacing-6);
+      box-shadow: var(--shadow-xl);
+      transition: all 200ms ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-2xl);
+      border-color: var(--color-border-strong);
+    }
+
+    .metric-card__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-4);
+    }
+
+    .metric-label {
+      font-size: 0.875rem;
+      color: var(--color-text-muted);
+      font-weight: 500;
+    }
+
+    .metric-icon {
+      font-size: 1.5rem;
+      opacity: 0.7;
+    }
+
+    .metric-value {
+      font-size: 2.5rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin: 0.5rem 0;
+      color: var(--color-accent);
+    }
+
+    .metric-subtitle {
+      font-size: 0.8125rem;
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+
+    .metric-trend {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      margin-top: 0.75rem;
+    }
+
+    .metric-trend--up {
+      color: var(--color-success);
+    }
+
+    .metric-trend--down {
+      color: var(--color-danger);
+    }
+
+    /* ====================================================================
+     * Progress Panel with Charts
+     * ==================================================================== */
+    .progress-section {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: var(--spacing-8);
+      background: rgba(12, 30, 46, 0.85);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--color-border);
+      padding: var(--spacing-8);
+      box-shadow: var(--shadow-xl);
+    }
+
+    .radial-chart {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: conic-gradient(
+        var(--color-accent) 0deg 252deg,
+        rgba(255, 255, 255, 0.08) 252deg 360deg
+      );
+      display: grid;
+      place-items: center;
+      margin: auto;
+    }
+
+    .radial-chart::before {
+      content: '';
+      position: absolute;
+      inset: 16px;
+      background: var(--color-bg-elevated);
+      border-radius: 50%;
+    }
+
+    .radial-label {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .radial-label strong {
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1;
+      display: block;
+    }
+
+    .radial-label span {
+      font-size: 0.9375rem;
+      color: var(--color-text-muted);
+    }
+
+    .progress-details h3 {
+      margin: 0 0 0.75rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .progress-details p {
+      color: var(--color-text-secondary);
+      margin: 0 0 var(--spacing-6);
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--spacing-4);
+      margin-bottom: var(--spacing-6);
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .status-bullet {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .status-bullet--success { background: var(--color-success); }
+    .status-bullet--danger { background: var(--color-danger); }
+    .status-bullet--warning { background: var(--color-warning); }
+    .status-bullet--muted { background: rgba(255, 255, 255, 0.2); }
+
+    .status-item span:first-of-type {
+      font-weight: 700;
+      font-size: 1.25rem;
+      min-width: 50px;
+    }
+
+    .status-item span:last-of-type {
+      color: var(--color-text-muted);
+      font-size: 0.9375rem;
+    }
+
+    /* Category Progress Bars */
+    .category-progress {
+      display: grid;
+      gap: var(--spacing-4);
+    }
+
+    .progress-row {
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .progress-row header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.875rem;
+    }
+
+    .progress-row header span:first-child {
+      color: var(--color-text-secondary);
+      font-weight: 500;
+    }
+
+    .progress-row header span:last-child {
+      color: var(--color-accent);
+      font-weight: 600;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .progress-bar__fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--color-accent), var(--color-accent-light));
+      border-radius: 999px;
+      transition: width 600ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ====================================================================
+     * Insights Panel
+     * ==================================================================== */
+    .insights-panel {
+      background: rgba(10, 24, 39, 0.92);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--color-border);
+      padding: var(--spacing-8);
+      box-shadow: var(--shadow-xl);
+    }
+
+    .insights-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-6);
+    }
+
+    .insights-header h3 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--spacing-6);
+    }
+
+    .insight-card {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border-subtle);
+      padding: var(--spacing-6);
+    }
+
+    .insight-card dt {
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.75rem;
+    }
+
+    .insight-card dd {
+      margin: 0;
+      color: var(--color-text-primary);
+      line-height: 1.6;
+    }
+
+    .risk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .risk-badge--critical {
+      background: rgba(255, 107, 107, 0.18);
+      border: 1px solid rgba(255, 107, 107, 0.6);
+      color: #ff6b6b;
+    }
+
+    .risk-badge--high {
+      background: rgba(255, 166, 77, 0.18);
+      border: 1px solid rgba(255, 166, 77, 0.6);
+      color: #ffa64d;
+    }
+
+    /* ====================================================================
+     * Heatmap
+     * ==================================================================== */
+    .heatmap-section {
+      background: rgba(10, 24, 39, 0.92);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--color-border);
+      padding: var(--spacing-8);
+      box-shadow: var(--shadow-xl);
+    }
+
+    .heatmap-header {
+      margin-bottom: var(--spacing-6);
+    }
+
+    .heatmap-header h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .heatmap-header p {
+      margin: 0;
+      color: var(--color-text-secondary);
+    }
+
+    .heatmap {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: var(--spacing-4);
+    }
+
+    .heatmap-y-labels {
+      display: grid;
+      grid-template-rows: repeat(5, 1fr);
+      gap: 4px;
+    }
+
+    .heatmap-y-labels span {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: var(--spacing-4);
+      font-size: 0.8125rem;
+      color: var(--color-text-muted);
+      font-weight: 500;
+    }
+
+    .heatmap-grid {
+      display: grid;
+      grid-template-rows: repeat(5, 1fr);
+      grid-template-columns: repeat(10, 1fr);
+      gap: 4px;
+    }
+
+    .heatmap-cell {
+      aspect-ratio: 1;
+      border-radius: 6px;
+      transition: all 150ms ease;
+      cursor: pointer;
+    }
+
+    .heatmap-cell:hover {
+      transform: scale(1.15);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .heatmap-cell--none { background: rgba(255, 255, 255, 0.05); }
+    .heatmap-cell--low { background: rgba(61, 220, 151, 0.3); }
+    .heatmap-cell--medium { background: rgba(255, 209, 102, 0.4); }
+    .heatmap-cell--high { background: rgba(255, 166, 77, 0.5); }
+    .heatmap-cell--critical { background: rgba(255, 107, 107, 0.6); }
+
+    .heatmap-legend {
+      display: flex;
+      gap: var(--spacing-6);
+      justify-content: center;
+      margin-top: var(--spacing-6);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8125rem;
+      color: var(--color-text-muted);
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+    }
+
+    /* ====================================================================
+     * Chart Container (for future integration)
+     * ==================================================================== */
+    .chart-container {
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border-subtle);
+      padding: var(--spacing-6);
+      min-height: 280px;
+      display: grid;
+      place-items: center;
+    }
+
+    .chart-placeholder {
+      text-align: center;
+      color: var(--color-text-muted);
+    }
+
+    .chart-placeholder svg {
+      width: 200px;
+      height: 120px;
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand-block">
+        <div class="brand-logo">🔒</div>
+        <div>
+          <h1 class="brand-title">AppSec Checklist</h1>
+          <p class="brand-subtitle">OWASP • Cloud • DevSecOps</p>
+        </div>
+      </div>
+
+      <nav class="nav-section">
+        <h2 class="section-label">Domínios</h2>
+        <a href="#" class="nav-link active">
+          <strong>OWASP Web</strong>
+          <small>Top 10 (2021) + Lógica de Negócio</small>
+        </a>
+        <a href="#" class="nav-link">
+          <strong>OWASP API</strong>
+          <small>Autenticação, BOLA/BFLA, Rate Limit</small>
+        </a>
+        <a href="#" class="nav-link">
+          <strong>Mobile Security</strong>
+          <small>iOS/Android Storage, Pinning, Reverse</small>
+        </a>
+        <a href="#" class="nav-link">
+          <strong>Cloud Native</strong>
+          <small>Containers, K8s, Serverless</small>
+        </a>
+        <a href="#" class="nav-link">
+          <strong>Supply Chain</strong>
+          <small>Dependencies, SBOM, Build Pipeline</small>
+        </a>
+        <a href="#" class="nav-link">
+          <strong>Advanced Techniques</strong>
+          <small>WAF Bypass, Race Conditions, Chains</small>
+        </a>
+      </nav>
+
+      <div class="nav-section">
+        <h2 class="section-label">Workflow</h2>
+        <div style="display: grid; gap: 0.75rem; font-size: 0.875rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.25rem;">📡</span>
+            <div>
+              <strong style="display: block; font-weight: 600;">Recon</strong>
+              <small style="color: var(--color-text-muted);">Asset Discovery, CT Logs</small>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.25rem;">🧪</span>
+            <div>
+              <strong style="display: block; font-weight: 600;">Testing</strong>
+              <small style="color: var(--color-text-muted);">SAST/DAST, Manual PoCs</small>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.25rem;">🛂</span>
+            <div>
+              <strong style="display: block; font-weight: 600;">Access Control</strong>
+              <small style="color: var(--color-text-muted);">Auth, Authz, Rate Limit</small>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.25rem;">📝</span>
+            <div>
+              <strong style="display: block; font-weight: 600;">Report</strong>
+              <small style="color: var(--color-text-muted);">Evidence, Narrative, Metrics</small>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.25rem;">🛡️</span>
+            <div>
+              <strong style="display: block; font-weight: 600;">Mitigation</strong>
+              <small style="color: var(--color-text-muted);">Retest, Validate, Monitor</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Page Header -->
+      <section class="page-header">
+        <div class="header-top">
+          <div class="header-titles">
+            <p class="eyebrow">Auditoria AppSec</p>
+            <h2 class="page-title">OWASP Web Security – Sprint 24/2025</h2>
+            <p class="page-description">
+              Validando controles críticos de autenticação, autorização e lógica de negócio em API de Pagamentos.
+            </p>
+          </div>
+          <div class="header-meta">
+            <div class="meta-card">
+              <strong>Projeto</strong>
+              <p>API de Pagamentos v3.2</p>
+            </div>
+            <div class="meta-card">
+              <strong>Tester Líder</strong>
+              <p>Maria Pentester</p>
+            </div>
+            <div class="meta-card">
+              <strong>Janela</strong>
+              <p>Março 2025</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Metrics Grid -->
+      <section class="metrics-grid">
+        <article class="metric-card">
+          <div class="metric-card__header">
+            <span class="metric-label">Itens Avaliados</span>
+            <span class="metric-icon">🧾</span>
+          </div>
+          <div class="metric-value">164</div>
+          <p class="metric-subtitle">Cobertura completa do checklist OWASP Web</p>
+          <div class="metric-trend metric-trend--up">
+            <span>↗</span>
+            <span>+12% vs. sprint anterior</span>
+          </div>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-card__header">
+            <span class="metric-label">Concluídos</span>
+            <span class="metric-icon">✅</span>
+          </div>
+          <div class="metric-value">128</div>
+          <p class="metric-subtitle">78% de progresso da auditoria</p>
+          <div class="metric-trend metric-trend--up">
+            <span>↗</span>
+            <span>+8% hoje</span>
+          </div>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-card__header">
+            <span class="metric-label">Falhas Registradas</span>
+            <span class="metric-icon">🚨</span>
+          </div>
+          <div class="metric-value">9</div>
+          <p class="metric-subtitle">4 críticas / 5 altas</p>
+          <div class="metric-trend metric-trend--down">
+            <span>↘</span>
+            <span>-2 após remediação</span>
+          </div>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-card__header">
+            <span class="metric-label">Evidências</span>
+            <span class="metric-icon">📎</span>
+          </div>
+          <div class="metric-value">36</div>
+          <p class="metric-subtitle">Screenshots, logs, PoCs e payloads</p>
+          <div class="metric-trend metric-trend--up">
+            <span>↗</span>
+            <span>100% dos findings documentados</span>
+          </div>
+        </article>
+      </section>
+
+      <!-- Progress Section with Radial Chart -->
+      <section class="progress-section">
+        <div>
+          <div class="radial-chart">
+            <div class="radial-label">
+              <strong>78%</strong>
+              <span>Completo</span>
+            </div>
+          </div>
+        </div>
+        <div class="progress-details">
+          <h3>Status da Auditoria</h3>
+          <p>
+            Identificada cadeia de exploração entre bypass de rate limit e IDOR (BOLA).
+            Prioridade na validação de controles de autorização horizontais.
+          </p>
+
+          <div class="status-grid">
+            <div class="status-item">
+              <span class="status-bullet status-bullet--success"></span>
+              <span>128</span>
+              <span>Concluídos</span>
+            </div>
+            <div class="status-item">
+              <span class="status-bullet status-bullet--danger"></span>
+              <span>9</span>
+              <span>Falhas</span>
+            </div>
+            <div class="status-item">
+              <span class="status-bullet status-bullet--warning"></span>
+              <span>6</span>
+              <span>N/A</span>
+            </div>
+            <div class="status-item">
+              <span class="status-bullet status-bullet--muted"></span>
+              <span>21</span>
+              <span>Pendentes</span>
+            </div>
+          </div>
+
+          <div class="category-progress">
+            <div class="progress-row">
+              <header>
+                <span>A01 - Controle de Acesso</span>
+                <span>85%</span>
+              </header>
+              <div class="progress-bar">
+                <div class="progress-bar__fill" style="width: 85%"></div>
+              </div>
+            </div>
+            <div class="progress-row">
+              <header>
+                <span>A02 - Falhas Criptográficas</span>
+                <span>92%</span>
+              </header>
+              <div class="progress-bar">
+                <div class="progress-bar__fill" style="width: 92%"></div>
+              </div>
+            </div>
+            <div class="progress-row">
+              <header>
+                <span>A03 - Injeção</span>
+                <span>76%</span>
+              </header>
+              <div class="progress-bar">
+                <div class="progress-bar__fill" style="width: 76%"></div>
+              </div>
+            </div>
+            <div class="progress-row">
+              <header>
+                <span>A04 - Design Inseguro</span>
+                <span>68%</span>
+              </header>
+              <div class="progress-bar">
+                <div class="progress-bar__fill" style="width: 68%"></div>
+              </div>
+            </div>
+            <div class="progress-row">
+              <header>
+                <span>A05 - Configuração Incorreta</span>
+                <span>90%</span>
+              </header>
+              <div class="progress-bar">
+                <div class="progress-bar__fill" style="width: 90%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Insights Panel -->
+      <section class="insights-panel">
+        <div class="insights-header">
+          <h3>Insights da Rodada</h3>
+          <p style="margin: 0; color: var(--color-text-secondary);">
+            Análise de risco e priorização baseada em severidade, exploitabilidade e impacto
+          </p>
+        </div>
+
+        <div class="insights-grid">
+          <dl class="insight-card">
+            <dt>🔥 Top Riscos</dt>
+            <dd>
+              <span class="risk-badge risk-badge--critical">CRITICAL</span>
+              <span class="risk-badge risk-badge--critical">CRITICAL</span>
+              <span class="risk-badge risk-badge--high">HIGH</span>
+              <span class="risk-badge risk-badge--high">HIGH</span>
+              <br/><br/>
+              <strong>BOLA no endpoint /api/users/:id/transactions</strong> permite acesso cross-tenant.
+              <br/><br/>
+              <strong>Rate limit bypass</strong> via header injection permite credential stuffing em escala.
+            </dd>
+          </dl>
+
+          <dl class="insight-card">
+            <dt>📊 Seções com Gaps</dt>
+            <dd>
+              <strong>Lógica de Negócio (45% completo):</strong>
+              Race conditions em vouchers e overdraft em transferências pendentes.
+              <br/><br/>
+              <strong>Logging & Monitoring (32% completo):</strong>
+              Ausência de alertas para tentativas de bypass e falhas de autorização.
+            </dd>
+          </dl>
+
+          <dl class="insight-card">
+            <dt>🔗 Chain Exploitation</dt>
+            <dd>
+              <strong>Chain 1:</strong> Rate limit bypass → Credential stuffing → Account takeover (CVSS 9.8)
+              <br/><br/>
+              <strong>Chain 2:</strong> IDOR (BOLA) → SSRF via avatar URL → Internal metadata leak (CVSS 8.6)
+            </dd>
+          </dl>
+        </div>
+      </section>
+
+      <!-- Heatmap Section -->
+      <section class="heatmap-section">
+        <div class="heatmap-header">
+          <h3>Heatmap de Vulnerabilidades por Categoria</h3>
+          <p>Visualização de densidade e severidade de findings por categoria OWASP</p>
+        </div>
+
+        <div class="heatmap">
+          <div class="heatmap-y-labels">
+            <span>A01 Access</span>
+            <span>A02 Crypto</span>
+            <span>A03 Injection</span>
+            <span>A04 Design</span>
+            <span>A05 Config</span>
+          </div>
+          <div class="heatmap-grid">
+            <!-- A01 Row -->
+            <div class="heatmap-cell heatmap-cell--critical"></div>
+            <div class="heatmap-cell heatmap-cell--critical"></div>
+            <div class="heatmap-cell heatmap-cell--high"></div>
+            <div class="heatmap-cell heatmap-cell--high"></div>
+            <div class="heatmap-cell heatmap-cell--medium"></div>
+            <div class="heatmap-cell heatmap-cell--low"></div>
+            <div class="heatmap-cell heatmap-cell--low"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+
+            <!-- A02 Row -->
+            <div class="heatmap-cell heatmap-cell--high"></div>
+            <div class="heatmap-cell heatmap-cell--medium"></div>
+            <div class="heatmap-cell heatmap-cell--low"></div>
+            <div class="heatmap-cell heatmap-cell--low"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+
+            <!-- A03 Row -->
+            <div class="heatmap-cell heatmap-cell--critical"></div>
+            <div class="heatmap-cell heatmap-cell--high"></div>
+            <div class="heatmap-cell heatmap-cell--high"></div>
+            <div class="heatmap-cell heatmap-cell--medium"></div>
+            <div class="heatmap-cell heatmap-cell--medium"></div>
+            <div class="heatmap-cell heatmap-cell--low"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+
+            <!-- A04 Row -->
+            <div class="heatmap-cell heatmap-cell--medium"></div>
+            <div class="heatmap-cell heatmap-cell--medium"></div>
+            <div class="heatmap-cell heatmap-cell--low"></div>
+            <div class="heatmap-cell heatmap-cell--low"></div>
+            <div class="heatmap-cell heatmap-cell--low"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+
+            <!-- A05 Row -->
+            <div class="heatmap-cell heatmap-cell--high"></div>
+            <div class="heatmap-cell heatmap-cell--medium"></div>
+            <div class="heatmap-cell heatmap-cell--low"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+            <div class="heatmap-cell heatmap-cell--none"></div>
+          </div>
+        </div>
+
+        <div class="heatmap-legend">
+          <div class="legend-item">
+            <div class="legend-color" style="background: rgba(255, 255, 255, 0.05);"></div>
+            <span>Nenhum finding</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: rgba(61, 220, 151, 0.3);"></div>
+            <span>Low</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: rgba(255, 209, 102, 0.4);"></div>
+            <span>Medium</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: rgba(255, 166, 77, 0.5);"></div>
+            <span>High</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: rgba(255, 107, 107, 0.6);"></div>
+            <span>Critical</span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

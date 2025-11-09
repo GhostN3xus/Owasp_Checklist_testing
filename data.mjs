@@ -2398,6 +2398,869 @@ const checklistData = [
         ]
       }
     ]
+  },
+  {
+    id: "mobile-security",
+    name: "Mobile Security",
+    description: "Segurança para aplicações móveis iOS e Android - OWASP MASVS e MASTG compliance.",
+    sections: [
+      {
+        id: "mobile-storage",
+        title: "Armazenamento Seguro de Dados",
+        summary: "Proteção de dados locais, cache, keychain/keystore e backup.",
+        items: [
+          {
+            id: "mobile-storage-1",
+            title: "Validar armazenamento seguro de credenciais e tokens",
+            description: "Confirme uso de Keychain (iOS) ou Keystore (Android) para dados sensíveis.",
+            guide: {
+              overview: "Dados sensíveis nunca devem estar em UserDefaults, SharedPreferences ou arquivos plano.",
+              impact: "Exposição de credenciais via backup, jailbreak/root ou malware com acesso ao filesystem.",
+              detection: [
+                "Extract IPA/APK e inspecione plist, SharedPreferences, SQLite databases.",
+                "Use objection/Frida para dump de memória em runtime.",
+                "Verifique se backups do iCloud/Google Drive expõem dados."
+              ],
+              tools: ["objection", "Frida", "MobSF", "apktool", "jtool2"],
+              commands: [
+                "objection --gadget com.app.example explore",
+                "ios keychain dump",
+                "android sslpinning disable",
+                "apktool d app.apk -o ./decoded",
+                "grep -r 'password\\|token\\|secret' ./decoded/res ./decoded/smali"
+              ],
+              steps: [
+                "Decompile o APK/IPA e procure por hardcoded secrets.",
+                "Conecte objection e liste itens no Keychain/Keystore.",
+                "Force backup e restaure em outro device - valide se dados sensíveis vazam.",
+                "Use Frida para hook métodos de storage e interceptar writes.",
+                "Revise código para confirmar uso correto de SecureStorage/Keychain."
+              ],
+              mitigation: [
+                "Migrar todos os dados sensíveis para Keychain/Keystore com flags de proteção (kSecAttrAccessibleWhenUnlockedThisDeviceOnly).",
+                "Criptografar bancos SQLite com SQLCipher.",
+                "Desabilitar backups automáticos para dados críticos (AndroidManifest: allowBackup=false).",
+                "Implementar proteção anti-tampering e jailbreak/root detection."
+              ],
+              evidence: [
+                "Dump do filesystem mostrando ausência de secrets em plano.",
+                "Screenshot do Keychain Dumper ou Keystore Explorer.",
+                "Código-fonte mostrando uso correto de APIs seguras.",
+                "Relatório MobSF com score de storage security."
+              ],
+              references: [
+                "https://owasp.org/www-project-mobile-security-testing-guide/",
+                "OWASP MASVS v2.0 - MSTG-STORAGE",
+                "Apple Keychain Services Programming Guide",
+                "Android Keystore System Documentation"
+              ]
+            }
+          },
+          {
+            id: "mobile-storage-2",
+            title: "Avaliar logs e crash reports por vazamento de dados",
+            description: "Verifique se logs do sistema, analytics ou crash reports expõem PII/credenciais.",
+            guide: {
+              overview: "Logs verbosos em produção frequentemente vazam tokens, emails, IDs de sessão.",
+              impact: "Dados sensíveis indexados por serviços de analytics/crash (Firebase, Sentry) ou acessíveis via ADB.",
+              detection: [
+                "Execute adb logcat durante uso normal e autenticação.",
+                "Revise dashboards de Crashlytics/Sentry por dados sensíveis.",
+                "Procure por NSLog/console.log em código iOS e Log.d/Log.v em Android."
+              ],
+              tools: ["adb", "Console.app (macOS)", "Xcode Instruments"],
+              commands: [
+                "adb logcat | grep -iE 'password|token|api_key|authorization'",
+                "adb shell run-as com.app.example ls -la /data/data/com.app.example",
+                "ios syslog"
+              ],
+              steps: [
+                "Ative logging detalhado e monitore durante flows críticos (login, pagamento).",
+                "Force crashes e verifique relatórios enviados para serviços externos.",
+                "Analise código-fonte procurando por logging de objetos request/response completos.",
+                "Valide se dados são sanitizados antes de envio para analytics."
+              ],
+              mitigation: [
+                "Remover logs verbosos em builds de produção (ProGuard, Swift Optimization).",
+                "Implementar logger wrapper que filtra campos sensíveis.",
+                "Configurar obfuscação de stack traces.",
+                "Revisar configuração de serviços de analytics para data scrubbing."
+              ],
+              evidence: [
+                "Captura de logcat mostrando (ou não) presença de dados sensíveis.",
+                "Screenshot de crash report sanitizado.",
+                "Código do logger wrapper implementado.",
+                "Policy de logging documentada."
+              ],
+              references: [
+                "OWASP MSTG - Testing Logs for Sensitive Data",
+                "CWE-532: Insertion of Sensitive Information into Log File"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        id: "mobile-network",
+        title: "Segurança de Comunicação",
+        summary: "SSL Pinning, certificate validation, proxy detection.",
+        items: [
+          {
+            id: "mobile-net-1",
+            title: "Testar SSL/TLS pinning e bypass",
+            description: "Confirme implementação de certificate/public key pinning e tente bypass.",
+            guide: {
+              overview: "SSL pinning previne MITM mesmo com certificado raiz malicioso instalado.",
+              impact: "Sem pinning, atacantes podem interceptar todo tráfego instalando CA root (comum em pentest corporativo).",
+              detection: [
+                "Configure proxy (Burp/Charles) e tente interceptar tráfego HTTPS.",
+                "Use Frida/objection para desabilitar pinning em runtime.",
+                "Valide se app detecta proxy/debugging e bloqueia operação."
+              ],
+              tools: ["Burp Suite", "Frida", "objection", "SSL Kill Switch", "Proxyman"],
+              commands: [
+                "frida -U -f com.app.example -l bypass-ssl-pinning.js",
+                "objection --gadget com.app.example explore",
+                "android sslpinning disable",
+                "ios sslpinning disable"
+              ],
+              steps: [
+                "Instale certificado do proxy no device e configure WiFi proxy.",
+                "Tente acessar app - valide se há erro de certificado.",
+                "Use objection para bypass automático do pinning.",
+                "Se bypass funcionar, documente como falha e implemente pinning correto.",
+                "Revise código para confirmar uso de NSURLSession pinning (iOS) ou OkHttp CertificatePinner (Android)."
+              ],
+              mitigation: [
+                "Implementar public key pinning com backup pins.",
+                "Usar bibliotecas nativas (TrustKit para iOS, CertificatePinner para OkHttp).",
+                "Adicionar detecção de proxy/Frida em runtime.",
+                "Implementar tamper protection e obfuscação do pinning code."
+              ],
+              evidence: [
+                "Screenshot do erro de pinning quando proxy está ativo.",
+                "Código-fonte mostrando configuração de pinning.",
+                "Teste demonstrando falha de bypass após implementação.",
+                "Lista de public key hashes pinned."
+              ],
+              references: [
+                "OWASP MSTG - Testing Network Communication",
+                "OWASP Certificate Pinning Cheat Sheet",
+                "TrustKit Documentation",
+                "OkHttp CertificatePinner Guide"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        id: "mobile-code",
+        title: "Proteção de Código e Anti-Reversing",
+        summary: "Obfuscação, anti-debug, anti-tampering, runtime protection.",
+        items: [
+          {
+            id: "mobile-code-1",
+            title: "Avaliar obfuscação e proteção contra reverse engineering",
+            description: "Tente decompile, análise estática e dinâmica para testar proteções.",
+            guide: {
+              overview: "Apps devem dificultar análise via obfuscação de código, strings, e controle de fluxo.",
+              impact: "Código desprotegido permite extração de lógica de negócio, algoritmos e descoberta de vulnerabilidades.",
+              detection: [
+                "Decompile APK com jadx e analise legibilidade do código.",
+                "Extract strings e procure por URLs, keys, algoritmos.",
+                "Use Hopper/Ghidra para análise de binários iOS."
+              ],
+              tools: ["jadx", "apktool", "dex2jar", "Hopper", "Ghidra", "r2frida"],
+              commands: [
+                "jadx app.apk -d ./decompiled",
+                "strings app.apk | grep -iE 'http|api|key|secret'",
+                "apktool d app.apk && grep -r 'BuildConfig' .",
+                "otool -L app.ipa/Payload/*.app/*"
+              ],
+              steps: [
+                "Decompile e avalie se nomes de classes/métodos são legíveis.",
+                "Procure hardcoded secrets, API endpoints, business logic.",
+                "Tente patch do binário e recompile (valide se há integrity checks).",
+                "Execute em debugger (lldb/gdb) e valide se há anti-debug.",
+                "Use Frida para hook e modificar comportamento em runtime."
+              ],
+              mitigation: [
+                "Ativar ProGuard/R8 (Android) com regras agressivas.",
+                "Usar Swift optimization e Bitcode (iOS).",
+                "Implementar string encryption e control flow obfuscation.",
+                "Adicionar root/jailbreak detection, debugger detection.",
+                "Implementar integrity checks (signature verification)."
+              ],
+              evidence: [
+                "Comparação de código decompilado antes/depois de obfuscação.",
+                "Lista de proteções ativas (ProGuard rules, anti-debug).",
+                "Teste de tampering mostrando app crashando ou detectando modificação.",
+                "Screenshot de ferramentas falhando ao analisar código obfuscado."
+              ],
+              references: [
+                "OWASP MSTG - Code Quality and Build Settings",
+                "OWASP MSTG - Resilience Against Reverse Engineering",
+                "ProGuard/R8 Configuration Best Practices"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: "cloud-native",
+    name: "Cloud Native Security",
+    description: "Segurança para containers, Kubernetes, serverless e cloud-native architectures.",
+    sections: [
+      {
+        id: "container-security",
+        title: "Container & Image Security",
+        summary: "Scanning de vulnerabilidades, secrets in images, runtime protection.",
+        items: [
+          {
+            id: "container-1",
+            title: "Scan de vulnerabilidades em container images",
+            description: "Analise layers, dependências e configurações de images Docker/OCI.",
+            guide: {
+              overview: "Images devem ser escaneadas em build-time e registry para CVEs conhecidas.",
+              impact: "Vulnerabilidades em base images ou dependencies permitem exploração de containers em runtime.",
+              detection: [
+                "Execute trivy/grype contra images locais e em registry.",
+                "Verifique SBOM (Software Bill of Materials) gerado.",
+                "Analise se há imagens desatualizadas ou EOL."
+              ],
+              tools: ["trivy", "grype", "snyk", "clair", "aqua"],
+              commands: [
+                "trivy image --severity HIGH,CRITICAL nginx:latest",
+                "grype docker:nginx:latest -o json",
+                "docker scan nginx:latest",
+                "syft nginx:latest -o spdx-json > sbom.json"
+              ],
+              steps: [
+                "Liste todas as images em uso (prod, staging, dev).",
+                "Execute scan automatizado em CI/CD pipeline.",
+                "Priorize remediação por severidade e exploitabilidade.",
+                "Implemente policy para bloquear deploy de images com CVEs críticas.",
+                "Monitore advisories de segurança para base images."
+              ],
+              mitigation: [
+                "Usar distroless ou minimal base images (alpine, scratch).",
+                "Automatizar scanning em CI/CD com gates de aprovação.",
+                "Implementar image signing e verification (cosign, notary).",
+                "Manter registry privado com scanning integrado (Harbor, ECR).",
+                "Atualizar base images regularmente via Renovate/Dependabot."
+              ],
+              evidence: [
+                "Relatório trivy/grype mostrando CVEs encontradas.",
+                "SBOM completo das images críticas.",
+                "Pipeline CI/CD com stage de security scanning.",
+                "Policy de imagem documentada (allowed base images, max CVE score)."
+              ],
+              references: [
+                "CIS Docker Benchmark",
+                "NIST SP 800-190 - Container Security",
+                "OWASP Docker Security Cheat Sheet",
+                "Kubernetes Security Best Practices"
+              ]
+            }
+          },
+          {
+            id: "container-2",
+            title: "Detectar secrets hardcoded em container layers",
+            description: "Procure por credentials, API keys, certificates em layers de imagem.",
+            guide: {
+              overview: "Secrets em layers permanecem mesmo se removidos em layer posterior.",
+              impact: "Qualquer pessoa com acesso à image pode extrair secrets de layers intermediárias.",
+              detection: [
+                "Use trivy fs --scanners secret para detectar secrets.",
+                "Analise histórico de layers com dive.",
+                "Procure por arquivos .env, config.json, certificates em cada layer."
+              ],
+              tools: ["trivy", "gitleaks", "trufflehog", "dive", "docker history"],
+              commands: [
+                "trivy image --scanners secret nginx:latest",
+                "dive nginx:latest",
+                "docker history nginx:latest --no-trunc",
+                "docker save nginx:latest -o nginx.tar && tar -xf nginx.tar && grep -r 'password' ."
+              ],
+              steps: [
+                "Export image como tar e extraia layers.",
+                "Para cada layer, procure por patterns de secrets (regex).",
+                "Valide se build process usa multi-stage builds corretamente.",
+                "Confirme se secrets são injetados em runtime (volumes, env vars do orchestrator).",
+                "Revise Dockerfiles por ADD/COPY de arquivos sensíveis."
+              ],
+              mitigation: [
+                "Nunca incluir secrets em imagens - usar secrets management (Vault, K8s Secrets).",
+                "Implementar .dockerignore para arquivos sensíveis.",
+                "Usar multi-stage builds para separar build-time secrets de runtime image.",
+                "Scanear images automaticamente em CI/CD com trivy/gitleaks.",
+                "Rotacionar qualquer secret vazado imediatamente."
+              ],
+              evidence: [
+                "Relatório de scan mostrando ausência de secrets.",
+                "Dockerfile usando multi-stage builds.",
+                "Configuração de secrets management no K8s/Docker Swarm.",
+                "Log de rotação de secrets comprometidos."
+              ],
+              references: [
+                "OWASP Docker Security - Secret Management",
+                "12-Factor App - Config",
+                "Kubernetes Secrets Best Practices"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        id: "k8s-security",
+        title: "Kubernetes Security",
+        summary: "RBAC, Network Policies, Pod Security, admission control.",
+        items: [
+          {
+            id: "k8s-1",
+            title: "Auditar RBAC e privilégios excessivos",
+            description: "Revise roles, clusterroles, bindings e service accounts por over-permissions.",
+            guide: {
+              overview: "Princípio de menor privilégio deve ser aplicado a todos os recursos K8s.",
+              impact: "Service accounts com permissões excessivas permitem privilege escalation e lateral movement.",
+              detection: [
+                "Liste todos os ClusterRoleBindings e RoleBindings.",
+                "Use rbac-lookup para mapear permissões por service account.",
+                "Identifique accounts com cluster-admin ou wildcards (*, get/list/watch em all resources)."
+              ],
+              tools: ["kubectl", "rbac-lookup", "kubeaudit", "kube-bench", "kubectl-who-can"],
+              commands: [
+                "kubectl get clusterrolebindings -o json | jq '.items[] | select(.roleRef.name==\"cluster-admin\")'",
+                "rbac-lookup -o wide",
+                "kubectl-who-can create pods --all-namespaces",
+                "kubeaudit all -f manifest.yaml"
+              ],
+              steps: [
+                "Inventory de todos os service accounts e suas bindings.",
+                "Para cada SA, documente recursos e verbos necessários.",
+                "Compare permissões atuais vs. mínimas necessárias.",
+                "Implemente Role/RoleBinding granular por namespace.",
+                "Revise regularmente com kubeaudit ou OPA policies."
+              ],
+              mitigation: [
+                "Aplicar least privilege - roles específicas por workload.",
+                "Desabilitar automountServiceAccountToken quando não necessário.",
+                "Usar PodSecurityPolicies/PodSecurityStandards.",
+                "Implementar admission controllers (OPA, Kyverno) para enforce policies.",
+                "Auditar access logs do API server."
+              ],
+              evidence: [
+                "Matriz de permissões (SA × Resources × Verbs).",
+                "Relatório kubeaudit sem findings críticas.",
+                "Manifests com RBAC granular.",
+                "Dashboard de audit logs do API server."
+              ],
+              references: [
+                "Kubernetes RBAC Documentation",
+                "CIS Kubernetes Benchmark",
+                "NSA/CISA Kubernetes Hardening Guide",
+                "RBAC-Tool GitHub Repository"
+              ]
+            }
+          },
+          {
+            id: "k8s-2",
+            title: "Validar Network Policies e segmentação",
+            description: "Confirme isolamento de namespaces e pods via NetworkPolicies.",
+            guide: {
+              overview: "Por padrão, todos os pods podem se comunicar - NetworkPolicies implementam zero-trust.",
+              impact: "Sem segmentação, compromisso de um pod permite lateral movement para todo o cluster.",
+              detection: [
+                "Liste NetworkPolicies ativas em cada namespace.",
+                "Tente conectividade pod-to-pod em namespaces diferentes.",
+                "Use ferramenta de visualização como cilium/network-policy-viewer."
+              ],
+              tools: ["kubectl", "cilium", "calico", "netshoot", "kubectl-np-viewer"],
+              commands: [
+                "kubectl get networkpolicies --all-namespaces",
+                "kubectl run netshoot --rm -it --image=nicolaka/netshoot -- /bin/bash",
+                "curl http://service.namespace.svc.cluster.local",
+                "cilium monitor"
+              ],
+              steps: [
+                "Documente arquitetura de rede e zonas de confiança.",
+                "Implemente default-deny NetworkPolicy em cada namespace.",
+                "Crie policies específicas permitindo apenas tráfego necessário.",
+                "Teste conectividade após aplicar policies (positivo e negativo).",
+                "Monitore logs do CNI para blocked connections."
+              ],
+              mitigation: [
+                "Implementar default-deny em todos os namespaces.",
+                "Criar NetworkPolicies granulares por app/tier.",
+                "Usar service mesh (Istio, Linkerd) para mTLS e authorization.",
+                "Monitorar e alertar sobre violações de network policy.",
+                "Documentar topology e flows permitidos."
+              ],
+              evidence: [
+                "Diagrama de network segmentation.",
+                "Lista de NetworkPolicies por namespace.",
+                "Teste de conectividade mostrando bloqueio correto.",
+                "Logs do CNI com denied connections."
+              ],
+              references: [
+                "Kubernetes Network Policies Guide",
+                "Cilium Network Policy Editor",
+                "Calico Network Policy Tutorial"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        id: "serverless-security",
+        title: "Serverless Security",
+        summary: "Lambda/Cloud Functions security, IAM, cold start risks.",
+        items: [
+          {
+            id: "serverless-1",
+            title: "Auditar IAM roles e permissões de funções",
+            description: "Valide princípio de menor privilégio em execution roles de Lambda/Cloud Functions.",
+            guide: {
+              overview: "Functions frequentemente têm permissões excessivas por facilidade de desenvolvimento.",
+              impact: "Compromisso de função com role amplo permite acesso a recursos não relacionados (S3, DynamoDB, secrets).",
+              detection: [
+                "Liste todas as functions e seus execution roles.",
+                "Analise policies attached procurando por wildcards.",
+                "Use AWS IAM Access Analyzer ou GCP Policy Analyzer.",
+                "Simule privilege escalation paths."
+              ],
+              tools: ["aws cli", "gcloud", "prowler", "cloudsploit", "ScoutSuite"],
+              commands: [
+                "aws lambda list-functions --query 'Functions[*].[FunctionName,Role]'",
+                "aws iam get-role-policy --role-name lambda-role --policy-name policy",
+                "gcloud functions list --format='table(name,serviceAccountEmail)'",
+                "prowler -c check123 # IAM checks"
+              ],
+              steps: [
+                "Inventory de todas as serverless functions.",
+                "Para cada function, liste recursos AWS/GCP acessados no código.",
+                "Compare permissões atuais vs. necessárias.",
+                "Refatore roles para permissões granulares com resource-level constraints.",
+                "Implemente IaC (Terraform, CloudFormation) com policies auditadas."
+              ],
+              mitigation: [
+                "Criar role específico por função com least privilege.",
+                "Usar resource-based policies ao invés de identity-based quando possível.",
+                "Implementar permission boundaries.",
+                "Monitorar uso efetivo de permissões com Access Analyzer.",
+                "Automatizar review com policy-as-code (OPA, Sentinel)."
+              ],
+              evidence: [
+                "Matriz de functions × IAM roles × recursos acessados.",
+                "Relatório de Access Analyzer.",
+                "IaC manifests com roles granulares.",
+                "Dashboard de permissões não utilizadas."
+              ],
+              references: [
+                "AWS Lambda Security Best Practices",
+                "OWASP Serverless Top 10",
+                "GCP Cloud Functions Security",
+                "Azure Functions Security Considerations"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: "supply-chain",
+    name: "Supply Chain Security",
+    description: "Proteção da cadeia de suprimentos de software - dependencies, build pipeline, artifacts.",
+    sections: [
+      {
+        id: "dependency-security",
+        title: "Dependency Security",
+        summary: "SCA, vulnerabilidades em bibliotecas, typosquatting, malicious packages.",
+        items: [
+          {
+            id: "supply-1",
+            title: "Scan de vulnerabilidades em dependências",
+            description: "Identifique CVEs em bibliotecas diretas e transitivas.",
+            guide: {
+              overview: "Dependências vulneráveis são porta de entrada comum para exploração.",
+              impact: "Bibliotecas com CVEs conhecidas permitem RCE, XSS, SSRF sem tocar código próprio.",
+              detection: [
+                "Execute npm audit, pip-audit, bundle-audit.",
+                "Use Snyk, Dependabot, Renovate para monitoramento contínuo.",
+                "Analise SBOM e valide se há dependências EOL."
+              ],
+              tools: ["snyk", "npm audit", "pip-audit", "OWASP Dependency-Check", "grype"],
+              commands: [
+                "npm audit --production",
+                "pip-audit -r requirements.txt",
+                "snyk test",
+                "dependency-check --project myapp --scan ./",
+                "trivy fs --scanners vuln ."
+              ],
+              steps: [
+                "Gere SBOM de todas as aplicações (CycloneDX, SPDX).",
+                "Execute scan automatizado em CI/CD.",
+                "Priorize vulnerabilidades por CVSS, exploit availability, EPSS.",
+                "Crie plano de remediação (update, patch, replace).",
+                "Monitore advisories de segurança (GitHub Security Advisories, NVD)."
+              ],
+              mitigation: [
+                "Automatizar updates de dependencies com Renovate/Dependabot.",
+                "Implementar policy de versionamento (semver, lock files).",
+                "Usar registries privados com caching e scanning.",
+                "Block de deploy com CVEs críticas não remediadas.",
+                "Documentar exceções e compensating controls."
+              ],
+              evidence: [
+                "Relatório de audit completo (npm audit, snyk).",
+                "SBOM em formato padronizado.",
+                "Pipeline com stage de SCA.",
+                "Dashboard de vulnerabilidades por projeto."
+              ],
+              references: [
+                "OWASP Dependency-Check Documentation",
+                "NIST SSDF - Secure Software Development Framework",
+                "SLSA Framework",
+                "SBOM Guide - CISA"
+              ]
+            }
+          },
+          {
+            id: "supply-2",
+            title: "Detectar dependency confusion e typosquatting",
+            description: "Valide se nomes de packages estão corretos e não há packages maliciosos.",
+            guide: {
+              overview: "Atacantes publicam packages com nomes similares ou internal names em registries públicos.",
+              impact: "Install de package malicioso executa código arbitrário durante build ou runtime.",
+              detection: [
+                "Revise package.json, requirements.txt, go.mod por typos.",
+                "Verifique se packages internos têm namespace correto.",
+                "Use ferramentas de detection como confused.",
+                "Monitore novos packages publicados com nomes similares."
+              ],
+              tools: ["confused", "npm-diff", "guarddog"],
+              commands: [
+                "confused -l npm package.json",
+                "guarddog scan pypi suspicious-package",
+                "npm diff lodash@4.17.20 lodash@4.17.21"
+              ],
+              steps: [
+                "Liste todas as dependências de todos os projetos.",
+                "Para cada dependency, valide origem (registry oficial, maintainer confiável).",
+                "Configure registry privado como primary source.",
+                "Implemente namespacing de packages internos (@company/package).",
+                "Use scope/prefix para prevenir confusion."
+              ],
+              mitigation: [
+                "Configurar .npmrc/.pypirc para priorizar registry privado.",
+                "Implementar allow-list de packages aprovados.",
+                "Usar package-lock/poetry.lock com integrity checks.",
+                "Monitorar typosquatting com guarddog/socket.dev.",
+                "Treinar desenvolvedores sobre riscos de supply chain."
+              ],
+              evidence: [
+                "Scan com confused sem findings.",
+                "Configuração de registry privado.",
+                "Policy de aprovação de dependências.",
+                "Log de monitoramento de registries públicos."
+              ],
+              references: [
+                "Dependency Confusion Attack Explanation",
+                "OWASP Top 10 CI/CD - Insufficient Dependency Verification",
+                "Socket.dev Security Platform"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        id: "build-pipeline-security",
+        title: "Build Pipeline Security",
+        summary: "CI/CD security, artifact integrity, build isolation.",
+        items: [
+          {
+            id: "build-1",
+            title: "Validar integridade e provenance de artifacts",
+            description: "Implemente signing de artifacts e validação de build provenance.",
+            guide: {
+              overview: "Artifacts devem ser assinados para garantir autenticidade e integridade.",
+              impact: "Artifacts manipulados podem introduzir backdoors sem detecção.",
+              detection: [
+                "Verifique se há assinatura GPG/cosign em containers e binários.",
+                "Valide SLSA provenance statements.",
+                "Revise se pipeline gera attestations verificáveis."
+              ],
+              tools: ["cosign", "in-toto", "sigstore", "SLSA framework"],
+              commands: [
+                "cosign sign --key cosign.key image:tag",
+                "cosign verify --key cosign.pub image:tag",
+                "in-toto-run --step-name build -- make build",
+                "in-toto-verify --layout root.layout --layout-keys key.pub"
+              ],
+              steps: [
+                "Gere par de chaves para signing (rotação segura).",
+                "Integre signing no pipeline de CI/CD.",
+                "Publique public key em local acessível e auditável.",
+                "Valide assinatura antes de deploy em produção.",
+                "Documente processo de verification para auditoria."
+              ],
+              mitigation: [
+                "Implementar signing obrigatório de todos os artifacts.",
+                "Usar Sigstore para signing transparente e verificável.",
+                "Gerar SLSA provenance level 3+.",
+                "Automatizar verification no deployment pipeline.",
+                "Manter key management com HSM ou cloud KMS."
+              ],
+              evidence: [
+                "Artifacts assinados em registry.",
+                "SLSA provenance statements.",
+                "Pipeline com stages de signing e verification.",
+                "Documentação de processo de key management."
+              ],
+              references: [
+                "SLSA Framework Documentation",
+                "Sigstore - Signing for Software Supply Chain",
+                "in-toto Framework",
+                "NIST SSDF Supply Chain Security"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: "advanced-techniques",
+    name: "Advanced Bug Hunting",
+    description: "Técnicas avançadas de bug hunting - WAF bypass, race conditions, chain exploitation.",
+    sections: [
+      {
+        id: "waf-bypass",
+        title: "WAF Bypass Techniques",
+        summary: "Evasão de Web Application Firewalls e detection systems.",
+        items: [
+          {
+            id: "waf-1",
+            title: "Identificar e bypassar WAF com encoding e obfuscation",
+            description: "Detecte presença de WAF e teste técnicas de evasão.",
+            guide: {
+              overview: "WAFs bloqueiam payloads conhecidos, mas podem ser evadidos com transformações.",
+              impact: "Bypass de WAF permite exploração de vulnerabilidades reais na aplicação.",
+              detection: [
+                "Envie payloads canônicos e observe bloqueios/headers específicos.",
+                "Use wafw00f para fingerprinting de WAF.",
+                "Analise response time patterns e error pages customizadas."
+              ],
+              tools: ["wafw00f", "Burp Suite", "sqlmap --tamper", "nuclei"],
+              commands: [
+                "wafw00f https://target.com",
+                "sqlmap -u 'https://target.com/page?id=1' --tamper=space2comment,between",
+                "echo '<script>alert(1)</script>' | base64",
+                "curl -H 'X-Forwarded-For: 127.0.0.1' https://target.com/admin"
+              ],
+              steps: [
+                "Fingerprint do WAF (CloudFlare, Akamai, AWS WAF, ModSecurity).",
+                "Liste regras conhecidas do WAF identificado.",
+                "Teste encodings: URL encode, double encode, unicode, hex.",
+                "Teste case manipulation: <sCriPt>, <script/random>alert(1)</script>.",
+                "Use HTTP Parameter Pollution (HPP) e smuggling.",
+                "Teste bypass via headers: X-Forwarded-For, X-Original-URL, X-Rewrite-URL.",
+                "Fragmente payloads em múltiplos parâmetros."
+              ],
+              mitigation: [
+                "Não confiar apenas em WAF - fixar vulnerabilidade na aplicação.",
+                "Configurar WAF em modo blocking com tuning específico.",
+                "Implementar rate limiting e behavioral analysis.",
+                "Usar virtual patching temporário enquanto fix não é deployado.",
+                "Monitorar bypass attempts com SIEM."
+              ],
+              evidence: [
+                "Fingerprint do WAF detectado.",
+                "Payload original vs. payload que bypassou.",
+                "Screenshot de response bloqueada vs. bem-sucedida.",
+                "PoC completo de exploitation pós-bypass."
+              ],
+              references: [
+                "OWASP WAF Bypass Techniques",
+                "PortSwigger - WAF Bypass Cheat Sheet",
+                "PayloadsAllTheThings - WAF Bypass",
+                "wafw00f GitHub Repository"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        id: "race-conditions",
+        title: "Race Conditions & TOCTOU",
+        summary: "Time-of-check to time-of-use vulnerabilities em lógica de negócio.",
+        items: [
+          {
+            id: "race-1",
+            title: "Explorar race conditions em transações e vouchers",
+            description: "Teste concorrência em operações críticas (saldo, cupons, limites).",
+            guide: {
+              overview: "Operações não-atômicas permitem exploração via requisições simultâneas.",
+              impact: "Resgate múltiplo de vouchers, overdraft de saldo, bypass de rate limits.",
+              detection: [
+                "Identifique operações de read-modify-write sem lock.",
+                "Envie requisições simultâneas (Turbo Intruder, Burp Intruder com paralelismo).",
+                "Monitore se recursos são consumidos múltiplas vezes.",
+                "Analise código por transações database sem isolation level adequado."
+              ],
+              tools: ["Turbo Intruder (Burp)", "race-the-web", "curl paralelo", "Apache Bench"],
+              commands: [
+                "# Turbo Intruder script: envie 100 requests simultâneos",
+                "ab -n 100 -c 100 -m POST -H 'Cookie: session=xyz' https://target.com/redeem-voucher",
+                "parallel -j 50 curl -X POST https://target.com/redeem ::: {1..50}"
+              ],
+              steps: [
+                "Identifique endpoints críticos: pagamentos, resgates, transferências.",
+                "Configure Burp Turbo Intruder com gate='race1' para sincronização.",
+                "Envie payloads idênticos simultaneamente (>20 threads).",
+                "Valide se balanço/contador foi decrementado corretamente.",
+                "Analise DB queries e transaction isolation levels.",
+                "Teste com diferentes timings e paralelismo."
+              ],
+              mitigation: [
+                "Implementar pessimistic locking (SELECT FOR UPDATE).",
+                "Usar optimistic locking com version fields.",
+                "Garantir transações ACID com isolation SERIALIZABLE.",
+                "Implementar idempotency keys para operações críticas.",
+                "Usar distributed locks (Redis, Zookeeper) em ambientes multi-node.",
+                "Adicionar rate limiting e jitter artificial."
+              ],
+              evidence: [
+                "Screenshot de múltiplos resgates bem-sucedidos.",
+                "Logs de database mostrando inconsistência.",
+                "Código vulnerável vs. código com locking.",
+                "PoC em vídeo mostrando timing da exploração."
+              ],
+              references: [
+                "PortSwigger - Race Condition Vulnerabilities",
+                "OWASP - Testing for Race Conditions",
+                "CWE-362: Concurrent Execution using Shared Resource",
+                "Turbo Intruder Documentation"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        id: "cert-transparency",
+        title: "Asset Discovery via Certificate Transparency",
+        summary: "Descoberta de subdomínios e infraestrutura via CT logs.",
+        items: [
+          {
+            id: "cert-1",
+            title: "Enumerar subdomínios via Certificate Transparency Logs",
+            description: "Use CT logs para descobrir assets não documentados.",
+            guide: {
+              overview: "CT logs são públicos e indexam todos os certificados SSL emitidos.",
+              impact: "Descoberta de staging, dev, admin panels não listados em DNS público.",
+              detection: [
+                "Query CT logs via crt.sh, Censys, Shodan.",
+                "Procure wildcards e SANs (Subject Alternative Names).",
+                "Valide se subdomínios descobertos estão acessíveis."
+              ],
+              tools: ["crt.sh", "subfinder", "amass", "Censys", "Shodan"],
+              commands: [
+                "curl -s 'https://crt.sh/?q=%.target.com&output=json' | jq -r '.[].name_value' | sort -u",
+                "subfinder -d target.com -o subdomains.txt",
+                "amass enum -passive -d target.com -o amass-output.txt",
+                "censys search 'target.com' --fields services.service.tls.certificate.parsed.names"
+              ],
+              steps: [
+                "Execute query em crt.sh para %.target.com.",
+                "Extraia todos os subdomínios encontrados (incluindo wildcards).",
+                "Resolva DNS de cada subdomain descoberto.",
+                "Teste acessibilidade HTTP/HTTPS.",
+                "Priorize descobertas: staging, dev, admin, api-internal, vpn.",
+                "Realize recon profundo em assets não documentados."
+              ],
+              mitigation: [
+                "Manter inventário completo de assets.",
+                "Implementar authentication em todos os ambientes não-prod.",
+                "Usar DNS privado ou split-horizon DNS.",
+                "Monitorar emissão de certificados com Certificate Transparency Monitoring.",
+                "Retirar do ar ou proteger ambientes expostos inadvertidamente."
+              ],
+              evidence: [
+                "Lista de subdomínios descobertos via CT logs.",
+                "Screenshot de ambientes sensíveis expostos.",
+                "Comparação: inventário oficial vs. CT discovery.",
+                "Relatório de assets não documentados."
+              ],
+              references: [
+                "Certificate Transparency - RFC 6962",
+                "crt.sh - Certificate Search",
+                "OWASP - Attack Surface Analysis",
+                "Subdomain Enumeration Guide"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        id: "chain-exploitation",
+        title: "Chain Exploitation",
+        summary: "Combinação de vulnerabilidades para amplificar impacto.",
+        items: [
+          {
+            id: "chain-1",
+            title: "Encadear IDOR + SSRF para acesso interno",
+            description: "Combine múltiplas vulnerabilidades para atingir recursos protegidos.",
+            guide: {
+              overview: "Vulnerabilidades isoladas podem parecer low/medium, mas combinadas são críticas.",
+              impact: "Acesso a metadata endpoints (AWS, GCP), internal APIs, databases.",
+              detection: [
+                "Identifique IDOR que permite controle de URLs (avatar, webhooks, import).",
+                "Test SSRF em endpoints descobertos via IDOR.",
+                "Mapeie rede interna via SSRF (169.254.169.254, localhost:xxxx).",
+                "Combine com XXE, deserialization, ou LFI para full compromise."
+              ],
+              tools: ["Burp Suite", "Collaborator", "SSRFmap"],
+              commands: [
+                "# IDOR para modificar webhook URL + SSRF para metadata",
+                "curl -X PUT https://target.com/api/webhooks/123 -d '{\"url\":\"http://169.254.169.254/latest/meta-data/iam/security-credentials/\"}'",
+                "# Chain: IDOR + SSRF + credential leak",
+                "curl https://target.com/api/users/456/import?url=http://internal-db:5432/dump"
+              ],
+              steps: [
+                "Fase 1: Encontre IDOR que aceita input controlável (URL, file path).",
+                "Fase 2: Teste SSRF via input descoberto.",
+                "Fase 3: Enumere rede interna (port scanning via time-based SSRF).",
+                "Fase 4: Acesse metadata endpoints ou internal services.",
+                "Fase 5: Extraia credentials, tokens, ou pivote para outros hosts.",
+                "Documente cada passo e demonstre impacto amplificado."
+              ],
+              mitigation: [
+                "Fixar cada vulnerabilidade individualmente.",
+                "Implementar defense-in-depth (IDOR fix + SSRF prevention).",
+                "Usar allowlists para URLs/IPs externos.",
+                "Segmentar rede para limitar blast radius.",
+                "Monitorar chains conhecidas com detection rules."
+              ],
+              evidence: [
+                "Diagrama de attack chain (Step 1 → Step N).",
+                "Evidência de cada etapa (IDOR, SSRF, credential leak).",
+                "Screenshot de acesso a recurso que não deveria ser possível.",
+                "Relatório de impacto combinado vs. individual."
+              ],
+              references: [
+                "PortSwigger - Advanced SSRF Exploitation",
+                "HackerOne Reports - Chain Exploits",
+                "MITRE ATT&CK - Lateral Movement",
+                "OWASP - Vulnerability Chaining"
+              ]
+            }
+          }
+        ]
+      }
+    ]
   }
 ];
 
