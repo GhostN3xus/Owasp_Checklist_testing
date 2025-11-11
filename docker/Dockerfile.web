@@ -1,0 +1,56 @@
+FROM node:20-alpine AS base
+
+# Install dependencies for Playwright
+RUN apk add --no-cache \
+  chromium \
+  noto-sans \
+  noto-sans-cjk \
+  noto-emoji \
+  dumb-init
+
+# Set environment variable for Playwright
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+WORKDIR /app
+
+# Copy pnpm files
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* ./
+
+# Install dependencies
+RUN npm install -g pnpm && pnpm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Build stage
+RUN pnpm run build
+
+# Production stage
+FROM node:20-alpine
+
+# Install runtime dependencies for Playwright
+RUN apk add --no-cache \
+  chromium \
+  noto-sans \
+  noto-sans-cjk \
+  noto-emoji \
+  dumb-init
+
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+WORKDIR /app
+
+# Copy built application
+COPY --from=base /app/node_modules ./node_modules
+COPY --from=base /app/apps/web/.next ./apps/web/.next
+COPY --from=base /app/apps/web/public ./apps/web/public
+COPY --from=base /app/apps/web/package.json ./apps/web/package.json
+COPY --from=base /app/prisma ./prisma
+COPY --from=base /app/.env.example ./.env.example
+
+# Create directories
+RUN mkdir -p /app/prisma/sqlite
+
+EXPOSE 3000
+
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "apps/web/.next/standalone/server.js"]
