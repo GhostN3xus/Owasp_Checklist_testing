@@ -14,13 +14,13 @@ items:
       - Users can view, edit, or delete resources they shouldn't have access to
       - Direct references to objects without proper authorization checks
       - Missing or ineffective access controls on sensitive functionality
-      
+
       ## Risk
       - Unauthorized access to sensitive data
       - Data breach and privacy violations
       - System compromise
       - Business impact and regulatory fines
-      
+
       ## Verification
       - Test changing user IDs in URLs (IDOR)
       - Verify permission checks on all endpoints
@@ -50,12 +50,12 @@ items:
       - Using weak or outdated cryptographic algorithms
       - Inadequate encryption key management
       - Missing TLS/SSL in communication
-      
+
       ## Risk
       - Data interception and exposure
       - Loss of confidentiality and integrity
       - Regulatory compliance violations
-      
+
       ## Verification
       - Check for HTTPS/TLS on all pages
       - Verify strong encryption algorithms (AES-256)
@@ -85,13 +85,13 @@ items:
       - OS Command Injection
       - Template Injection
       - Expression Language Injection
-      
+
       ## Risk
       - Unauthorized data access
       - Data modification or deletion
       - System compromise
       - Denial of service
-      
+
       ## Verification
       - Test all input fields with SQL injection payloads
       - Verify prepared statements usage
@@ -107,3 +107,255 @@ items:
       - Commix
     category: "Input Validation"
     sort: 3
+
+  - code: "A4"
+    title: "Insecure Design"
+    description: "Missing or ineffective control design."
+    severity: "HIGH"
+    cweId: "CWE-209"
+    bodyMd: |
+      ## Definition
+      Insecure design represents different weaknesses expressed as "missing or ineffective control design."
+      - Lack of security controls
+      - Ineffective security controls
+      - Missing threat modeling
+      - Insufficient security architecture
+
+      ## Risk
+      - Systematic security flaws
+      - Business logic bypass
+      - Privilege escalation
+      - Data exposure
+
+      ## Verification
+      - Review security architecture documents
+      - Perform threat modeling
+      - Test business logic flows
+      - Verify security controls are in place
+    references: |
+      - https://owasp.org/Top10/A04_2021-Insecure_Design/
+      - https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html
+    tools: |
+      - OWASP Threat Dragon
+      - Microsoft Threat Modeling Tool
+      - IriusRisk
+    category: "Architecture"
+    sort: 4
+
+  - code: "A5"
+    title: "Security Misconfiguration"
+    description: "Improperly configured security settings."
+    severity: "HIGH"
+    cweId: "CWE-16"
+    bodyMd: |
+      ## Definition
+      Security misconfiguration includes:
+      - Default credentials
+      - Unnecessary features enabled
+      - Missing security headers
+      - Verbose error messages
+      - Outdated software versions
+
+      ## Risk
+      - System compromise
+      - Information disclosure
+      - Unauthorized access
+      - Service disruption
+
+      ## Verification
+      - Check for default passwords
+      - Verify security headers
+      - Review error handling
+      - Test for exposed admin interfaces
+      - Scan for outdated components
+    references: |
+      - https://owasp.org/Top10/A05_2021-Security_Misconfiguration/
+      - https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html
+    tools: |
+      - Nmap
+      - Nikto
+      - Security Headers Scanner
+      - Docker Bench
+    category: "Configuration"
+    sort: 5
+
+  - code: "A6"
+    title: "Vulnerable and Outdated Components"
+    description: "Using components with known vulnerabilities."
+    severity: "HIGH"
+    cweId: "CWE-1035"
+    bodyMd: |
+      ## Definition
+      Issues when you use vulnerable, outdated, or unsupported components:
+      - Outdated libraries and frameworks
+      - Unpatched dependencies
+      - End-of-life software
+      - Unknown component versions
+
+      ## Risk
+      - Known exploits available
+      - Remote code execution
+      - Data breaches
+      - System compromise
+
+      ## Verification
+      - Run dependency scanners
+      - Check for CVEs
+      - Review package versions
+      - Test for known vulnerabilities
+    references: |
+      - https://owasp.org/Top10/A06_2021-Vulnerable_and_Outdated_Components/
+      - https://cheatsheetseries.owasp.org/cheatsheets/Vulnerable_Dependency_Management_Cheat_Sheet.html
+    tools: |
+      - npm audit
+      - Snyk
+      - OWASP Dependency-Check
+      - Retire.js
+    category: "Dependencies"
+    sort: 6
+
+  - code: "A7"
+    title: "Identification and Authentication Failures"
+    description: "Broken authentication mechanisms."
+    severity: "CRITICAL"
+    cweId: "CWE-287"
+    bodyMd: |
+      ## Definition
+      Authentication failures include:
+      - Credential stuffing attacks possible
+      - Weak password requirements
+      - Missing multi-factor authentication
+      - Session fixation vulnerabilities
+      - Insecure password recovery
+
+      ## Risk
+      - Account takeover
+      - Identity theft
+      - Unauthorized access
+      - Session hijacking
+
+      ## Verification
+      - Test password policies
+      - Verify MFA implementation
+      - Check session management
+      - Test password reset flow
+      - Review authentication logs
+    references: |
+      - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+      - https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html
+    tools: |
+      - Burp Suite
+      - Hydra
+      - John the Ripper
+      - Hashcat
+    category: "Authentication"
+    sort: 7
+
+  - code: "A8"
+    title: "Software and Data Integrity Failures"
+    description: "Code and infrastructure without integrity verification."
+    severity: "HIGH"
+    cweId: "CWE-502"
+    bodyMd: |
+      ## Definition
+      Failures related to software updates, CI/CD pipelines, and data integrity:
+      - Insecure deserialization
+      - Unsigned code
+      - Untrusted CI/CD pipeline
+      - Auto-updates without verification
+      - Missing integrity checks
+
+      ## Risk
+      - Supply chain attacks
+      - Remote code execution
+      - Data tampering
+      - Malware distribution
+
+      ## Verification
+      - Check code signing
+      - Review CI/CD security
+      - Test deserialization
+      - Verify update mechanisms
+      - Check for SRI implementation
+    references: |
+      - https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/
+      - https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html
+    tools: |
+      - Sigstore
+      - in-toto
+      - SLSA Framework
+      - ysoserial
+    category: "Integrity"
+    sort: 8
+
+  - code: "A9"
+    title: "Security Logging and Monitoring Failures"
+    description: "Insufficient logging, detection, and response."
+    severity: "MEDIUM"
+    cweId: "CWE-778"
+    bodyMd: |
+      ## Definition
+      Logging and monitoring failures include:
+      - Missing security event logging
+      - Insufficient log retention
+      - No alerting on suspicious activities
+      - Logs not monitored
+      - Log injection vulnerabilities
+
+      ## Risk
+      - Delayed breach detection
+      - Insufficient forensics
+      - Compliance violations
+      - Inability to respond to incidents
+
+      ## Verification
+      - Review logging implementation
+      - Test log retention policies
+      - Verify alert mechanisms
+      - Check log protection
+      - Test incident response procedures
+    references: |
+      - https://owasp.org/Top10/A09_2021-Security_Logging_and_Monitoring_Failures/
+      - https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html
+    tools: |
+      - ELK Stack
+      - Splunk
+      - Datadog
+      - Graylog
+    category: "Logging"
+    sort: 9
+
+  - code: "A10"
+    title: "Server-Side Request Forgery (SSRF)"
+    description: "Fetching remote resources without validating user-supplied URLs."
+    severity: "HIGH"
+    cweId: "CWE-918"
+    bodyMd: |
+      ## Definition
+      SSRF flaws occur when:
+      - Application fetches remote resources
+      - No URL validation
+      - Internal network access possible
+      - Cloud metadata access
+
+      ## Risk
+      - Internal network scanning
+      - Cloud credential theft
+      - Bypass of access controls
+      - Remote code execution
+
+      ## Verification
+      - Test URL parameters
+      - Try accessing internal IPs (127.0.0.1, 169.254.169.254)
+      - Check for cloud metadata access
+      - Test file:// protocol
+      - Verify input validation
+    references: |
+      - https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_(SSRF)/
+      - https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html
+    tools: |
+      - Burp Suite Collaborator
+      - SSRFmap
+      - Gopherus
+    category: "Input Validation"
+    sort: 10
