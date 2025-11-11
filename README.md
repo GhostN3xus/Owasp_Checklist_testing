@@ -1,19 +1,21 @@
-# 🛡️ OWASP AppSec Checklist - Portal Educacional Completo
+# 🛡️ OWASP Checklist - Modern AppSec Audit Platform
 
-> **Plataforma interativa completa para Application Security, Bug Bounty e DevSecOps**
-> Transforme-se em um especialista de AppSec com checklists completos, guias práticos e conteúdo didático atualizado.
+> **Enterprise-grade Application Security Checklist Manager**
+> Next.js 14 + Prisma + SQLite + Docker. Complete audits with OWASP Web/API/Mobile/LLM checklists, project management, findings tracking, and professional exports.
 
 ---
 
-## 🎯 O que é este projeto?
+## 🎯 What is this?
 
-Um **portal educacional e prático de Application Security** que combina:
+A **modern, production-ready AppSec audit platform** combining:
 
-✅ **Checklists interativos completos** (OWASP Web, API, Mobile, Cloud, DevSecOps)
-✅ **Guias técnicos detalhados** com exemplos práticos, comandos reais e ferramentas
-✅ **Conteúdo didático** para formação de analistas de segurança
-✅ **Ferramentas profissionais** (relatórios, exportação, automação)
-✅ **100% offline** - nenhum dado sai da sua máquina
+✅ **OWASP Checklists** - Web Top 10, API Security Top 10, Mobile (MASVS), LLM Top 10
+✅ **Projects & Assessments** - Organize security audits and track progress
+✅ **Findings Management** - Record vulnerabilities with evidence tracking
+✅ **Professional Exports** - PDF/CSV/JSON reports with full assessment data
+✅ **Authentication & RBAC** - Role-based access control (Admin/Analyst/User)
+✅ **Local-first Architecture** - SQLite by default, easy migration to Postgres
+✅ **Security-hardened** - Zod validation, rate-limiting, XSS protection, CSP headers
 
 ---
 
@@ -98,32 +100,111 @@ Um **portal educacional e prático de Application Security** que combina:
 
 ---
 
-## 🛠️ Instalação e Uso
+## 🚀 Quick Start with Docker
 
-### **Requisitos**
-- Node.js 16+
-- npm ou yarn
+### **Requirements**
+- Docker & Docker Compose
 
-### **Instalação**
+### **Installation**
 
 ```bash
-# Clone o repositório
+# Clone repository
 git clone https://github.com/GhostN3xus/Owasp_Checklist_testing.git
 cd Owasp_Checklist_testing
 
-# Instale dependências
-npm install
+# Copy example env
+cp .env.example .env.local
 
-# Inicie o servidor
-npm start
+# Start with Docker
+docker compose -f docker/docker-compose.yml up --build
 ```
 
-### **Acesso**
-Abra [http://localhost:3000](http://localhost:3000) no navegador
+Wait for container to initialize, then open **http://localhost:3000**
+
+### **Default Credentials**
+- **Email**: `admin@local`
+- **Password**: `admin123!`
+
+### **Manual Setup (without Docker)**
+
+```bash
+# Install dependencies (requires Node.js 20+, pnpm)
+pnpm install
+
+# Setup database
+pnpm migrate
+pnpm seed
+
+# Start development server
+pnpm dev
+```
+
+Open **http://localhost:3000**
 
 ---
 
-## 📖 Como Usar
+## 📖 API Endpoints
+
+### **Authentication**
+- `POST /api/v1/auth/login` - User login
+
+### **Checklists**
+- `GET /api/v1/checklists` - List all checklists
+- `GET /api/v1/checklists/[slug]` - Get checklist with items
+
+### **Projects**
+- `GET /api/v1/projects` - List projects
+- `POST /api/v1/projects` - Create project
+- `GET /api/v1/projects/[id]` - Get project
+- `PATCH /api/v1/projects/[id]` - Update project
+
+### **Assessments**
+- `GET /api/v1/assessments` - List assessments
+- `POST /api/v1/assessments` - Create assessment
+- `GET /api/v1/assessments/[id]` - Get assessment with progress
+- `PATCH /api/v1/assessments/[id]/items/[itemId]` - Update assessment item status
+
+### **Findings**
+- `GET /api/v1/findings` - List findings
+- `POST /api/v1/findings` - Create finding
+- `GET /api/v1/findings/[id]` - Get finding
+- `PATCH /api/v1/findings/[id]` - Update finding
+
+### **Exports**
+- `POST /api/v1/exports/pdf` - Generate PDF report
+- `POST /api/v1/exports/csv` - Export CSV
+- `POST /api/v1/exports/json` - Export JSON
+
+## 📋 Adding New Checklists
+
+1. **Create YAML file** in `packages/content/checklists/`:
+
+```yaml
+id: owasp_custom_2025
+title: Custom Checklist
+version: "1.0"
+category: "CUSTOM"
+items:
+  - code: "ITEM1"
+    title: "Item Title"
+    description: "Item description"
+    severity: "HIGH"
+    cweId: "CWE-123"
+    bodyMd: "# Markdown content..."
+    references: "https://example.com"
+    tools: "Tool1, Tool2"
+    category: "Category"
+    sort: 1
+```
+
+2. **Run seed**:
+```bash
+pnpm run seed
+```
+
+3. **New checklist appears in UI!**
+
+## 📊 Using Como Usar
 
 ### **1. Configurar Auditoria**
 - Informe nome do projeto, tester, janela de auditoria
@@ -266,26 +347,83 @@ Owasp_Checklist_testing/
 
 ---
 
-## 🔧 Stack Tecnológico
+## 🏗️ Project Architecture
+
+```
+owasp-checklist/
+├── apps/web/
+│   ├── app/
+│   │   ├── (auth)/sign-in/page.tsx
+│   │   ├── dashboard/page.tsx
+│   │   ├── projects/[id]/page.tsx
+│   │   ├── checklists/page.tsx
+│   │   ├── findings/[id]/page.tsx
+│   │   ├── exports/print/[assessmentId]/page.tsx
+│   │   ├── api/v1/{auth,projects,assessments,findings,exports}/
+│   │   └── layout.tsx
+│   ├── components/{ui,charts,forms}/
+│   ├── lib/
+│   │   ├── auth.ts (NextAuth config)
+│   │   ├── prisma.ts (DB client)
+│   │   ├── rbac.ts (Role-based access control)
+│   │   ├── rate-limit.ts (Rate limiting)
+│   │   ├── validation/
+│   │   ├── api-response.ts
+│   │   └── logger.ts (Pino)
+│   ├── e2e/tests.spec.ts (Playwright)
+│   └── package.json
+├── packages/
+│   ├── content/
+│   │   ├── checklists/*.yaml
+│   │   └── references/
+│   └── cli/bin/owaspctl.ts
+├── prisma/
+│   ├── schema.prisma
+│   └── seeds/seed.ts
+├── docker/
+│   ├── Dockerfile.web
+│   └── docker-compose.yml
+└── package.json (workspace root)
+```
+
+## 🛠️ Tech Stack
 
 ### **Frontend**
-- **HTML5** + **CSS3** (Grid, Flexbox, CSS Variables)
-- **Vanilla JavaScript** (ES Modules, async/await)
-- **Responsivo** (Desktop → Mobile)
+- **Next.js 14+** - React with App Router
+- **TailwindCSS** - Utility-first CSS
+- **Radix UI** - Accessible components
+- **React Hook Form + Zod** - Form validation
 
 ### **Backend**
-- **Node.js** + **Express.js**
-- **LowDB** (banco de dados JSON leve)
-- **Multer** (upload de arquivos)
+- **Node.js 20+** - Runtime
+- **Next.js API Routes** - REST endpoints
+- **Prisma ORM** - Type-safe database
+- **Zod** - Schema validation
+- **NextAuth.js v5** - Authentication + JWT
 
-### **Build & Testes**
-- **esbuild** (bundler rápido)
-- **Vitest** (testes unitários)
+### **Database**
+- **SQLite** - Local development (file-based)
+- **Postgres** - Production ready (just change `DATABASE_URL`)
 
-### **Design**
-- **Dark theme** profissional
-- **Glassmorphism** e gradientes
-- **Inter font** (Google Fonts)
+### **Security**
+- **bcryptjs** - Password hashing
+- **Helmet** - HTTP security headers
+- **express-rate-limit** - Rate limiting
+- **rehype-sanitize** - HTML sanitization
+- **CSP Headers** - XSS protection
+
+### **Exports**
+- **Playwright** - PDF generation
+- **Custom CSV/JSON** - Data serialization
+
+### **Testing**
+- **Vitest** - Unit tests
+- **Playwright** - E2E tests
+
+### **DevOps**
+- **Docker** - Containerization
+- **Docker Compose** - Orchestration
+- **pnpm** - Fast package manager
 
 ---
 

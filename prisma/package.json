@@ -1,0 +1,23 @@
+{
+  "name": "@owasp/prisma",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "migrate": "prisma migrate dev",
+    "generate": "prisma generate",
+    "seed": "node -r ts-node/register seeds/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.17.0",
+    "bcryptjs": "^2.4.3",
+    "js-yaml": "^4.1.0",
+    "dotenv": "^16.4.1"
+  },
+  "devDependencies": {
+    "prisma": "^5.17.0",
+    "typescript": "^5.5.0",
+    "@types/node": "^20.13.0",
+    "ts-node": "^10.9.0",
+    "@types/js-yaml": "^4.0.9"
+  }
+}

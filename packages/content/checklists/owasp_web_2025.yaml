@@ -1,0 +1,109 @@
+id: owasp_web_2025
+title: OWASP Top 10 Web Application Security Risks 2025
+version: "1.0"
+category: "WEB"
+items:
+  - code: "A1"
+    title: "Broken Access Control"
+    description: "Access control enforces policy such that users cannot act outside of their intended permissions."
+    severity: "CRITICAL"
+    cweId: "CWE-639"
+    bodyMd: |
+      ## Definition
+      Broken access control occurs when users can act outside of their intended permissions. This includes:
+      - Users can view, edit, or delete resources they shouldn't have access to
+      - Direct references to objects without proper authorization checks
+      - Missing or ineffective access controls on sensitive functionality
+      
+      ## Risk
+      - Unauthorized access to sensitive data
+      - Data breach and privacy violations
+      - System compromise
+      - Business impact and regulatory fines
+      
+      ## Verification
+      - Test changing user IDs in URLs (IDOR)
+      - Verify permission checks on all endpoints
+      - Test role-based access restrictions
+      - Check for missing authentication on sensitive functions
+    references: |
+      - https://owasp.org/Top10/A01_2021-Broken_Access_Control/
+      - https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html
+      - https://owasp.org/www-project-idor/
+    tools: |
+      - Burp Suite Professional
+      - OWASP ZAP
+      - Postman
+      - Insomnia
+    category: "Access Control"
+    sort: 1
+
+  - code: "A2"
+    title: "Cryptographic Failures"
+    description: "Failure to adequately protect sensitive data in transit and at rest."
+    severity: "CRITICAL"
+    cweId: "CWE-327"
+    bodyMd: |
+      ## Definition
+      Cryptographic failures involve issues such as:
+      - Transmitting sensitive data in cleartext
+      - Using weak or outdated cryptographic algorithms
+      - Inadequate encryption key management
+      - Missing TLS/SSL in communication
+      
+      ## Risk
+      - Data interception and exposure
+      - Loss of confidentiality and integrity
+      - Regulatory compliance violations
+      
+      ## Verification
+      - Check for HTTPS/TLS on all pages
+      - Verify strong encryption algorithms (AES-256)
+      - Test for weak cryptography implementations
+      - Check encryption key storage and rotation
+    references: |
+      - https://owasp.org/Top10/A02_2021-Cryptographic_Failures/
+      - https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html
+    tools: |
+      - Burp Suite
+      - SSL Labs
+      - testssl.sh
+      - Wireshark
+    category: "Cryptography"
+    sort: 2
+
+  - code: "A3"
+    title: "Injection"
+    description: "Injection flaws occur when untrusted data is sent to code interpreter."
+    severity: "CRITICAL"
+    cweId: "CWE-89"
+    bodyMd: |
+      ## Definition
+      Injection vulnerabilities include:
+      - SQL Injection
+      - LDAP Injection
+      - OS Command Injection
+      - Template Injection
+      - Expression Language Injection
+      
+      ## Risk
+      - Unauthorized data access
+      - Data modification or deletion
+      - System compromise
+      - Denial of service
+      
+      ## Verification
+      - Test all input fields with SQL injection payloads
+      - Verify prepared statements usage
+      - Test for command injection vectors
+      - Check for proper input validation and escaping
+    references: |
+      - https://owasp.org/Top10/A03_2021-Injection/
+      - https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html
+    tools: |
+      - Burp Suite
+      - OWASP ZAP
+      - SQLmap
+      - Commix
+    category: "Input Validation"
+    sort: 3

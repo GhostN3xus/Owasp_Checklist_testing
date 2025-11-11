@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: file:./prisma/sqlite/sqlite.db
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-change-this-to-a-secure-random-string}
+      NEXTAUTH_URL: http://localhost:3000
+      PUBLIC_BASE_URL: http://localhost:3000
+    volumes:
+      - ./sqlite:/app/prisma/sqlite
+      - ./exports:/tmp
+    depends_on:
+      - init
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/v1/checklists"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  init:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+    entrypoint: >
+      sh -c "
+      echo 'Running migrations...' &&
+      npx prisma migrate deploy &&
+      echo 'Running seed...' &&
+      node -r ts-node/register prisma/seeds/seed.ts &&
+      echo 'Init completed!'
+      "
+    environment:
+      DATABASE_URL: file:./prisma/sqlite/sqlite.db
+    volumes:
+      - ./sqlite:/app/prisma/sqlite
+    working_dir: /app
+
+volumes:
+  sqlite:
+  exports:

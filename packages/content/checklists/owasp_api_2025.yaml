@@ -1,0 +1,37 @@
+id: owasp_api_2025
+title: OWASP API Security Top 10 2025
+version: "1.0"
+category: "API"
+items:
+  - code: "API1"
+    title: "Broken Object Level Authorization"
+    description: "Object level authorization flaws allow attackers to bypass authorization checks."
+    severity: "CRITICAL"
+    cweId: "CWE-639"
+    bodyMd: "Test IDOR by manipulating object IDs in API requests."
+    references: "https://owasp.org/www-project-api-security/"
+    tools: "Burp Suite, Postman"
+    category: "Authorization"
+    sort: 1
+
+  - code: "API2"
+    title: "Broken Authentication"
+    description: "APIs lack proper authentication mechanisms."
+    severity: "CRITICAL"
+    cweId: "CWE-287"
+    bodyMd: "Verify JWT tokens, API keys, and authentication endpoints."
+    references: "https://owasp.org/www-project-api-security/"
+    tools: "OWASP ZAP, Burp Suite"
+    category: "Authentication"
+    sort: 2
+
+  - code: "API3"
+    title: "Broken Object Property Level Authorization"
+    description: "APIs expose sensitive properties of objects."
+    severity: "HIGH"
+    cweId: "CWE-639"
+    bodyMd: "Check for excessive data exposure in API responses."
+    references: "https://owasp.org/www-project-api-security/"
+    tools: "Insomnia, Postman"
+    category: "Authorization"
+    sort: 3
