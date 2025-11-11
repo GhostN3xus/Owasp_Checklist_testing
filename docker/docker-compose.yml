@@ -31,14 +31,15 @@ services:
       dockerfile: docker/Dockerfile.web
     entrypoint: >
       sh -c "
-      echo 'Running migrations...' &&
-      npx prisma migrate deploy &&
-      echo 'Running seed...' &&
-      node -r ts-node/register prisma/seeds/seed.ts &&
-      echo 'Init completed!'
+      echo 'Initializing database...' &&
+      pnpm -C prisma exec prisma generate &&
+      pnpm -C prisma exec prisma migrate deploy &&
+      pnpm -C prisma exec prisma db seed &&
+      echo '✅ Init completed!'
       "
     environment:
       DATABASE_URL: file:./prisma/sqlite/sqlite.db
+      NODE_ENV: development
     volumes:
       - ./sqlite:/app/prisma/sqlite
     working_dir: /app

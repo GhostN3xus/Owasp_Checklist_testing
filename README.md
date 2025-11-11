@@ -43,103 +43,95 @@ A **modern, production-ready AppSec audit platform** combining:
 
 ---
 
-## 🆕 Novidades Desta Versão
+## ⚡ **Quick Start (Comece Agora!)**
 
-### ✨ **6 Novos Módulos Completos**
-
-1. **🔌 OWASP API Security Top 10 2023**
-   - BOLA/IDOR, Broken Authentication, Mass Assignment
-   - GraphQL Security (introspection, depth attacks)
-   - Exemplos práticos com Burp, Postman, curl
-
-2. **📱 Mobile Security (MASVS/MASTG)**
-   - Android & iOS security testing
-   - Armazenamento seguro, criptografia, biometria
-   - Root/Jailbreak detection, anti-debugging
-   - WebView, Deep Links, Certificate Pinning
-
-3. **🧠 Threat Modeling**
-   - STRIDE (Spoofing, Tampering, Repudiation, etc)
-   - PASTA (7 estágios de análise de risco)
-   - LINDDUN (privacy threat modeling)
-   - Attack Trees e Kill Chain Analysis
-
-4. **💼 Business Logic Vulnerabilities**
-   - Bypass de workflow, race conditions
-   - Manipulação de preços e quantidades
-   - Abuse de funcionalidades legítimas
-   - Timing attacks e replay
-
-5. **🔗 Supply Chain Security & SCA**
-   - Scan de dependências (npm audit, Snyk, OWASP Dependency-Check)
-   - SBOM (Software Bill of Materials)
-   - Dependency confusion, typosquatting
-   - License compliance
-
-6. **📊 Logging, Monitoring & Incident Response**
-   - Logging seguro (o que logar, como proteger)
-   - SIEM (Splunk, ELK Stack, Datadog)
-   - Detection rules e alertas
-   - Incident Response Plan (NIST 800-61)
-   - Forensics readiness
-
-### 🎨 **Interface Profissional Aprimorada**
-
-- Dashboard com métricas em tempo real
-- Workflow de 5 fases (Recon → Testing → Access → Report → Mitigate)
-- Filtros avançados por status, tester, fase
-- Campos ricos: notas, evidências, anexos, narrativas
-- Sistema de tags (severity, priority, stage)
-
-### 📄 **Exportação Profissional**
-
-- Relatórios PDF completos com métricas
-- Exportação parcial por seção
-- Templates profissionais formatados
-- Evidências anexadas (screenshots, logs, PoCs)
-
----
-
-## 🚀 Quick Start with Docker
-
-### **Requirements**
-- Docker & Docker Compose
-
-### **Installation**
+### **Opção 1: Docker (Recomendado - Mais Fácil)**
 
 ```bash
-# Clone repository
+# Clone e entre no projeto
 git clone https://github.com/GhostN3xus/Owasp_Checklist_testing.git
 cd Owasp_Checklist_testing
 
-# Copy example env
-cp .env.example .env.local
-
-# Start with Docker
+# Inicie com Docker Compose (tudo automático!)
 docker compose -f docker/docker-compose.yml up --build
 ```
 
-Wait for container to initialize, then open **http://localhost:3000**
+Aguarde 30-40 segundos e acesse: **http://localhost:3000**
 
-### **Default Credentials**
-- **Email**: `admin@local`
-- **Password**: `admin123!`
-
-### **Manual Setup (without Docker)**
+### **Opção 2: Local (Node.js 20+)**
 
 ```bash
-# Install dependencies (requires Node.js 20+, pnpm)
+# Instale dependências
 pnpm install
 
-# Setup database
-pnpm migrate
-pnpm seed
+# Execute setup (automático: migrate + seed + build)
+./scripts/setup.sh
 
-# Start development server
+# Inicie o servidor de desenvolvimento
 pnpm dev
 ```
 
-Open **http://localhost:3000**
+Acesse: **http://localhost:3000**
+
+### **Credenciais Padrão**
+```
+Email: admin@local
+Senha: admin123!
+```
+
+---
+
+## 📊 **Features Implementadas**
+
+### **1. Dashboard Inteligente**
+- Visualização de projetos, avaliações, achados
+- Estatísticas em tempo real
+- Acesso rápido a funcionalidades principais
+
+### **2. 4 Checklists OWASP Versionados**
+- **OWASP Web Top 10 2025** - Vulnerabilidades web
+- **OWASP API Security 2025** - Segurança de APIs
+- **OWASP Mobile 2025** - Segurança mobile (MASVS)
+- **OWASP LLM Top 10 2025** - Segurança de modelos LLM
+
+Cada checklist inclui:
+- ✅ Código e título
+- ✅ Descrição detalhada em Markdown
+- ✅ CWE mapping
+- ✅ Referências e links
+- ✅ Ferramentas recomendadas
+- ✅ Severidade (LOW/MEDIUM/HIGH/CRITICAL)
+
+### **3. Gerenciamento de Projetos**
+- Criar, editar, listar projetos
+- Vincular múltiplas avaliações
+- Definir escopo e descrição
+
+### **4. Avaliações (Assessments)**
+- Iniciar avaliação a partir de checklist
+- Marcar itens: PENDING → PASS/FAIL/NA
+- Cálculo automático de progresso (%)
+- Adicionar notas e evidências por item
+
+### **5. Achados (Findings)**
+- Registrar vulnerabilidades encontradas
+- Severidade: LOW/MEDIUM/HIGH/CRITICAL
+- Status: OPEN/RESOLVED
+- Rastreamento de evidências (screenshots, logs, PoCs)
+
+### **6. Exportações Profissionais**
+- **PDF**: Relatório completo com tabelas e métricas
+- **CSV**: Dados estruturados para análise
+- **JSON**: API raw para integração
+
+### **7. Segurança Enterprise**
+- 🔐 **Autenticação**: NextAuth.js + bcryptjs
+- 👤 **RBAC**: Admin, Analyst, User
+- ⏱️ **Rate-limiting**: Proteção contra abuse (5 logins/15min, 10 creates/min)
+- ✅ **Validação**: Zod em todos os endpoints
+- 🔒 **Headers**: CSP, X-Frame-Options, XSS-Protection, Strict-Transport-Security
+- 🧹 **Sanitização**: HTML entity encoding
+- 📝 **Logging**: Pino com estrutura profissional
 
 ---
 
