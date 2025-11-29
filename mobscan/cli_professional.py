@@ -208,10 +208,39 @@ class MobscanCLI:
 
     async def run_scan(self, args):
         """Executa scan de segurança."""
+        from mobscan.core.plugin_system import PluginManager
+
         print(f"{Colors.OKGREEN}[*] Starting security scan...{Colors.ENDC}")
         print(f"{Colors.OKCYAN}    Target: {args.target}{Colors.ENDC}")
         print(f"{Colors.OKCYAN}    Modules: {', '.join(args.modules)}{Colors.ENDC}")
         print(f"{Colors.OKCYAN}    Intensity: {args.intensity}{Colors.ENDC}\n")
+
+        # Inicializa e carrega plugins
+        plugin_manager = PluginManager()
+        plugin_manager.add_plugin_directory('./plugins')
+        plugin_manager.add_plugin_directory('./mobscan/plugins')
+
+        # Carrega plugins
+        loaded_plugins = await plugin_manager.load_all_plugins()
+        if loaded_plugins > 0:
+            print(f"{Colors.OKCYAN}[*] Loaded {loaded_plugins} plugin(s){Colors.ENDC}\n")
+
+        # Executa hooks before_scan
+        scan_context = {
+            'target': args.target,
+            'modules': args.modules,
+            'intensity': args.intensity
+        }
+
+        hook_plugins = [info for info in plugin_manager.get_all_plugins()
+                       if info.metadata.plugin_type.value == 'hook' and
+                       info.status.value == 'active']
+
+        for hook_plugin in hook_plugins:
+            try:
+                scan_context = await hook_plugin.instance.on_before_scan(scan_context)
+            except Exception as e:
+                logger.warning(f"Hook before_scan failed for {hook_plugin.metadata.name}: {e}")
 
         results = {}
 
@@ -274,6 +303,29 @@ class MobscanCLI:
             }
 
             print(f"{Colors.OKGREEN}    ✓ Frida completed: {len(frida_result.hooks_loaded)} hooks loaded{Colors.ENDC}")
+
+        # Executa plugins analyzer customizados
+        analyzer_plugins = [info for info in plugin_manager.get_all_plugins()
+                           if info.metadata.plugin_type.value == 'analyzer' and
+                           info.status.value == 'active']
+
+        if analyzer_plugins:
+            print(f"\n{Colors.OKBLUE}[+] Running custom analyzer plugins...{Colors.ENDC}")
+
+            for analyzer_plugin in analyzer_plugins:
+                try:
+                    plugin_results = await analyzer_plugin.instance.analyze(args.target, {})
+                    results[f"plugin_{analyzer_plugin.metadata.name}"] = plugin_results
+                    print(f"{Colors.OKGREEN}    ✓ {analyzer_plugin.metadata.name} completed{Colors.ENDC}")
+                except Exception as e:
+                    logger.error(f"Plugin {analyzer_plugin.metadata.name} failed: {e}")
+
+        # Executa hooks after_scan
+        for hook_plugin in hook_plugins:
+            try:
+                results = await hook_plugin.instance.on_after_scan(results)
+            except Exception as e:
+                logger.warning(f"Hook after_scan failed for {hook_plugin.metadata.name}: {e}")
 
         # Resumo
         print(f"\n{Colors.BOLD}{Colors.OKGREEN}[✓] Scan completed successfully!{Colors.ENDC}")
