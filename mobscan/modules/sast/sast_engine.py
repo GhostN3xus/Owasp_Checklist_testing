@@ -24,6 +24,18 @@ import logging
 import hashlib
 import json
 
+# Androguard para parsing de APK e AndroidManifest.xml binário
+try:
+    from androguard.core.bytecodes.apk import APK as AndroguardAPK
+    from androguard.core.bytecodes.axml import AXMLPrinter
+    ANDROGUARD_AVAILABLE = True
+except ImportError:
+    ANDROGUARD_AVAILABLE = False
+    logger.warning(
+        "Androguard not available. APK analysis will be limited. "
+        "Install with: pip install androguard"
+    )
+
 logger = logging.getLogger(__name__)
 
 
@@ -355,12 +367,12 @@ class SASTEngine:
             # Analisa AndroidManifest.xml
             if 'AndroidManifest.xml' in file_list:
                 try:
-                    manifest_data = apk.read('AndroidManifest.xml')
-                    # Nota: manifest binário precisa ser decodificado
-                    # Por simplicidade, assumimos texto aqui
-                    manifest_str = manifest_data.decode('utf-8', errors='ignore')
-                    manifest_findings = self.manifest_analyzer.analyze(manifest_str)
-                    result.findings.extend(manifest_findings)
+                    manifest_str = self._parse_android_manifest(apk)
+                    if manifest_str:
+                        manifest_findings = self.manifest_analyzer.analyze(manifest_str)
+                        result.findings.extend(manifest_findings)
+                    else:
+                        logger.warning("Failed to parse AndroidManifest.xml")
                 except Exception as e:
                     logger.warning(f"Error analyzing manifest: {e}")
 
@@ -410,12 +422,59 @@ class SASTEngine:
                     except Exception as e:
                         logger.debug(f"Error analyzing {file_path}: {e}")
 
-    def _extract_package_name(self, apk: zipfile.ZipFile) -> Optional[str]:
-        """Extrai nome do pacote do APK."""
+    def _parse_android_manifest(self, apk: zipfile.ZipFile) -> Optional[str]:
+        """
+        Parse AndroidManifest.xml binário usando androguard.
+
+        Args:
+            apk: ZipFile do APK
+
+        Returns:
+            String XML do manifest ou None se falhar
+        """
         try:
-            # Implementação simplificada
-            return "com.example.app"
-        except:
+            if ANDROGUARD_AVAILABLE:
+                # Usa androguard para decodificar o manifest binário
+                manifest_data = apk.read('AndroidManifest.xml')
+                axml = AXMLPrinter(manifest_data)
+                return axml.get_xml_obj().decode('utf-8', errors='ignore')
+            else:
+                # Fallback: tenta ler como texto (não funcionará com APKs reais)
+                logger.warning(
+                    "Androguard not available. AndroidManifest.xml parsing may fail. "
+                    "Install with: pip install androguard"
+                )
+                manifest_data = apk.read('AndroidManifest.xml')
+                return manifest_data.decode('utf-8', errors='ignore')
+        except Exception as e:
+            logger.error(f"Error parsing AndroidManifest.xml: {e}")
+            return None
+
+    def _extract_package_name(self, apk: zipfile.ZipFile) -> Optional[str]:
+        """
+        Extrai nome do pacote do APK.
+
+        Args:
+            apk: ZipFile do APK
+
+        Returns:
+            Nome do pacote ou None se falhar
+        """
+        try:
+            if ANDROGUARD_AVAILABLE:
+                # Usa androguard para extrair o package name corretamente
+                manifest_str = self._parse_android_manifest(apk)
+                if manifest_str:
+                    # Parse XML para extrair package name
+                    root = ET.fromstring(manifest_str)
+                    package_name = root.get('package')
+                    return package_name
+            else:
+                # Fallback: retorna nome genérico
+                logger.warning("Cannot extract real package name without androguard")
+                return "unknown.package"
+        except Exception as e:
+            logger.error(f"Error extracting package name: {e}")
             return None
 
     def _calculate_stats(self, result: SASTResult) -> None:

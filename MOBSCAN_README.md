@@ -3,6 +3,20 @@
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![OWASP](https://img.shields.io/badge/OWASP-MASTG-orange.svg)](https://owasp.org/www-project-mobile-app-security/)
+[![Status](https://img.shields.io/badge/status-beta-yellow.svg)](https://github.com/GhostN3xus/Owasp_Checklist_testing)
+
+> ⚠️ **PROJETO EM DESENVOLVIMENTO ATIVO - VERSÃO BETA**
+>
+> **Status Atual: ~45% Completo**
+>
+> Este projeto está em desenvolvimento ativo e contém funcionalidades parcialmente implementadas:
+> - ✅ **Funcional**: SAST Engine básico, CLI básico, arquitetura core
+> - ⚠️ **Limitado**: SCA Engine (banco de vulnerabilidades simulado), DAST Engine (parcialmente simulado)
+> - ❌ **Não Implementado**: Sistema de relatórios (0%), DAST/Frida engines completos, integrações externas
+>
+> **NÃO use em ambientes de produção sem validação completa dos resultados.**
+>
+> Para detalhes completos do status de implementação, veja [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md)
 
 ## 🚀 Quick Start
 

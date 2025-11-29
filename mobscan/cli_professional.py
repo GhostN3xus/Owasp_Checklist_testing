@@ -208,10 +208,39 @@ class MobscanCLI:
 
     async def run_scan(self, args):
         """Executa scan de segurança."""
+        from mobscan.core.plugin_system import PluginManager
+
         print(f"{Colors.OKGREEN}[*] Starting security scan...{Colors.ENDC}")
         print(f"{Colors.OKCYAN}    Target: {args.target}{Colors.ENDC}")
         print(f"{Colors.OKCYAN}    Modules: {', '.join(args.modules)}{Colors.ENDC}")
         print(f"{Colors.OKCYAN}    Intensity: {args.intensity}{Colors.ENDC}\n")
+
+        # Inicializa e carrega plugins
+        plugin_manager = PluginManager()
+        plugin_manager.add_plugin_directory('./plugins')
+        plugin_manager.add_plugin_directory('./mobscan/plugins')
+
+        # Carrega plugins
+        loaded_plugins = await plugin_manager.load_all_plugins()
+        if loaded_plugins > 0:
+            print(f"{Colors.OKCYAN}[*] Loaded {loaded_plugins} plugin(s){Colors.ENDC}\n")
+
+        # Executa hooks before_scan
+        scan_context = {
+            'target': args.target,
+            'modules': args.modules,
+            'intensity': args.intensity
+        }
+
+        hook_plugins = [info for info in plugin_manager.get_all_plugins()
+                       if info.metadata.plugin_type.value == 'hook' and
+                       info.status.value == 'active']
+
+        for hook_plugin in hook_plugins:
+            try:
+                scan_context = await hook_plugin.instance.on_before_scan(scan_context)
+            except Exception as e:
+                logger.warning(f"Hook before_scan failed for {hook_plugin.metadata.name}: {e}")
 
         results = {}
 
@@ -274,6 +303,29 @@ class MobscanCLI:
             }
 
             print(f"{Colors.OKGREEN}    ✓ Frida completed: {len(frida_result.hooks_loaded)} hooks loaded{Colors.ENDC}")
+
+        # Executa plugins analyzer customizados
+        analyzer_plugins = [info for info in plugin_manager.get_all_plugins()
+                           if info.metadata.plugin_type.value == 'analyzer' and
+                           info.status.value == 'active']
+
+        if analyzer_plugins:
+            print(f"\n{Colors.OKBLUE}[+] Running custom analyzer plugins...{Colors.ENDC}")
+
+            for analyzer_plugin in analyzer_plugins:
+                try:
+                    plugin_results = await analyzer_plugin.instance.analyze(args.target, {})
+                    results[f"plugin_{analyzer_plugin.metadata.name}"] = plugin_results
+                    print(f"{Colors.OKGREEN}    ✓ {analyzer_plugin.metadata.name} completed{Colors.ENDC}")
+                except Exception as e:
+                    logger.error(f"Plugin {analyzer_plugin.metadata.name} failed: {e}")
+
+        # Executa hooks after_scan
+        for hook_plugin in hook_plugins:
+            try:
+                results = await hook_plugin.instance.on_after_scan(results)
+            except Exception as e:
+                logger.warning(f"Hook after_scan failed for {hook_plugin.metadata.name}: {e}")
 
         # Resumo
         print(f"\n{Colors.BOLD}{Colors.OKGREEN}[✓] Scan completed successfully!{Colors.ENDC}")
@@ -345,34 +397,99 @@ class MobscanCLI:
 
     def run_report(self, args):
         """Gera relatórios."""
+        from mobscan.reports import generate_reports
+
         print(f"{Colors.OKGREEN}[*] Generating reports...{Colors.ENDC}")
         print(f"{Colors.OKCYAN}    Input: {args.input}{Colors.ENDC}")
-        print(f"{Colors.OKCYAN}    Formats: {', '.join(args.format)}{Colors.ENDC}\n")
+        print(f"{Colors.OKCYAN}    Formats: {', '.join(args.format)}{Colors.ENDC}")
+        print(f"{Colors.OKCYAN}    Output: {args.output}{Colors.ENDC}\n")
 
-        for fmt in args.format:
-            print(f"{Colors.OKBLUE}[+] Generating {fmt.upper()} report...{Colors.ENDC}")
-            # Implementação de geração de relatório
-            print(f"{Colors.OKGREEN}    ✓ {fmt.upper()} report generated{Colors.ENDC}")
+        try:
+            # Gera relatórios
+            generated_files = generate_reports(
+                input_file=args.input,
+                output_dir=args.output,
+                formats=args.format
+            )
 
-        print(f"\n{Colors.BOLD}{Colors.OKGREEN}[✓] Reports generated successfully!{Colors.ENDC}")
-        print(f"{Colors.OKCYAN}    Output directory: {args.output}{Colors.ENDC}\n")
+            # Exibe arquivos gerados
+            for fmt, filepath in generated_files.items():
+                print(f"{Colors.OKGREEN}[✓] {fmt.upper()} report: {filepath}{Colors.ENDC}")
+
+            print(f"\n{Colors.BOLD}{Colors.OKGREEN}[✓] All reports generated successfully!{Colors.ENDC}")
+            print(f"{Colors.OKCYAN}    Total: {len(generated_files)} report(s){Colors.ENDC}\n")
+
+        except FileNotFoundError:
+            print(f"{Colors.FAIL}[✗] Error: Input file not found: {args.input}{Colors.ENDC}")
+            sys.exit(1)
+        except Exception as e:
+            print(f"{Colors.FAIL}[✗] Error generating reports: {e}{Colors.ENDC}")
+            import traceback
+            traceback.print_exc()
+            sys.exit(1)
 
     def run_config(self, args):
         """Gerencia configuração."""
+        from mobscan.utils.config_manager import ConfigManager
+
+        config_manager = ConfigManager()
+
         if args.config_action == 'init':
             print(f"{Colors.OKGREEN}[*] Initializing configuration...{Colors.ENDC}")
-            # Cria config padrão
-            print(f"{Colors.OKGREEN}[✓] Configuration file created: mobscan_config.yaml{Colors.ENDC}\n")
+
+            # Determina arquivo de saída
+            output_file = args.file if hasattr(args, 'file') and args.file else 'mobscan_config.yaml'
+
+            try:
+                # Cria arquivo de configuração padrão
+                config_path = config_manager.create_default_config(output_file)
+                print(f"{Colors.OKGREEN}[✓] Configuration file created: {config_path}{Colors.ENDC}")
+                print(f"{Colors.OKCYAN}    Edit this file to customize your scans{Colors.ENDC}\n")
+            except Exception as e:
+                print(f"{Colors.FAIL}[✗] Error creating configuration: {e}{Colors.ENDC}")
+                sys.exit(1)
 
         elif args.config_action == 'show':
             print(f"{Colors.OKGREEN}[*] Current configuration:{Colors.ENDC}\n")
-            # Mostra config atual
-            print("Configuration displayed\n")
+
+            # Arquivo de configuração
+            config_file = args.file if hasattr(args, 'file') and args.file else 'mobscan_config.yaml'
+
+            try:
+                # Carrega e exibe configuração
+                config = config_manager.load_config(config_file)
+                import yaml
+                print(yaml.dump(config, default_flow_style=False, indent=2))
+                print()
+            except FileNotFoundError:
+                print(f"{Colors.FAIL}[✗] Configuration file not found: {config_file}{Colors.ENDC}")
+                print(f"{Colors.OKCYAN}    Run 'mobscan config init' to create a default config{Colors.ENDC}\n")
+                sys.exit(1)
+            except Exception as e:
+                print(f"{Colors.FAIL}[✗] Error loading configuration: {e}{Colors.ENDC}")
+                sys.exit(1)
 
         elif args.config_action == 'validate':
-            print(f"{Colors.OKGREEN}[*] Validating configuration: {args.file}{Colors.ENDC}")
-            # Valida config
-            print(f"{Colors.OKGREEN}[✓] Configuration is valid{Colors.ENDC}\n")
+            print(f"{Colors.OKGREEN}[*] Validating configuration: {args.file}{Colors.ENDC}\n")
+
+            try:
+                # Valida configuração
+                is_valid, errors = config_manager.validate_config(args.file)
+
+                if is_valid:
+                    print(f"{Colors.OKGREEN}[✓] Configuration is valid{Colors.ENDC}\n")
+                else:
+                    print(f"{Colors.FAIL}[✗] Configuration validation failed:{Colors.ENDC}\n")
+                    for error in errors:
+                        print(f"  • {error}")
+                    print()
+                    sys.exit(1)
+            except FileNotFoundError:
+                print(f"{Colors.FAIL}[✗] Configuration file not found: {args.file}{Colors.ENDC}\n")
+                sys.exit(1)
+            except Exception as e:
+                print(f"{Colors.FAIL}[✗] Error validating configuration: {e}{Colors.ENDC}\n")
+                sys.exit(1)
 
     def run_database(self, args):
         """Gerencia banco de dados."""
