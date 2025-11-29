@@ -1,0 +1,393 @@
+# MOBSCAN v1.1.0 - Complete Configuration Example
+# Este arquivo demonstra todas as opções de configuração disponíveis
+
+# ============================================================================
+# SCAN CONFIGURATION
+# ============================================================================
+scan:
+  # Módulos a executar
+  modules:
+    - sast    # Static Application Security Testing
+    - dast    # Dynamic Application Security Testing
+    - sca     # Software Composition Analysis
+    - frida   # Runtime Instrumentation
+
+  # Intensidade do scan
+  # quick: Análise rápida com regras essenciais
+  # normal: Análise balanceada (padrão)
+  # comprehensive: Análise profunda com todas as regras
+  intensity: comprehensive
+
+  # Diretório de saída
+  output_dir: ./mobscan_results
+
+  # Execução paralela de módulos
+  parallel: true
+
+  # Timeout global (segundos)
+  timeout: 3600
+
+  # Continuar após erros
+  continue_on_error: false
+
+# ============================================================================
+# SAST - STATIC APPLICATION SECURITY TESTING
+# ============================================================================
+sast:
+  enabled: true
+
+  # Regras a aplicar
+  rules:
+    - hardcoded_secrets
+    - weak_crypto
+    - insecure_storage
+    - manifest_issues
+    - permission_issues
+    - exported_components
+    - vulnerable_libraries
+
+  # Severidade mínima para reportar
+  min_severity: medium  # info, low, medium, high, critical
+
+  # Caminhos a excluir
+  exclude_paths:
+    - test/**
+    - tests/**
+    - build/**
+    - dist/**
+    - node_modules/**
+
+  # Padrões customizados
+  custom_patterns:
+    - name: custom_api_key
+      pattern: 'api[_-]?key[\s]*[:=][\s]*["\']([a-zA-Z0-9_\-]{20,})["\']'
+      severity: high
+      category: Hardcoded Secrets
+
+  # Análise de manifest
+  manifest:
+    check_debuggable: true
+    check_backup: true
+    check_exported: true
+    check_permissions: true
+
+  # Detalhes nos relatórios
+  include_code_snippets: true
+  max_snippet_lines: 5
+
+# ============================================================================
+# DAST - DYNAMIC APPLICATION SECURITY TESTING
+# ============================================================================
+dast:
+  enabled: true
+
+  # Configuração de proxy
+  proxy:
+    host: localhost
+    port: 8080
+    ssl_insecure: false  # Permite certificados auto-assinados
+
+  # Duração da análise (segundos)
+  duration: 300
+
+  # Exportar tráfego como HAR
+  export_har: true
+
+  # Detecção de dados sensíveis
+  sensitive_data:
+    enabled: true
+    patterns:
+      - credit_card
+      - ssn
+      - email
+      - phone
+      - password
+      - api_key
+      - token
+
+  # Validação de headers de segurança
+  security_headers:
+    enabled: true
+    required:
+      - Strict-Transport-Security
+      - X-Content-Type-Options
+      - X-Frame-Options
+      - Content-Security-Policy
+
+  # Validação de certificados
+  certificate_validation:
+    enabled: true
+    check_expiry: true
+    check_signature: true
+    min_key_size: 2048
+
+  # Detecção de HTTP não criptografado
+  unencrypted_http:
+    enabled: true
+    fail_on_http: true
+
+# ============================================================================
+# SCA - SOFTWARE COMPOSITION ANALYSIS
+# ============================================================================
+sca:
+  enabled: true
+
+  # Verificação de vulnerabilidades
+  check_vulnerabilities: true
+
+  # Severidade mínima de CVE para reportar
+  min_cve_severity: medium
+
+  # Verificação de licenças
+  check_licenses: true
+
+  # Licenças proibidas
+  forbidden_licenses:
+    - GPL
+    - AGPL
+
+  # Licenças com aviso
+  warning_licenses:
+    - LGPL
+
+  # Verificação de versões desatualizadas
+  check_outdated: true
+
+  # Gerar SBOM (Software Bill of Materials)
+  generate_sbom: true
+  sbom_format: cyclonedx  # cyclonedx, spdx
+
+  # Análise de supply chain
+  supply_chain:
+    enabled: true
+    check_typosquatting: true
+    check_abandoned: true
+
+  # Ecosistemas suportados
+  ecosystems:
+    - maven
+    - gradle
+    - cocoapods
+    - swift
+    - npm
+
+# ============================================================================
+# FRIDA - RUNTIME INSTRUMENTATION
+# ============================================================================
+frida:
+  enabled: false  # Requer dispositivo/emulador
+
+  # ID do dispositivo
+  device_id: usb  # usb, local, ou IP
+
+  # Hooks a carregar
+  hooks:
+    - root_bypass
+    - jailbreak_bypass
+    - ssl_bypass
+    - crypto_monitor
+    - storage_monitor
+    - network_monitor
+
+  # Scripts customizados
+  custom_scripts:
+    # - path: ./scripts/custom_hook.js
+    #   description: Custom hook description
+
+  # Spawn ou attach
+  mode: attach  # spawn, attach
+
+  # Timeout de anexação (segundos)
+  attach_timeout: 30
+
+  # Logging
+  log_level: info  # debug, info, warning, error
+
+# ============================================================================
+# REPORT GENERATION
+# ============================================================================
+report:
+  # Formatos de saída
+  formats:
+    - html
+    - pdf
+    - json
+    - markdown
+    - docx
+
+  # Diretório de saída
+  output_dir: ./reports
+
+  # Template customizado
+  template: null  # Caminho para template customizado
+
+  # Informações do relatório
+  title: MOBSCAN Security Assessment Report
+  company: Your Company Name
+  author: Security Team
+
+  # Incluir nos relatórios
+  include:
+    executive_summary: true
+    technical_details: true
+    code_snippets: true
+    remediation: true
+    references: true
+    cvss_scores: true
+
+  # Agrupamento de findings
+  group_by: severity  # severity, category, module
+
+  # PDF específico
+  pdf:
+    page_size: A4
+    orientation: portrait
+    include_toc: true
+    include_charts: true
+
+  # HTML específico
+  html:
+    theme: default  # default, dark, minimal
+    interactive: true
+    embed_resources: true
+
+# ============================================================================
+# PLUGIN SYSTEM
+# ============================================================================
+plugins:
+  enabled: true
+
+  # Diretórios de plugins
+  directories:
+    - ./plugins
+    - ~/.mobscan/plugins
+
+  # Plugins específicos
+  load:
+    # - name: custom_analyzer
+    #   config:
+    #     option1: value1
+
+  # Auto-discovery
+  auto_discover: true
+
+# ============================================================================
+# EVENT SYSTEM
+# ============================================================================
+events:
+  enabled: true
+
+  # Histórico de eventos
+  history_size: 1000
+
+  # Middleware
+  middleware: []
+
+# ============================================================================
+# LOGGING
+# ============================================================================
+logging:
+  level: INFO  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+
+  # Log para arquivo
+  file:
+    enabled: true
+    path: ./logs/mobscan.log
+    max_size: 10485760  # 10MB
+    backup_count: 5
+
+  # Log para console
+  console:
+    enabled: true
+    colored: true
+
+  # Formato
+  format: "[{time}] [{level}] {message}"
+
+# ============================================================================
+# PERFORMANCE
+# ============================================================================
+performance:
+  # Número de workers paralelos
+  max_workers: 4
+
+  # Cache
+  cache:
+    enabled: true
+    directory: ./.mobscan_cache
+    ttl: 86400  # 24 horas
+
+  # Limites de memória
+  memory:
+    max_usage: 2048  # MB
+
+# ============================================================================
+# INTEGRATIONS
+# ============================================================================
+integrations:
+  # Jira
+  jira:
+    enabled: false
+    url: https://your-jira.atlassian.net
+    project: SEC
+    # api_token: ${JIRA_API_TOKEN}
+
+  # Slack
+  slack:
+    enabled: false
+    webhook_url: ${SLACK_WEBHOOK_URL}
+    channel: "#security"
+
+  # GitHub
+  github:
+    enabled: false
+    # token: ${GITHUB_TOKEN}
+    create_issues: false
+
+  # CI/CD
+  ci:
+    fail_on_high: true
+    fail_on_critical: true
+    threshold:
+      critical: 0
+      high: 5
+      medium: 20
+
+# ============================================================================
+# VULNERABILITY DATABASE
+# ============================================================================
+database:
+  # Auto-update
+  auto_update: true
+  update_interval: 86400  # 24 horas
+
+  # Fontes
+  sources:
+    - nvd
+    - osv
+    - github_advisories
+
+  # Cache local
+  cache_dir: ~/.mobscan/vulndb
+
+# ============================================================================
+# ADVANCED OPTIONS
+# ============================================================================
+advanced:
+  # Modo verboso
+  verbose: false
+
+  # Modo debug
+  debug: false
+
+  # Dry run (não executa, só mostra o que faria)
+  dry_run: false
+
+  # User agent customizado
+  user_agent: "MOBSCAN/1.1.0"
+
+  # Proxy global (para requests HTTP)
+  proxy: null
+
+  # Timeout padrão (segundos)
+  default_timeout: 300
